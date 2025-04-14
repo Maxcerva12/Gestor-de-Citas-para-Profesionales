@@ -14,8 +14,12 @@ return new class extends Migration
             $table->string('email')->unique(); // Email único para autenticación
             $table->string('password'); // Contraseña cifrada
             $table->string('phone')->nullable(); // Teléfono (opcional)
+            $table->string('address')->nullable(); // Dirección (opcional)
+            $table->string('city')->nullable(); // Ciudad (opcional)
+            $table->string('country')->nullable(); // País (opcional)
             $table->timestamps(); // Campos created_at y updated_at
         });
+        
     }
 
     public function down(): void

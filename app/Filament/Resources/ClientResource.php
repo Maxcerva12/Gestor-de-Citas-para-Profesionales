@@ -36,12 +36,23 @@ class ClientResource extends Resource
                     ->label('Teléfono')
                     ->tel()
                     ->nullable(),
+                    Forms\Components\TextInput::make('address')
+                        ->label('Dirección')
+                        ->nullable(),
+                Forms\Components\TextInput::make('city')
+                    ->label('Ciudad')
+                    ->nullable(),
+                Forms\Components\TextInput::make('country')
+                    ->label('País')
+                    ->nullable(),
                 Forms\Components\TextInput::make('password')
                     ->label('Contraseña')
                     ->password()
                     ->dehydrateStateUsing(fn($state) => bcrypt($state))
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $operation): bool => $operation === 'create'),
+                
+                
             ]);
     }
 
@@ -57,6 +68,15 @@ class ClientResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Teléfono')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('address')
+                    ->label('Dirección')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('city')     
+                    ->label('Ciudad')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('country')
+                    ->label('País')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Registro')
