@@ -11,6 +11,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Spatie\Permission\Models\Role; // Añadir esta línea
 use Illuminate\Foundation\Auth\Access\Authorizable; // Añadir esta línea
+use Illuminate\Database\Eloquent\Relations\HasMany; // Añadir esta línea
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -36,5 +37,12 @@ class User extends Authenticatable implements FilamentUser
     {
         // Solo verifica si el usuario tiene algún rol, no da permisos extra
         return $this->roles()->count() > 0;
+    }
+    /**
+     * Relación con los horarios del profesional.
+     */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
     }
 }
