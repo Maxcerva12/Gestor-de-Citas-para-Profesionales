@@ -18,6 +18,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -29,7 +30,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
+                'secondary' => Color::Indigo,
+                'success' => Color::Green,
+                'danger' => Color::Red,
+                'warning' => Color::Amber,
+                'info' => Color::Sky,
+
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -40,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                // \App\Filament\Widgets\ScheduleCalendarWidget::class, // Añade el widget aquí 
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -56,10 +64,12 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make()
-                
+                FilamentShieldPlugin::make(),
+                FilamentFullCalendarPlugin::make()
+                    ->selectable(true) // Permite seleccionar rangos de fechas
+                    ->editable(true) // Permite editar eventos arrastrando
+                    ->timezone(config('app.timezone')) // Usa la zona horaria de la app
+                    ->locale(config('app.locale')) // Usa el idioma de la app
             ]);
-
-            
     }
 }
