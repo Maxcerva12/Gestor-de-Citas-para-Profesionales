@@ -8,12 +8,13 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Spatie\Permission\Models\Role; // Añadir esta línea
 use Illuminate\Foundation\Auth\Access\Authorizable; // Añadir esta línea
 use Illuminate\Database\Eloquent\Relations\HasMany; // Añadir esta línea
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, Authorizable;
 
@@ -21,8 +22,27 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'avatar_url',
+        'document_type',
+        'document_number',
+        'document',
+        'phone',
+        'address',
+        'city',
+        'country',
+        'profession',
+        'especialty',
+        'description',
+        'custom_fields',
     ];
-
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'custom_fields' => 'array'
+        ];
+    }
     protected $hidden = [
         'password',
         'remember_token',
@@ -44,5 +64,12 @@ class User extends Authenticatable implements FilamentUser
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
+    }
+    /**
+     * Relación con los servicios del profesional.
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_url;
     }
 }

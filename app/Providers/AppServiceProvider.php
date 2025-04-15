@@ -17,5 +17,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // Registra manualmente el widget en Livewire
         Livewire::component('schedule-calendar-widget', ScheduleCalendarWidget::class);
+        
     }
 }
