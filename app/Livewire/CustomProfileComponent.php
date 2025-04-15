@@ -14,6 +14,7 @@ use Joaopaulolndev\FilamentEditProfile\Concerns\HasSort;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class CustomProfileComponent extends Component implements HasForms
 {
@@ -25,12 +26,15 @@ class CustomProfileComponent extends Component implements HasForms
     protected static int $sort = 15;
 
     public Model $user;
-
     public function mount(): void
     {
-        $this->user = User::find(Auth::user()->id);
+        // abort_unless(Auth::check() && Gate::allows('edit_profile', Auth::user()), 403);
+
+        $this->user = User::findOrFail(Auth::id());
+        $this->user = User::findOrFail(Auth::id());
         $this->form->fill($this->user->attributesToArray());
     }
+
 
     public function form(Form $form): Form
     {

@@ -11,6 +11,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class ScheduleResource extends Resource
 {
@@ -20,6 +22,52 @@ class ScheduleResource extends Resource
 
     protected static ?string $navigationLabel = 'Horarios';
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_schedule');
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('view_schedule', $record);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Gate::allows('create_schedule');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('update_schedule', $record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('delete_schedule', $record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Gate::allows('delete_any_schedule');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_schedule');
+    }
     /**
      * Restringe el resource a los horarios del usuario autenticado.
      */

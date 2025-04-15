@@ -68,11 +68,24 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     /**
      * Relación con los servicios del profesional.
      */
+
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatar_url;
+        if ($this->avatar_url) {
+            // Normalizar la ruta para Windows
+            $path = str_replace('\\', '/', $this->avatar_url);
 
+            // Asegurarse de que la ruta comience correctamente
+            if (!str_starts_with($path, 'avatars/')) {
+                $path = 'avatars/' . basename($path);
+            }
+
+            // Usar asset() para generar la URL completa
+            return asset('storage/' . $path);
+        }
+        return null;
     }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

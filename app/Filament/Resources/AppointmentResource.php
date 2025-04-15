@@ -11,6 +11,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class AppointmentResource extends Resource
 {
@@ -19,6 +21,53 @@ class AppointmentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?string $navigationLabel = 'Citas';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_appointment');
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('view_appointment', $record);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Gate::allows('create_appointment');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('update_appointment', $record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('delete_appointment', $record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Gate::allows('delete_any_appointment');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_appointment');
+    }
 
     /**
      * Restringe las citas al profesional autenticado.

@@ -10,6 +10,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Resources\ClientResource\RelationManagers;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ClientResource extends Resource
 {
@@ -18,6 +21,53 @@ class ClientResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     protected static ?string $navigationLabel = 'Clientes';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_client');
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('view_client', $record);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Gate::allows('create_client');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('update_client', $record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('delete_client', $record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Gate::allows('delete_any_client');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_client');
+    }
 
     public static function form(Form $form): Form
     {

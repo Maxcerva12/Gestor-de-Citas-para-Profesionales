@@ -55,7 +55,11 @@ return [
         'pages' => true,
         'widgets' => true,
         'resources' => true,
-        'custom_permissions' => false,
+        'custom_permissions' => true,
+    ],
+
+    'custom_permissions' => [
+        'edit_profile', // ✅ Nuestro permiso personalizado para el componente Livewire
     ],
 
     'generator' => [
@@ -72,7 +76,8 @@ return [
         ],
 
         'widgets' => [
-            'AccountWidget', 'FilamentInfoWidget',
+            'AccountWidget',
+            'FilamentInfoWidget',
         ],
 
         'resources' => [],
