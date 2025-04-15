@@ -15,6 +15,11 @@ class Calendar extends Page
     protected static string $view = 'filament.pages.calendar';
 
     protected static ?string $navigationLabel = 'Calendario';
+    protected static ?string $navigationGroup = 'Gestión de Citas';
+    protected static ?string $label = 'Calendario';
+    protected static ?string $pluralLabel = 'Calendarios';
+    protected static ?string $title = 'Calendario';
+
 
     protected function getHeaderWidgets(): array
     {

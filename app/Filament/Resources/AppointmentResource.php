@@ -21,6 +21,9 @@ class AppointmentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?string $navigationLabel = 'Citas';
+    protected static ?string $navigationGroup = 'Gestión de Citas';
+    protected static ?string $label = 'Cita';
+    protected static ?string $pluralLabel = 'Citas';
 
     public static function getPermissionPrefixes(): array
     {

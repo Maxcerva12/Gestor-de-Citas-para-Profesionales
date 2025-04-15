@@ -21,11 +21,17 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Illuminate\Support\Facades\Auth;
+use Filament\Navigation\MenuItem;
+use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+// use Illuminate\Support\Facades\Auth;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('9rem')
             ->default()
             ->id('admin')
             ->path('admin')
@@ -73,21 +79,27 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentEditProfilePlugin::make()
-                ->shouldShowAvatarForm(
-                    value: true,
-                    directory: 'avatars', // Especifica el directorio
-                    rules: 'image|mimes:jpeg,png,jpg|max:2048' // Define las reglas
-                )
-                ->slug('profile')
-                ->setNavigationGroup('Configuración')
-                ->setIcon('heroicon-o-user-circle')
-                ->setNavigationLabel('Mi Perfil')
-                ->shouldShowAvatarForm()
-                ->shouldShowSanctumTokens()
-                ->shouldShowBrowserSessionsForm()
-                ->customProfileComponents([
-                    \App\Livewire\CustomProfileComponent::class,
-                ]),
+                    ->shouldShowAvatarForm(
+                        value: true,
+                        directory: 'avatars', // Especifica el directorio
+                        rules: 'image|mimes:jpeg,png,jpg|max:2048' // Define las reglas
+                    )
+                    ->slug('profile')
+                    ->setNavigationGroup('Configuración')
+                    ->setIcon('heroicon-o-user-circle')
+                    ->setNavigationLabel('Mi Perfil')
+                    ->shouldShowAvatarForm()
+                    ->shouldShowSanctumTokens()
+                    ->shouldShowBrowserSessionsForm()
+                    ->customProfileComponents([
+                        \App\Livewire\CustomProfileComponent::class,
+                    ]),
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn() => Auth::user()->name) // Usar el facade de Auth
+                    ->url(fn(): string => EditProfilePage::getUrl())
+                    ->icon('heroicon-m-user-circle')
             ]);
     }
 }

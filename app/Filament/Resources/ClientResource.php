@@ -21,6 +21,9 @@ class ClientResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     protected static ?string $navigationLabel = 'Clientes';
+    protected static ?string $navigationGroup = 'Gestión de Administrativa';
+    protected static ?string $label = 'Cliente';
+    protected static ?string $pluralLabel = 'Clientes';
 
     public static function getPermissionPrefixes(): array
     {

@@ -21,6 +21,12 @@ class ScheduleResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?string $navigationLabel = 'Horarios';
+    protected static ?string $navigationGroup = 'Gestión de Citas';
+    protected static ?string $label = 'Horario';
+    protected static ?string $pluralLabel = 'Horarios';
+
+    protected static int $sort = -19;
+    protected static ?int $navigationSort = -19;
 
     public static function getPermissionPrefixes(): array
     {

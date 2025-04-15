@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use BcMath\Number;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,6 +21,15 @@ class UserResource extends Resource implements HasShieldPermissions
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationLabel = 'Profesional';
+    protected static ?string $navigationGroup = 'Gestión de Administrativa';
+    protected static ?string $label = 'Profesional';
+    protected static ?string $pluralLabel = 'Profesionales';
+
+    protected static int $sort = -10;
+    protected static ?int $navigationSort = -10;
+
+    // protected static ?
 
     public static function getPermissionPrefixes(): array
     {
