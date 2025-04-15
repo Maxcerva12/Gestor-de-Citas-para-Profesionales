@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Authenticatable implements FilamentUser
 {
@@ -34,5 +35,10 @@ class Client extends Authenticatable implements FilamentUser
     {
         // Solo permite acceso al panel 'client'
         return $panel->getId() === 'client';
+    }
+
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
     }
 }

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Filament\Resources\ClientResource\RelationManagers;
 
 class ClientResource extends Resource
 {
@@ -36,9 +37,9 @@ class ClientResource extends Resource
                     ->label('Teléfono')
                     ->tel()
                     ->nullable(),
-                    Forms\Components\TextInput::make('address')
-                        ->label('Dirección')
-                        ->nullable(),
+                Forms\Components\TextInput::make('address')
+                    ->label('Dirección')
+                    ->nullable(),
                 Forms\Components\TextInput::make('city')
                     ->label('Ciudad')
                     ->nullable(),
@@ -51,8 +52,8 @@ class ClientResource extends Resource
                     ->dehydrateStateUsing(fn($state) => bcrypt($state))
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $operation): bool => $operation === 'create'),
-                
-                
+
+
             ]);
     }
 
@@ -72,7 +73,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('address')
                     ->label('Dirección')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('city')     
+                Tables\Columns\TextColumn::make('city')
                     ->label('Ciudad')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('country')
@@ -95,6 +96,13 @@ class ClientResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\AppointmentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

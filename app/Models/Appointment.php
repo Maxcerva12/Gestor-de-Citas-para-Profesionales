@@ -5,37 +5,39 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Schedule extends Model
+class Appointment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'date',
+        'client_id',
+        'schedule_id',
         'start_time',
         'end_time',
-        'is_available',
+        'status',
+        'notes',
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'start_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i',
-        'is_available' => 'boolean',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'status' => 'string',
     ];
 
-    /**
-     * Relación con el profesional (User).
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function appointments(): HasMany
+    public function client(): BelongsTo
     {
-        return $this->hasMany(Appointment::class);
+        return $this->belongsTo(Client::class);
+    }
+
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(Schedule::class);
     }
 }
