@@ -10,9 +10,9 @@ use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
-use Spatie\Permission\Models\Role; // Añadir esta línea
-use Illuminate\Foundation\Auth\Access\Authorizable; // Añadir esta línea
-use Illuminate\Database\Eloquent\Relations\HasMany; // Añadir esta línea
+use Spatie\Permission\Models\Role;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
@@ -34,15 +34,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'especialty',
         'description',
         'custom_fields',
+        'google_token',
     ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'custom_fields' => 'array'
+            'custom_fields' => 'array',
+            'google_token' => 'json',
         ];
     }
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -51,6 +55,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'google_token' => 'json',
     ];
 
     public function canAccessPanel(Panel $panel): bool

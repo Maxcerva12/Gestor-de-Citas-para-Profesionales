@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'google' => [
+        'credentials_path' => base_path(env('GOOGLE_CREDENTIALS_PATH', 'credentials.json')),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/google-calendar/callback'),
+    ],
 ];

@@ -89,16 +89,20 @@ class AppointmentResource extends Resource
                 Forms\Components\Select::make('client_id')
                     ->label('Cliente')
                     ->relationship('client', 'name')
+                    ->native(false)
                     ->required(),
                 Forms\Components\Select::make('schedule_id')
                     ->label('Horario')
                     ->relationship('schedule', 'date')
+                    ->native(false)
                     ->required(),
                 Forms\Components\DateTimePicker::make('start_time')
                     ->label('Hora de Inicio')
+                    ->native(false)
                     ->required(),
                 Forms\Components\DateTimePicker::make('end_time')
                     ->label('Hora de Fin')
+                    ->native(false)
                     ->required(),
                 Forms\Components\Select::make('status')
                     ->label('Estado')
@@ -109,6 +113,7 @@ class AppointmentResource extends Resource
                         'completed' => 'Completada',
                     ])
                     ->default('pending')
+                    ->native(false)
                     ->required(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Notas')
@@ -155,6 +160,10 @@ class AppointmentResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('connectGoogle')
+                    ->label('Conectar Google Calendar')
+                    ->url(route('google.auth'))
+                    ->visible(fn() => !Auth::user()->google_token),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
