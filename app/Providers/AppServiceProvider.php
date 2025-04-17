@@ -7,6 +7,9 @@ use Livewire\Livewire;
 use App\Filament\Widgets\ScheduleCalendarWidget;
 use App\Models\Appointment; // Añadir esta importación
 use App\Observers\AppointmentObserver; // Añadir esta importación
+// use App\Models\Cashier\User;
+use Laravel\Cashier\Cashier;
+use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Registra el observador para el modelo Appointment
         Appointment::observe(AppointmentObserver::class);
+
+        // Configura el modelo de usuario para Laravel Cashier
+        Cashier::useCustomerModel(User::class);
+        // Configura los impuestos para Laravel Cashier
+        // Puedes personalizar la configuración de impuestos según tus necesidades
+        // Cashier::calculateTaxes();
     }
 
     /**

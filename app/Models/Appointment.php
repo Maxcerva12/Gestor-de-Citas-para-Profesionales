@@ -14,11 +14,14 @@ class Appointment extends Model
         'user_id',
         'client_id',
         'schedule_id',
+        'price_id',
         'start_time',
         'end_time',
         'status',
         'notes',
-        'google_event_id',
+        'payment_status',
+        'stripe_payment_intent',
+        'stripe_checkout_session'
     ];
 
     protected $casts = [
@@ -26,6 +29,11 @@ class Appointment extends Model
         'end_time' => 'datetime',
         'status' => 'string',
     ];
+
+    public function price(): BelongsTo
+    {
+        return $this->belongsTo(Price::class);
+    }
 
     public function user(): BelongsTo
     {

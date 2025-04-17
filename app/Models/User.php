@@ -13,11 +13,12 @@ use Filament\Panel;
 use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, Authorizable;
-
+    use Billable;
     protected $fillable = [
         'name',
         'email',

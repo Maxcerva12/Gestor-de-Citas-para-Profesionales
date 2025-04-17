@@ -13,7 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
-
+use Filament\Tables\Actions\Action;
+use  APP\Models\Price;
 class AppointmentResource extends Resource
 {
     protected static ?string $model = Appointment::class;
@@ -118,6 +119,20 @@ class AppointmentResource extends Resource
                 Forms\Components\Textarea::make('notes')
                     ->label('Notas')
                     ->nullable(),
+                    Forms\Components\Select::make('price_id')
+                    ->label('Precio')
+                    ->relationship('price', 'name')
+                    ->reactive()
+                    // ->afterStateUpdated(function ($state, callable $set) {
+                    //     if ($state) {
+                    //         $price = Price::find($state);
+                    //         if ($price && $price->duration) {
+                    //             $set('duration', $price->duration);
+                    //         }
+                    //     }
+                    // })
+                    // ->required(),
+                
             ]);
     }
 
@@ -149,6 +164,27 @@ class AppointmentResource extends Resource
                         'canceled' => 'danger',
                         'completed' => 'info',
                     }),
+                Tables\Columns\TextColumn::make('price.amount')
+                    ->label('Precio')
+                    ->money('EUR'),
+                    
+                    Tables\Columns\TextColumn::make('payment_status')
+                    ->label('Estado del Pago')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Pendiente',
+                        'paid' => 'Pagado',
+                        'failed' => 'Fallido',
+                        'cancelled' => 'Cancelado',
+                        default => 'Desconocido',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'paid' => 'success',
+                        'failed' => 'danger',
+                        'cancelled' => 'gray',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -166,6 +202,17 @@ class AppointmentResource extends Resource
                     ->visible(fn() => !Auth::user()->google_token),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                
+                Action::make('pay')
+                ->label('Pagar')
+                ->icon('heroicon-o-credit-card')
+                ->color('success')
+                ->url(fn (Appointment $record) => route('payment.checkout', $record))
+                ->visible(fn (Appointment $record) => 
+                    $record->payment_status === 'pending' && 
+                    $record->price_id !== null
+                )
+                ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
