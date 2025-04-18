@@ -61,7 +61,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Solo verifica si el usuario tiene algún rol, no da permisos extra
+        // Si el panel es 'client', verifica si el usuario tiene el rol super_admin o permisos específicos
+        if ($panel->getId() === 'client') {
+            return $this->hasRole('super_admin') || $this->hasPermissionTo('view_any_client');
+        }
+    
+        // Para otros paneles, verifica si el usuario tiene algún rol
         return $this->roles()->count() > 0;
     }
     /**
