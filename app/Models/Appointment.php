@@ -28,6 +28,11 @@ class Appointment extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'status' => 'string',
+        'payment_status' => 'string'
+    ];
+
+    protected $attributes = [
+        'payment_status' => 'pending'
     ];
 
     public function price(): BelongsTo

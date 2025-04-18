@@ -123,16 +123,6 @@ class AppointmentResource extends Resource
                     ->label('Precio')
                     ->relationship('price', 'name')
                     ->reactive()
-                    // ->afterStateUpdated(function ($state, callable $set) {
-                    //     if ($state) {
-                    //         $price = Price::find($state);
-                    //         if ($price && $price->duration) {
-                    //             $set('duration', $price->duration);
-                    //         }
-                    //     }
-                    // })
-                    // ->required(),
-                
             ]);
     }
 
