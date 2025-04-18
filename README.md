@@ -64,3 +64,16 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+## Optimizacion de laravel
+
+1: Configuración y rutas en caché:
+
+php artisan config:cache
+php artisan route:cache
+
+2: Optimizar la carga automática de Composer :
+
+composer dump-autoload -o

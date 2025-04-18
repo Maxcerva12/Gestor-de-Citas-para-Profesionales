@@ -66,7 +66,13 @@ class GoogleCalendarService
         $calendarService = $this->getCalendarService();
 
         $event = new \Google\Service\Calendar\Event([
-            'summary' => 'Cita con ' . $appointment->client->name,
+            'summary' => 'Cita con ' . $appointment->client->name, // o client->name, según quién la ve
+            'location' => $appointment->location ?? 'Sin ubicación',
+            'description' => 
+                "Cliente: {$appointment->client->name}\n" .
+                "Profesional: {$appointment->user->name}\n" .
+                "Notas: {$appointment->notes}",
+    
             'start' => [
                 'dateTime' => $appointment->start_time->toRfc3339String(),
                 'timeZone' => config('app.timezone'),
@@ -75,7 +81,9 @@ class GoogleCalendarService
                 'dateTime' => $appointment->end_time->toRfc3339String(),
                 'timeZone' => config('app.timezone'),
             ],
-            'description' => $appointment->notes,
+    
+            // Opcional: cambiar color según tipo de cita
+            'colorId' => '2', // colores del 1 al 11
         ]);
 
         $calendarId = 'primary';
