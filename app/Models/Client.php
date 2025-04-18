@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Spatie\Permission\Models\Role;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Cashier\Billable;
 
-class Client extends Authenticatable implements FilamentUser
+class Client extends Authenticatable implements FilamentUser, HasAvatar
 {
-    use Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, Authorizable;
+    use Billable;
 
     protected $fillable = [
         'name',
@@ -40,5 +48,22 @@ class Client extends Authenticatable implements FilamentUser
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        if ($this->avatar_url) {
+            // Normalizar la ruta para Windows
+            $path = str_replace('\\', '/', $this->avatar_url);
+
+            // Asegurarse de que la ruta comience correctamente
+            if (!str_starts_with($path, 'avatars/')) {
+                $path = 'avatars/' . basename($path);
+            }
+
+            // Usar asset() para generar la URL completa
+            return asset('storage/' . $path);
+        }
+        return null;
     }
 }

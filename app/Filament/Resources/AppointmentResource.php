@@ -122,6 +122,7 @@ class AppointmentResource extends Resource
                     Forms\Components\Select::make('price_id')
                     ->label('Precio')
                     ->relationship('price', 'name')
+                    ->native(false)
                     ->reactive()
                     // ->afterStateUpdated(function ($state, callable $set) {
                     //     if ($state) {

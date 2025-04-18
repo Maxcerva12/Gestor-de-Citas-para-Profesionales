@@ -161,47 +161,44 @@ class RoleResource extends Resource implements HasShieldPermissions
         return __('filament-shield::filament-shield.resource.label.roles');
     }
 
-    // public static function shouldRegisterNavigation(): bool
-    // {
-    //     /** @var \App\Models\User|null $user */
-    //     $user = Auth::user();
+    public static function shouldRegisterNavigation(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
 
-    //     /** @phpstan-ignore-next-line */
-    //     return $user?->hasRole('super_admin') || $user?->can('view_any_role');
-    // }
+        /** @phpstan-ignore-next-line */
+        return $user?->hasRole('super_admin') || $user?->can('view_any_role');
+    }
 
-    // public static function canViewAny(): bool
-    // {
-    //     return Auth::check() && Gate::allows('view_any_role');
-    // }
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_role');
+    }
 
-    // public static function canView(Model $record): bool
-    // {
-    //     return Auth::check() && Gate::allows('view_role', $record);
-    // }
+    public static function canView(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('view_role', $record);
+    }
 
-    // public static function canCreate(): bool
-    // {
-    //     return Auth::check() && Gate::allows('create_role');
-    // }
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Gate::allows('create_role');
+    }
 
-    // public static function canEdit(Model $record): bool
-    // {
-    //     return Auth::check() && Gate::allows('update_role', $record);
-    // }
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('update_role', $record);
+    }
 
-    // public static function canDelete(Model $record): bool
-    // {
-    //     return Auth::check() && Gate::allows('delete_role', $record);
-    // }
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('delete_role', $record);
+    }
 
-    // public static function canDeleteAny(): bool
-    // {
-    //     return Auth::check() && Gate::allows('delete_any_role');
-    // }
-
-
-
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Gate::allows('delete_any_role');
+    }
 
     public static function getNavigationGroup(): ?string
     {
