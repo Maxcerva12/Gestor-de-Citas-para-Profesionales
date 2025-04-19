@@ -20,7 +20,8 @@ class AppointmentObserver
      */
     public function created(Appointment $appointment): void
     {
-        if (Auth::user()->google_token) {
+        // Verificar si hay un usuario autenticado antes de acceder a sus propiedades
+        if (Auth::check() && Auth::user()->google_token) {
             $eventId = $this->googleService->createEvent($appointment);
             $appointment->google_event_id = $eventId;
             $appointment->save();

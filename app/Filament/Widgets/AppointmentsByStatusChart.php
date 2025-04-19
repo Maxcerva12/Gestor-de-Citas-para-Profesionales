@@ -6,10 +6,12 @@ use App\Models\Appointment;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 
 class AppointmentsByStatusChart extends ApexChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $chartId = 'appointmentsByStatusChart';
     protected static ?string $heading = 'Citas por Estado';
     protected static ?string $subheading = 'Distribución actual de citas';

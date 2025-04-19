@@ -8,9 +8,13 @@ use Filament\Forms;
 use Illuminate\Support\Facades\Auth;
 use Saade\FilamentFullCalendar\Data\EventData;
 use Illuminate\Database\Eloquent\Model;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+
 
 class ScheduleCalendarWidget extends FullCalendarWidget
 {
+    use HasWidgetShield;
+
     public Model|string|null $model = Schedule::class;
 
     /**
