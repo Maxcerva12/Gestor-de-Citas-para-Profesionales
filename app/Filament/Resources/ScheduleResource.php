@@ -91,25 +91,35 @@ class ScheduleResource extends Resource
                 Forms\Components\DatePicker::make('date')
                     ->label('Fecha')
                     ->required()
-                    ->minDate(now())
-                    ->reactive(),
+                    ->minDate(now()->startOfDay()) // Permitir la fecha actual
+                    ->native(false)
+                    ->format('Y-m-d') // Formato de almacenamiento
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $dayOfWeek = date('N', strtotime($state));
+                            if ($dayOfWeek > 5) {
+                                $set('date', null);
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Fecha no válida')
+                                    ->body('Solo se pueden crear citas de lunes a viernes.')
+                                    ->danger()
+                                    ->send();
+                            }
+                        }
+                    }),
                 Forms\Components\TimePicker::make('start_time')
                     ->label('Hora de Inicio')
                     ->required()
+                    ->native(false)
                     ->seconds(false)
                     ->reactive(),
                 Forms\Components\TimePicker::make('end_time')
                     ->label('Hora de Fin')
                     ->required()
                     ->seconds(false)
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                        // Validar que la hora de fin sea posterior a la de inicio
-                        $startTime = $get('start_time');
-                        if ($startTime && $state && $state <= $startTime) {
-                            $set('end_time', null);
-                        }
-                    }),
+                    ->native(false)
+                    ->reactive(),
                 Forms\Components\Toggle::make('is_available')
                     ->label('Disponible')
                     ->default(true),

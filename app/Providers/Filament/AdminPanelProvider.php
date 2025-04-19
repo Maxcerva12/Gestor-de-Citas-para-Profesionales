@@ -23,6 +23,10 @@ use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\MenuItem;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+use App\Filament\Widgets\TotalAppointmentsChart;
+use App\Filament\Widgets\AppointmentsByStatusChart;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -50,9 +54,18 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+
+            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
+                // \App\Filament\Widgets\StatsProfessionalsOverview::class,
+                // \App\Filament\Widgets\StatsClientsOverview::class,
+                \App\Filament\Widgets\CombinedStatsOverview::class,
+                TotalAppointmentsChart::class,
+                AppointmentsByStatusChart::class,
+
+
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -97,6 +110,9 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn() => Auth::user()->name)
                     ->url(fn(): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle')
+            ])
+            ->plugins([
+                FilamentApexChartsPlugin::make(),
             ]);
     }
 }
