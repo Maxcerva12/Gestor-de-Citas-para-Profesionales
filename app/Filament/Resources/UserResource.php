@@ -157,6 +157,8 @@ class UserResource extends Resource implements HasShieldPermissions
                                                 Forms\Components\TextInput::make('phone')
                                                     ->label('Teléfono')
                                                     ->tel()
+                                                    ->prefix('+57')
+                                                    ->telRegex('/^[0-9\s\-\+\(\)]+$/')
                                                     ->maxLength(20),
                                                 Forms\Components\FileUpload::make('avatar_url')
                                                     ->label('Foto de perfil')
@@ -229,6 +231,7 @@ class UserResource extends Resource implements HasShieldPermissions
                                             ->password()
                                             ->label('Contraseña')
                                             ->required()
+                                            ->revealable()
                                             ->maxLength(255)
                                             ->hiddenOn('edit')
                                             ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)

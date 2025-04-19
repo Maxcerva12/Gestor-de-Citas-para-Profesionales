@@ -28,6 +28,7 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         'address',
         'city',
         'country',
+        'avatar_url',
     ];
 
     protected $hidden = [
