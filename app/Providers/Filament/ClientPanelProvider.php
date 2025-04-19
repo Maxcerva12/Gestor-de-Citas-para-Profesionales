@@ -92,6 +92,7 @@ class ClientPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->authGuard('client'); // Usar el guardia 'client'
+            ->authGuard('client')// Usar el guardia 'client'
+            ->databaseNotifications(); 
     }
 }

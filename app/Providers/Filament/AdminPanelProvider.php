@@ -23,7 +23,6 @@ use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\MenuItem;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
-// use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -36,6 +35,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Blue,
                 'secondary' => Color::Indigo,
@@ -43,14 +44,12 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Red,
                 'warning' => Color::Amber,
                 'info' => Color::Sky,
-
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -72,17 +71,15 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 FilamentFullCalendarPlugin::make()
-                    ->selectable(true) // Permite seleccionar rangos de fechas
-                    ->editable(true) // Permite editar eventos arrastrando
-                    ->timezone(config('app.timezone')) // Usa la zona horaria de la app
-                    ->locale(config('app.locale')) // Usa el idioma de la app
-            ])
-            ->plugins([
+                    ->selectable(true)
+                    ->editable(true)
+                    ->timezone(config('app.timezone'))
+                    ->locale(config('app.locale')),
                 FilamentEditProfilePlugin::make()
                     ->shouldShowAvatarForm(
                         value: true,
-                        directory: 'avatars', // Especifica el directorio
-                        rules: 'image|mimes:jpeg,png,jpg|max:2048' // Define las reglas
+                        directory: 'avatars',
+                        rules: 'image|mimes:jpeg,png,jpg|max:2048'
                     )
                     ->slug('profile')
                     ->setNavigationGroup('Configuración')
@@ -97,7 +94,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
-                    ->label(fn() => Auth::user()->name) // Usar el facade de Auth
+                    ->label(fn() => Auth::user()->name)
                     ->url(fn(): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle')
             ]);

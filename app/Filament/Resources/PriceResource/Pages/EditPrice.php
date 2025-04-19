@@ -16,4 +16,8 @@ class EditPrice extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    // protected function beforeSave(): void
+    // {
+    //     // Runs before the form fields are saved to the database.
+    // }
 }

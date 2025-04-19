@@ -19,6 +19,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, Authorizable;
     use Billable;
+
     protected $fillable = [
         'name',
         'email',
@@ -38,16 +39,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'google_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'custom_fields' => 'array',
-            'google_token' => 'json',
-        ];
-    }
-
     protected $hidden = [
         'password',
         'remember_token',
@@ -56,6 +47,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'custom_fields' => 'array',
         'google_token' => 'json',
     ];
 

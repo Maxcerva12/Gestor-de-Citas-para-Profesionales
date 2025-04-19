@@ -51,4 +51,8 @@ class EditRole extends EditRecord
 
         $this->record->syncPermissions($permissionModels);
     }
+    // protected function beforeSave(): void
+    // {
+    //     // Runs before the form fields are saved to the database.
+    // }
 }
