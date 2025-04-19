@@ -3,10 +3,13 @@
 namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Filament\Resources\RoleResource;
+use App\Notifications\RoleCreated;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class CreateRole extends CreateRecord
 {
@@ -43,5 +46,17 @@ class CreateRole extends CreateRecord
         });
 
         $this->record->syncPermissions($permissionModels);
+
+        // Enviar notificación
+        Auth::user()->notify(new RoleCreated($this->record));
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Rol creado')
+            ->body('El rol ha sido creado correctamente')
+            ->sendToDatabase(Auth::user());
     }
 }

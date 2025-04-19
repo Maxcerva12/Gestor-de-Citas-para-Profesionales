@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\ScheduleResource\Pages;
 
 use App\Filament\Resources\ScheduleResource;
+use App\Notifications\ScheduleUpdated;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
+
 
 class EditSchedule extends EditRecord
 {
@@ -16,8 +20,22 @@ class EditSchedule extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
-    // protected function beforeSave(): void
-    // {
-    //     // Runs before the form fields are saved to the database.
-    // }
+
+    protected function afterSave(): void
+    {
+        // Obtener el horario que está siendo editado
+        $schedule = $this->getRecord();
+        
+        // Enviar notificación a la base de datos
+        Auth::user()->notify(new ScheduleUpdated($schedule));
+    }
+
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Horario actualizado')
+            ->body('El horario ha sido actualizado correctamente')
+            ->sendToDatabase(Auth::user());
+    }
 }

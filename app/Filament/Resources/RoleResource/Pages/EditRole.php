@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Filament\Resources\RoleResource;
+use App\Notifications\RoleUpdated;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class EditRole extends EditRecord
 {
@@ -50,9 +53,17 @@ class EditRole extends EditRecord
         });
 
         $this->record->syncPermissions($permissionModels);
+
+        // Enviar notificación
+        Auth::user()->notify(new RoleUpdated($this->record));
     }
-    // protected function beforeSave(): void
-    // {
-    //     // Runs before the form fields are saved to the database.
-    // }
+
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Rol actualizado')
+            ->body('El rol ha sido actualizado correctamente')
+            ->sendToDatabase(Auth::user());
+    }
 }
