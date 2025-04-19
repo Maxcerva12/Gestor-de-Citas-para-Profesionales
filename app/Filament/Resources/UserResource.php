@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
-use BcMath\Number;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,21 +14,30 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Filament\Forms\Components\SectionHeader;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Grid;
+use Filament\Support\Enums\FontWeight;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class UserResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = User::class;
 
+    // Navigation and labels
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Profesionales';
-    protected static ?string $navigationGroup = 'Gestión de Administrativa';
+    protected static ?string $navigationGroup = 'Gestión Administrativa';
     protected static ?string $label = 'Profesional';
     protected static ?string $pluralLabel = 'Profesionales';
+    protected static ?string $recordTitleAttribute = 'name';
 
-    protected static int $sort = -10;
+    // Navigation sorting
     protected static ?int $navigationSort = -10;
 
-    // protected static ?
+    // Default sort for data
+    protected static ?string $defaultSort = 'name';
 
     public static function getPermissionPrefixes(): array
     {
@@ -42,6 +50,8 @@ class UserResource extends Resource implements HasShieldPermissions
             'delete_any',
         ];
     }
+
+    // Permission checks
     public static function canViewAny(): bool
     {
         return Auth::check() && Gate::allows('view_any_user');
@@ -77,29 +87,163 @@ class UserResource extends Resource implements HasShieldPermissions
         return Auth::check() && Gate::allows('view_any_user');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'last_name', 'email', 'document_number', 'profession', 'especialty'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return $record->name . ' ' . $record->last_name;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Email' => $record->email,
+            'Especialidad' => $record->especialty,
+            'Profesión' => $record->profession,
+        ];
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                    ->dehydrated(fn($state) => filled($state))
-                    ->required(fn(string $operation): bool => $operation === 'create'),
-                Forms\Components\Select::make('roles')
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload(),
+                Forms\Components\Tabs::make('Tabs')
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('Información Personal')
+                            ->icon('heroicon-o-user')
+                            ->schema([
+                                Forms\Components\Section::make('Datos Básicos')
+                                    ->description('Información básica del profesional')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label('Nombre')
+                                                    ->required()
+                                                    ->maxLength(255),
+                                                Forms\Components\TextInput::make('last_name')
+                                                    ->label('Apellidos')
+                                                    ->required()
+                                                    ->maxLength(255),
+                                            ]),
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Select::make('document_type')
+                                                    ->label('Tipo de Documento')
+                                                    ->native(false)
+                                                    ->options([
+                                                        'CC' => 'Cédula de Ciudadanía',
+                                                        'CE' => 'Cédula de Extranjería',
+                                                        'TI' => 'Tarjeta de Identidad',
+                                                        'PP' => 'Pasaporte',
+                                                    ])
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('document_number')
+                                                    ->label('Número de Documento')
+                                                    ->required()
+                                                    ->maxLength(20),
+                                            ]),
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('phone')
+                                                    ->label('Teléfono')
+                                                    ->tel()
+                                                    ->maxLength(20),
+                                                Forms\Components\FileUpload::make('avatar_url')
+                                                    ->label('Foto de perfil')
+                                                    ->image()
+                                                    ->directory('avatars')
+                                                    ->visibility('public')
+                                                    ->imageEditor(),
+                                            ]),
+                                    ]),
+                                Forms\Components\Section::make('Dirección')
+                                    ->description('Datos de ubicación')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Textarea::make('address')
+                                            ->label('Dirección')
+                                            ->rows(2)
+                                            ->maxLength(255),
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('city')
+                                                    ->label('Ciudad')
+                                                    ->maxLength(100),
+                                                Forms\Components\TextInput::make('country')
+                                                    ->label('País')
+                                                    ->maxLength(100),
+                                            ]),
+                                    ]),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Información Profesional')
+                            ->icon('heroicon-o-briefcase')
+                            ->schema([
+                                Forms\Components\Section::make('Datos Profesionales')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('profession')
+                                                    ->label('Profesión')
+                                                    ->required()
+
+                                                    ->maxLength(100),
+                                                Forms\Components\TextInput::make('especialty')
+                                                    ->label('Especialidad')
+                                                    ->required()
+                                                    ->maxLength(100),
+                                            ]),
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('Descripción')
+                                            ->rows(3)
+                                            ->maxLength(500)
+                                            ->helperText('Breve descripción profesional'),
+                                        Forms\Components\KeyValue::make('custom_fields')
+                                            ->label('Campos Personalizados')
+                                            ->keyLabel('Campo')
+                                            ->valueLabel('Valor')
+                                            ->addButtonLabel('Añadir campo')
+                                            ->reorderable(),
+                                    ]),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Cuenta')
+                            ->icon('heroicon-o-lock-closed')
+                            ->schema([
+                                Forms\Components\Section::make('Datos de acceso')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('email')
+                                            ->email()
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(ignoreRecord: true),
+                                        Forms\Components\TextInput::make('password')
+                                            ->password()
+                                            ->label('Contraseña')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->hiddenOn('edit')
+                                            ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
+                                            ->dehydrated(fn($state) => filled($state))
+                                            ->required(fn(string $operation): bool => $operation === 'create')
+                                            ->helperText('Dejar en blanco para mantener la contraseña actual'),
+                                        Forms\Components\Select::make('roles')
+                                            ->relationship('roles', 'name')
+                                            ->multiple()
+                                            ->preload()
+                                            ->searchable(),
+                                    ]),
+                            ]),
+                    ])
+                    ->columnSpan('full'),
             ]);
     }
 
@@ -107,28 +251,137 @@ class UserResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('avatar_url')
+                    ->label('Avatar')
+                    ->circular()
+                    ->defaultImageUrl(fn($record): string => "https://ui-avatars.com/api/?name=" . urlencode($record->name . " " . $record->last_name) . "&color=FFFFFF&background=6366F1")
+                    ->size(40),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nombre')
+                    ->sortable()
+                    ->searchable()
+                    ->weight(FontWeight::Bold)
+                    ->formatStateUsing(fn($record) => $record->name . ' ' . $record->last_name),
+                Tables\Columns\TextColumn::make('profession')
+                    ->label('Profesión')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('especialty')
+                    ->label('Especialidad')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable()
+                    ->copyable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->copyable(),
                 Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Roles')
                     ->badge()
-                    ->color('success'),
+                    ->color('success')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
+                    ->label('Creado')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Actualizado')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('roles')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload(),
+
+                Tables\Filters\SelectFilter::make('profession')
+                    ->options(fn() => User::whereNotNull('profession')->distinct()->pluck('profession', 'profession')->toArray())
+                    ->label('Profesión'),
+
+                Tables\Filters\SelectFilter::make('especialty')
+                    ->options(fn() => User::whereNotNull('especialty')->distinct()->pluck('especialty', 'especialty')->toArray())
+                    ->label('Especialidad'),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Creado desde'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Creado hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->color('gray'),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+                    ->tooltip('Acciones')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('exportToCsv')
+                        ->label('Exportar seleccionados')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->action(function (Collection $records) {
+                            return response()->streamDownload(function () use ($records) {
+                                $csv = fopen('php://output', 'w');
+
+                                // Add headers
+                                fputcsv($csv, ['ID', 'Nombre', 'Apellidos', 'Email', 'Profesión', 'Especialidad', 'Teléfono']);
+
+                                // Add data rows
+                                foreach ($records as $record) {
+                                    fputcsv($csv, [
+                                        $record->id,
+                                        $record->name,
+                                        $record->last_name,
+                                        $record->email,
+                                        $record->profession ?? '',
+                                        $record->especialty ?? '',
+                                        $record->phone ?? '',
+                                    ]);
+                                }
+
+                                fclose($csv);
+                            }, 'profesionales-' . date('Y-m-d') . '.csv');
+                        }),
                 ]),
-            ]);
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Crear Profesional'),
+            ])
+            ->emptyStateDescription('Comienza agregando un nuevo profesional a tu sistema.')
+            ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->paginated([10, 25, 50, 100]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            // Add your relations here if needed
+        ];
     }
 
     public static function getPages(): array
@@ -136,6 +389,7 @@ class UserResource extends Resource implements HasShieldPermissions
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            // 'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

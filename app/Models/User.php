@@ -23,11 +23,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected $fillable = [
         'name',
         'email',
+        'last_name',
         'password',
         'avatar_url',
         'document_type',
         'document_number',
-        'document',
         'phone',
         'address',
         'city',
@@ -57,7 +57,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         if ($panel->getId() === 'client') {
             return $this->hasRole('super_admin') || $this->hasPermissionTo('view_any_client');
         }
-    
+
         // Para otros paneles, verifica si el usuario tiene algún rol
         return $this->roles()->count() > 0;
     }
