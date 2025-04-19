@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ClientSeeder::class,
             ScheduleSeeder::class,
             AppointmentSeeder::class,
+            TestUserSeeder::class,
         ]);
     }
 }
