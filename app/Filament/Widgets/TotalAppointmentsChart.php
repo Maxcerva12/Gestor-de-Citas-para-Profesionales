@@ -6,9 +6,12 @@ use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+
 
 class TotalAppointmentsChart extends ApexChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $chartId = 'totalAppointmentsChart';
     protected static ?string $heading = 'Total de Citas Reservadas';
     protected static ?string $subheading = 'Todos los datos';

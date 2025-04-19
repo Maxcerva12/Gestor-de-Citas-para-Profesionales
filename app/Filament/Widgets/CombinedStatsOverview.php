@@ -9,9 +9,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+
 
 class CombinedStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         // Definir el período (últimos 30 días)
@@ -19,11 +22,10 @@ class CombinedStatsOverview extends BaseWidget
         $endDate = Carbon::now();
 
         // Total de Profesionales
-        $totalProfessionals = User::whereHas('roles')->count();
+        $totalProfessionals = User::count();
 
         // Datos históricos para el gráfico de profesionales (registros por día)
-        $professionalsData = User::whereHas('roles')
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        $professionalsData = User::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('date')
             ->orderBy('date')
