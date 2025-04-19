@@ -79,7 +79,15 @@ class ScheduleResource extends Resource
      */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', Auth::id());
+        $query = parent::getEloquentQuery();
+
+        // Si el usuario es superAdmin, mostrar todas las citas
+        // Si no, mostrar solo las citas del usuario autenticado
+        if (!Auth::user() || !Auth::user()->hasRole('super_admin')) {
+            $query->where('user_id', Auth::id());
+        }
+
+        return $query;
     }
 
     public static function form(Form $form): Form
