@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ScheduleSeeder::class,
             AppointmentSeeder::class,
             TestUserSeeder::class,
+            PriceSeeder::class,
         ]);
     }
 }

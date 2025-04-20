@@ -12,7 +12,7 @@ class ScheduleSeeder extends Seeder
 {
     public function run(): void
     {
-        Schedule::factory(50)->create(); // Genera 50 horarios usando la fábrica
+        Schedule::factory(10)->create(); // Genera 50 horarios usando la fábrica
   
     }
 }

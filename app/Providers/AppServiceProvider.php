@@ -7,6 +7,8 @@ use Livewire\Livewire;
 use App\Filament\Widgets\ScheduleCalendarWidget;
 use App\Models\Appointment; // Añadir esta importación
 use App\Observers\AppointmentObserver; // Añadir esta importación
+use App\Models\Price; // Añadir esta importación
+use App\Observers\PriceObserver; // Añadir esta importación
 // use App\Models\Cashier\User;
 use Laravel\Cashier\Cashier;
 use App\Models\User;
@@ -29,8 +31,9 @@ class AppServiceProvider extends ServiceProvider
         // Registra manualmente el widget en Livewire
         Livewire::component('schedule-calendar-widget', ScheduleCalendarWidget::class);
 
-        // Registra el observador para el modelo Appointment
+        // Registra los observadores
         Appointment::observe(AppointmentObserver::class);
+        Price::observe(PriceObserver::class);
 
         // Configura el modelo de usuario para Laravel Cashier
         Cashier::useCustomerModel(User::class);
@@ -44,5 +47,6 @@ class AppServiceProvider extends ServiceProvider
      */
     protected $observers = [
         Appointment::class => [AppointmentObserver::class],
+        Price::class => [PriceObserver::class],
     ];
 }

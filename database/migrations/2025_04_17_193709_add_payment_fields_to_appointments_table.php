@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('payment_status')->default('pending');
             $table->string('stripe_payment_intent')->nullable();
             $table->string('stripe_checkout_session')->nullable();
+            $table->decimal('amount', 8, 2)->nullable()->after('price_id');
         });
     }
 

@@ -81,6 +81,7 @@ class ScheduleResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
+        
         // Si el usuario es superAdmin, mostrar todas las citas
         // Si no, mostrar solo las citas del usuario autenticado
         if (!Auth::user() || !Auth::user()->hasRole('super_admin')) {

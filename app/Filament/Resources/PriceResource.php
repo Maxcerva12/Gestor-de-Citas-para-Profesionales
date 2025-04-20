@@ -16,7 +16,7 @@ class PriceResource extends Resource
     protected static ?string $model = Price::class;
     protected static ?string $navigationIcon = 'heroicon-o-currency-euro';
     protected static ?string $navigationGroup = 'Configuración';
-    protected static ?string $navigationLabel = 'Precios';
+    protected static ?string $navigationLabel = 'Servicios';
 
     public static function form(Form $form): Form
     {
@@ -33,10 +33,6 @@ class PriceResource extends Resource
                 Forms\Components\TextInput::make('stripe_price_id')
                     ->required()
                     ->label('ID de Precio en Stripe'),
-                // Forms\Components\TextInput::make('duration')
-                //     ->numeric()
-                //     ->suffix('minutos')
-                //     ->label('Duración'),
                 Forms\Components\Textarea::make('description')
                     ->label('Descripción'),
                 Forms\Components\Toggle::make('is_active')
@@ -55,9 +51,6 @@ class PriceResource extends Resource
                     ->money('EUR')
                     ->label('Precio')
                     ->sortable(),
-                // Tables\Columns\TextColumn::make('duration')
-                //     ->label('Duración')
-                //     ->suffix(' min'),
                     Tables\Columns\IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),

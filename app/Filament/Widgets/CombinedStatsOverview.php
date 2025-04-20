@@ -48,24 +48,21 @@ class CombinedStatsOverview extends BaseWidget
             ->toArray();
 
         // Ingresos por Citas (todas las citas con estado 'paid')
-        $paidAppointments = Appointment::join('prices', 'appointments.price_id', '=', 'prices.id')
-            ->where('appointments.payment_status', 'paid')
-            ->get();
+        $paidAppointments = Appointment::where('payment_status', 'paid')->get();
 
         $totalRevenue = 0;
         foreach ($paidAppointments as $appointment) {
-            $totalRevenue += $appointment->price->amount;
+            $totalRevenue += $appointment->amount ?? 0;
         }
 
         // Ingresos diarios (para el gráfico) - agrupados por fecha
-        $revenues = Appointment::join('prices', 'appointments.price_id', '=', 'prices.id')
-            ->select(
-                DB::raw('DATE(appointments.start_time) as date'),
-                DB::raw('COUNT(appointments.id) as appointment_count'),
-                DB::raw('SUM(prices.amount) as total')
+        $revenues = Appointment::select(
+                DB::raw('DATE(start_time) as date'),
+                DB::raw('COUNT(id) as appointment_count'),
+                DB::raw('SUM(amount) as total')
             )
-            ->where('appointments.payment_status', 'paid')
-            ->whereBetween('appointments.start_time', [$startDate, $endDate])
+            ->where('payment_status', 'paid')
+            ->whereBetween('start_time', [$startDate, $endDate])
             ->groupBy('date')
             ->orderBy('date')
             ->get();

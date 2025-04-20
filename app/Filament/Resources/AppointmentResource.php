@@ -100,13 +100,13 @@ class AppointmentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        
+
         // Si el usuario es superAdmin, mostrar todas las citas
         // Si no, mostrar solo las citas del usuario autenticado
         if (!Auth::user() || !Auth::user()->hasRole('super_admin')) {
             $query->where('user_id', Auth::id());
         }
-        
+
         return $query;
     }
 
@@ -236,7 +236,23 @@ class AppointmentResource extends Resource
                                             ->preload()
                                             ->searchable()
                                             ->reactive()
+                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                if ($state) {
+                                                    $price = Price::find($state);
+                                                    if ($price) {
+                                                        $set('amount', $price->amount);
+                                                    }
+                                                } else {
+                                                    $set('amount', null);
+                                                }
+                                            }),
 
+                                        Forms\Components\TextInput::make('amount')
+                                            ->label('Precio Fijo')
+                                            ->numeric()
+                                            ->prefix('€')
+                                            ->disabled()
+                                            ->dehydrated(true), // Asegura que el valor se guarde aunque el campo esté deshabilitado
                                     ]),
                             ]),
 
@@ -332,11 +348,13 @@ class AppointmentResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('price.amount')
+                Tables\Columns\TextColumn::make('amount')
                     ->label('Precio')
                     ->money('EUR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->description(fn(Appointment $record): string =>
+                    $record->price ? 'Tarifa: ' . $record->price->name : ''),
 
                 Tables\Columns\IconColumn::make('google_event_id')
                     ->label('Google')
@@ -600,8 +618,8 @@ class AppointmentResource extends Resource
                                         Infolists\Components\TextEntry::make('price.name')
                                             ->label('Tarifa'),
 
-                                        Infolists\Components\TextEntry::make('price.amount')
-                                            ->label('Importe')
+                                        Infolists\Components\TextEntry::make('amount')
+                                            ->label('Precio')
                                             ->money('EUR')
                                             ->weight(FontWeight::Bold),
                                     ]),
