@@ -640,13 +640,6 @@ class AppointmentResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            // Aquí puedes agregar relaciones si es necesario
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
