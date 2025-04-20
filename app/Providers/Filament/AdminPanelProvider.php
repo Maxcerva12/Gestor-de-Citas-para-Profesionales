@@ -61,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 // Widgets\FilamentInfoWidget::class,
                 // \App\Filament\Widgets\StatsProfessionalsOverview::class,
                 // \App\Filament\Widgets\StatsClientsOverview::class,
-                \App\Filament\Widgets\CombinedStatsOverview::class,
+                // \App\Filament\Widgets\CombinedStatsOverview::class,
                 TotalAppointmentsChart::class,
                 AppointmentsByStatusChart::class,
 

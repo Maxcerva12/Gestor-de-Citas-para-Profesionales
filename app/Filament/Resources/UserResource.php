@@ -380,19 +380,11 @@ class UserResource extends Resource implements HasShieldPermissions
             ->paginated([10, 25, 50, 100]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            // Add your relations here if needed
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            // 'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

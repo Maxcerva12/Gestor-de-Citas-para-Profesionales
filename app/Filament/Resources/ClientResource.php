@@ -325,7 +325,53 @@ class ClientResource extends Resource
                         ->label('Exportar seleccionados')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (Collection $records) {
-                            // Logic to export selected records
+                            // Create a temporary file
+                            $csv = fopen('php://temp', 'r+');
+
+                            // Add CSV headers
+                            fputcsv($csv, [
+                                'ID',
+                                'Nombre',
+                                'Email',
+                                'Teléfono',
+                                'Dirección',
+                                'Ciudad',
+                                'País',
+                                'Estado',
+                                'Fecha de Registro'
+                            ]);
+
+                            // Add data for each selected record
+                            foreach ($records as $record) {
+                                fputcsv($csv, [
+                                    $record->id,
+                                    $record->name,
+                                    $record->email,
+                                    $record->phone,
+                                    $record->address ?? '',
+                                    $record->city ?? '',
+                                    $record->country ?? '',
+                                    $record->active ? 'Activo' : 'Inactivo',
+                                    $record->created_at->format('d/m/Y H:i')
+                                ]);
+                            }
+
+                            // Reset the pointer to the beginning of the file
+                            rewind($csv);
+
+                            // Get the content of the file
+                            $content = stream_get_contents($csv);
+                            fclose($csv);
+
+                            // Generate a filename with current date
+                            $filename = 'clientes_' . now()->format('Y-m-d_His') . '.csv';
+
+                            // Return a download response
+                            return response()->streamDownload(function () use ($content) {
+                                echo $content;
+                            }, $filename, [
+                                'Content-Type' => 'text/csv',
+                            ]);
                         }),
                 ]),
             ])
