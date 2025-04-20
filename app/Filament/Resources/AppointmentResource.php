@@ -14,17 +14,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Filament\Tables\Actions\Action;
-use App\Models\Price;
-use App\Models\Client;
 use App\Models\Schedule;
 use Filament\Support\Enums\FontWeight;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
-use Filament\Support\Enums\IconPosition;
 use Illuminate\Support\Collection;
 use Filament\Support\Enums\MaxWidth;
-use App\Filament\Pages\Calendar;
 
 class AppointmentResource extends Resource
 {
@@ -158,7 +154,44 @@ class AppointmentResource extends Resource
                                     })
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        if ($state) {
+                                            // Buscar el horario seleccionado
+                                            $schedule = Schedule::find($state);
+                                            if ($schedule) {
+                                                // Crear objetos DateTime combinando la fecha con las horas
+                                                $dateObj = new \DateTime($schedule->date);
+
+                                                // Para start_time
+                                                $startTimeObj = new \DateTime($schedule->start_time);
+                                                $combinedStartTime = (clone $dateObj)
+                                                    ->setTime(
+                                                        (int) $startTimeObj->format('H'),
+                                                        (int) $startTimeObj->format('i'),
+                                                        0
+                                                    );
+
+                                                // Para end_time
+                                                $endTimeObj = new \DateTime($schedule->end_time);
+                                                $combinedEndTime = (clone $dateObj)
+                                                    ->setTime(
+                                                        (int) $endTimeObj->format('H'),
+                                                        (int) $endTimeObj->format('i'),
+                                                        0
+                                                    );
+
+                                                // Establecer los valores combinados
+                                                $set('start_time', $combinedStartTime->format('Y-m-d H:i:s'));
+                                                $set('end_time', $combinedEndTime->format('Y-m-d H:i:s'));
+                                            }
+                                        } else {
+                                            // Limpiar los campos si no se selecciona horario
+                                            $set('start_time', null);
+                                            $set('end_time', null);
+                                        }
+                                    }),
                             ]),
 
                         Forms\Components\Grid::make()
@@ -168,7 +201,9 @@ class AppointmentResource extends Resource
                                     ->seconds(false)
                                     ->minutesStep(15)
                                     ->displayFormat('d/m/Y H:i')
-                                    ->timezone('Europe/Madrid')
+                                    ->timezone('America/Bogota')
+                                    ->native(false)
+                                    ->readonly()
                                     ->required(),
 
                                 Forms\Components\DateTimePicker::make('end_time')
@@ -176,8 +211,10 @@ class AppointmentResource extends Resource
                                     ->seconds(false)
                                     ->minutesStep(15)
                                     ->displayFormat('d/m/Y H:i')
-                                    ->timezone('Europe/Madrid')
+                                    ->timezone('America/Bogota')
                                     ->after('start_time')
+                                    ->native(false)
+                                    ->readonly()
                                     ->required(),
                             ]),
                     ]),
@@ -262,7 +299,8 @@ class AppointmentResource extends Resource
                                 Forms\Components\Placeholder::make('google_status')
                                     ->label('Estado de Google Calendar')
                                     ->content(function (Forms\Get $get, ?Model $record) {
-                                        if (!$record) return 'Guarde la cita primero para sincronizar con Google Calendar';
+                                        if (!$record)
+                                            return 'Guarde la cita primero para sincronizar con Google Calendar';
 
                                         if (!Auth::user()->google_token) {
                                             return 'No has conectado tu cuenta de Google Calendar';
@@ -436,7 +474,7 @@ class AppointmentResource extends Resource
                         ->visible(
                             fn(Appointment $record) =>
                             Auth::user()->google_token &&
-                                !$record->google_event_id
+                            !$record->google_event_id
                         ),
 
                     Action::make('pay')
@@ -447,7 +485,7 @@ class AppointmentResource extends Resource
                         ->visible(
                             fn(Appointment $record) =>
                             $record->payment_status === 'pending' &&
-                                $record->price_id !== null
+                            $record->price_id !== null
                         )
                         ->openUrlInNewTab(),
                 ])
@@ -487,7 +525,70 @@ class AppointmentResource extends Resource
                         ->label('Exportar seleccionados')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (Collection $records) {
-                            // Logic to export selected records
+                            // Create CSV file in memory
+                            $csv = fopen('php://temp', 'r+');
+
+                            // Add CSV headers
+                            fputcsv($csv, [
+                                'ID',
+                                'Cliente',
+                                'Email',
+                                'Teléfono',
+                                'Fecha',
+                                'Hora Inicio',
+                                'Hora Fin',
+                                'Estado',
+                                'Estado de Pago',
+                                'Precio',
+                                'Notas'
+                            ]);
+
+                            // Add appointment data rows
+                            foreach ($records as $record) {
+                                fputcsv($csv, [
+                                    $record->id,
+                                    $record->client?->name ?? 'N/A',
+                                    $record->client?->email ?? 'N/A',
+                                    $record->client?->phone ?? 'N/A',
+                                    $record->start_time ? date('d/m/Y', strtotime($record->start_time)) : 'N/A',
+                                    $record->start_time ? date('H:i', strtotime($record->start_time)) : 'N/A',
+                                    $record->end_time ? date('H:i', strtotime($record->end_time)) : 'N/A',
+                                    match ($record->status) {
+                                        'pending' => 'Pendiente',
+                                        'confirmed' => 'Confirmada',
+                                        'canceled' => 'Cancelada',
+                                        'completed' => 'Completada',
+                                        default => 'Desconocido',
+                                    },
+                                    match ($record->payment_status) {
+                                        'pending' => 'Pendiente',
+                                        'paid' => 'Pagado',
+                                        'failed' => 'Fallido',
+                                        'cancelled' => 'Cancelado',
+                                        default => 'Desconocido',
+                                    },
+                                    $record->price ? $record->price->amount . ' €' : 'N/A',
+                                    strip_tags($record->notes ?? '')
+                                ]);
+                            }
+
+                            // Reset pointer to beginning of file
+                            rewind($csv);
+
+                            // Get content
+                            $content = stream_get_contents($csv);
+                            fclose($csv);
+
+                            // Generate unique filename
+                            $filename = 'citas_exportadas_' . date('Y-m-d_His') . '.csv';
+
+                            // Return as a downloadable file
+                            return response()->streamDownload(function () use ($content) {
+                                echo $content;
+                            }, $filename, [
+                                'Content-Type' => 'text/csv',
+                                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                            ]);
                         }),
                 ]),
             ])
@@ -505,12 +606,6 @@ class AppointmentResource extends Resource
                     ->url(route('google.auth'))
                     ->color('gray')
                     ->visible(fn() => !Auth::user()->google_token),
-
-                // Action::make('calendar_view')
-                //     ->label('Vista de Calendario')
-                //     ->icon('heroicon-o-calendar-days')
-                //     ->url(route('filament.admin.resources.appointments.calendar'))
-                //     ->color('primary'),
             ]);
     }
 
@@ -658,21 +753,12 @@ class AppointmentResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            // Aquí puedes agregar relaciones si es necesario
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListAppointments::route('/'),
             'create' => Pages\CreateAppointment::route('/create'),
-            // 'view' => Pages\ViewAppointment::route('/{record}'),
             'edit' => Pages\EditAppointment::route('/{record}/edit'),
-            // 'calendar' => Pages\CalendarAppointments::route('/calendar'),
         ];
     }
 }
