@@ -302,20 +302,25 @@ class UserResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
+                    ->native(false)
                     ->preload(),
 
                 Tables\Filters\SelectFilter::make('profession')
                     ->options(fn() => User::whereNotNull('profession')->distinct()->pluck('profession', 'profession')->toArray())
+                    ->native(false)
                     ->label('Profesión'),
 
                 Tables\Filters\SelectFilter::make('especialty')
                     ->options(fn() => User::whereNotNull('especialty')->distinct()->pluck('especialty', 'especialty')->toArray())
+                    ->native(false)
                     ->label('Especialidad'),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
+                            ->native(false)
                             ->label('Creado desde'),
                         Forms\Components\DatePicker::make('created_until')
+                            ->native(false)
                             ->label('Creado hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

@@ -86,7 +86,7 @@ class ScheduleResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        
+
         // Si el usuario es superAdmin, mostrar todas las citas
         // Si no, mostrar solo las citas del usuario autenticado
         if (!Auth::user() || !Auth::user()->hasRole('super_admin')) {
@@ -280,6 +280,7 @@ class ScheduleResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('is_available')
                     ->label('Disponibilidad')
+                    ->native(false)
                     ->options([
                         '1' => 'Disponible',
                         '0' => 'No disponible',
@@ -290,9 +291,11 @@ class ScheduleResource extends Resource
                     ->form([
                         Forms\Components\DatePicker::make('date_from')
                             ->label('Desde')
+                            ->native(false)
                             ->placeholder(fn($state): string => now()->subMonth()->format('d/m/Y')),
                         Forms\Components\DatePicker::make('date_until')
                             ->label('Hasta')
+                            ->native(false)
                             ->placeholder(fn($state): string => now()->addMonths(2)->format('d/m/Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -324,8 +327,9 @@ class ScheduleResource extends Resource
                     ->label('Profesional')
                     ->relationship('user', 'name')
                     ->searchable()
+                    ->native(false)
                     ->preload()
-                    ->visible(function() {
+                    ->visible(function () {
                         /** @var \App\Models\User $user */
                         $user = Auth::user();
                         return $user && $user->hasRole('super_admin');
@@ -447,9 +451,9 @@ class ScheduleResource extends Resource
 
             // Comprobar si hay superposición
             if (
-                ($start >= $existingStart && $start < $existingEnd) || 
-                ($end > $existingStart && $end <= $existingEnd) ||     
-                ($start <= $existingStart && $end >= $existingEnd)     
+                ($start >= $existingStart && $start < $existingEnd) ||
+                ($end > $existingStart && $end <= $existingEnd) ||
+                ($start <= $existingStart && $end >= $existingEnd)
             ) {
                 // Hay superposición, mostrar notificación
                 \Filament\Notifications\Notification::make()

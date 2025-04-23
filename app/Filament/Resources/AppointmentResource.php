@@ -21,6 +21,8 @@ use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Filament\Support\Enums\MaxWidth;
+use App\Models\Price;
+
 
 class AppointmentResource extends Resource
 {
@@ -392,7 +394,7 @@ class AppointmentResource extends Resource
                     ->sortable()
                     ->toggleable()
                     ->description(fn(Appointment $record): string =>
-                    $record->price ? 'Tarifa: ' . $record->price->name : ''),
+                        $record->price ? 'Tarifa: ' . $record->price->name : ''),
 
                 Tables\Columns\IconColumn::make('google_event_id')
                     ->label('Google')
@@ -408,6 +410,7 @@ class AppointmentResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Estado')
+                    ->native(false)
                     ->options([
                         'pending' => 'Pendiente',
                         'confirmed' => 'Confirmada',
@@ -417,6 +420,7 @@ class AppointmentResource extends Resource
 
                 Tables\Filters\SelectFilter::make('payment_status')
                     ->label('Estado del Pago')
+                    ->native(false)
                     ->options([
                         'pending' => 'Pendiente',
                         'paid' => 'Pagado',
@@ -426,6 +430,7 @@ class AppointmentResource extends Resource
 
                 Tables\Filters\SelectFilter::make('client_id')
                     ->label('Cliente')
+                    ->native(false)
                     ->relationship('client', 'name')
                     ->searchable()
                     ->preload(),
@@ -434,9 +439,11 @@ class AppointmentResource extends Resource
                     ->form([
                         Forms\Components\DatePicker::make('from')
                             ->label('Desde')
+                            ->native(false)
                             ->placeholder('Desde fecha'),
                         Forms\Components\DatePicker::make('until')
                             ->label('Hasta')
+                            ->native(false)
                             ->placeholder('Hasta fecha'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
