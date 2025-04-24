@@ -77,3 +77,7 @@ php artisan route:cache
 2: Optimizar la carga automática de Composer :
 
 composer dump-autoload -o
+
+3:
+php artisan icons:cache
+php artisan filament:cache-components
