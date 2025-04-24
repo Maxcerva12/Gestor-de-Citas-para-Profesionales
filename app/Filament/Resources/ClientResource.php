@@ -281,17 +281,30 @@ class ClientResource extends Resource
             ->filters([
                 // Tables\Filters\TrashedFilter::make()
                 //     ->visible(fn() => Auth::user()->can('restore_client')),
+
                 Tables\Filters\SelectFilter::make('country')
                     ->label('País')
-                    ->options(fn() => Client::distinct()->pluck('country', 'country')->toArray()),
+                    ->native(false)
+                    ->options(function () {
+                        $countries = Client::distinct()
+                            ->pluck('country', 'country')
+                            ->map(function ($country) {
+                                return $country ?? 'Sin especificar';
+                            })
+                            ->toArray();
+
+                        return $countries;
+                    }),
                 Tables\Filters\Filter::make('active')
                     ->label('Estado')
                     ->toggle(),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
+                            ->native(false)
                             ->label('Registrado desde'),
                         Forms\Components\DatePicker::make('created_until')
+                            ->native(false)
                             ->label('Registrado hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
