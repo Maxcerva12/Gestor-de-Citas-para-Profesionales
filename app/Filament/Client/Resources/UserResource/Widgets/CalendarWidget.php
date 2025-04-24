@@ -2,29 +2,72 @@
 
 namespace App\Filament\Client\Resources\UserResource\Widgets;
 
+use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use App\Models\Schedule;
 use App\Models\Appointment;
-use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Carbon\Carbon;
+use Filament\Forms;
 use Illuminate\Support\Facades\Log;
-use Saade\FilamentFullCalendar\Data\EventData;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Actions\Action;
 
 class CalendarWidget extends FullCalendarWidget
 {
-    // Cambiando la definición de $record para que sea compatible con la clase padre
     public Model|string|int|null $record = null;
 
-    // El modelo utilizado para los eventos
-    public Model|string|null $model = Schedule::class;
+    // Configuración del calendario
+    public function config(): array
+    {
+        return [
+            'headerToolbar' => [
+                'left' => 'prev,next today',
+                'center' => 'title',
+                'right' => 'dayGridMonth,timeGridWeek,timeGridDay',
+            ],
+            'initialView' => 'timeGridWeek',
+            'slotMinTime' => '07:00:00',
+            'slotMaxTime' => '20:00:00',
+            'slotDuration' => '00:30:00',
+            'businessHours' => [
+                'daysOfWeek' => [1, 2, 3, 4, 5], // Lunes a viernes
+                'startTime' => '08:00',
+                'endTime' => '18:00',
+            ],
+            'nowIndicator' => true,
+            'selectable' => false,
+            'editable' => false,
+            'droppable' => false,
+            'select' => [
+                'enabled' => false,
+            ],
+            'dayMaxEvents' => true,
+            'locale' => 'es',
+            'timeZone' => config('app.timezone'),
+            'buttonText' => [
+                'today' => 'Hoy',
+                'month' => 'Mes',
+                'week' => 'Semana',
+                'day' => 'Día',
+            ],
+            'views' => [
+                'timeGridWeek' => [
+                    'titleFormat' => [
+                        'year' => 'numeric',
+                        'month' => 'long',
+                        'day' => '2-digit',
+                    ],
+                ],
+                'timeGridDay' => [
+                    'titleFormat' => [
+                        'year' => 'numeric',
+                        'month' => 'long',
+                        'day' => '2-digit',
+                    ],
+                ],
+            ],
+        ];
+    }
 
-    // Hacemos que el widget pueda ser renderizado automáticamente
-    protected static bool $isLazy = false;
-
-    /**
-     * Recupera los eventos para el calendario
-     */
+    // Devuelve los eventos (slots disponibles)
     public function fetchEvents(array $fetchInfo): array
     {
         // Verificamos que el record sea una instancia de User
@@ -53,139 +96,115 @@ class CalendarWidget extends FullCalendarWidget
             $startDateTime = Carbon::parse($date . ' ' . $slot->start_time);
             $endDateTime = Carbon::parse($date . ' ' . $slot->end_time);
 
-            // Crear un evento para el calendario usando EventData
-            $events[] = EventData::make()
-                ->id($slot->id)
-                ->title('Disponible: ' . $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i'))
-                ->start($startDateTime)
-                ->end($endDateTime)
-                ->backgroundColor('#22c55e') // Verde para disponible
-                ->borderColor('#16a34a')
-                ->textColor('#ffffff')
-                ->extendedProps([
+            $events[] = [
+                'id' => $slot->id,
+                'title' => 'Disponible: ' . $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i'),
+                'start' => $startDateTime->format('Y-m-d H:i:s'),
+                'end' => $endDateTime->format('Y-m-d H:i:s'),
+                'backgroundColor' => '#22c55e', // Verde para disponible
+                'borderColor' => '#16a34a',
+                'textColor' => '#ffffff',
+                'extendedProps' => [
                     'schedule_id' => $slot->id,
-                    'status' => 'available',
                     'date' => $date,
                     'start_time' => $slot->start_time,
                     'end_time' => $slot->end_time,
-                ])
-                ->toArray();
+                ],
+            ];
         }
 
         return $events;
     }
 
-    /**
-     * Configuración del calendario
-     */
-    public function config(): array
+    // Acción al hacer click en un evento del calendario
+    public function onEventClick($event): void
+    {
+        Log::info('Evento click recibido con ID: ' . $event['id']);
+
+        // Dispara la acción nativa de "crear"
+        $this->mountAction('create', [
+            'schedule_id' => $event['id'],
+            'date' => $event['extendedProps']['date'],
+            'start_time' => $event['extendedProps']['start_time'],
+            'end_time' => $event['extendedProps']['end_time'],
+        ]);
+    }
+
+    // Propiedades del formulario de creación de cita
+    // Propiedades del formulario de creación de cita
+    public function getFormSchema(): array
     {
         return [
-            'headerToolbar' => [
-                'left' => 'prev,next today',
-                'center' => 'title',
-                'right' => 'dayGridMonth,timeGridWeek,timeGridDay',
-            ],
-            'initialView' => 'timeGridWeek',
-            'slotMinTime' => '07:00:00',
-            'slotMaxTime' => '20:00:00',
-            'slotDuration' => '00:30:00',
-            'businessHours' => [
-                'daysOfWeek' => [1, 2, 3, 4, 5], // Lunes a viernes
-                'startTime' => '08:00',
-                'endTime' => '18:00',
-            ],
-            'nowIndicator' => true,
-            'selectable' => false,
-            'editable' => false,
-            // Agregar esta configuración para deshabilitar creación por arrastrar
-            'droppable' => false,
-            // Asegurarnos que no se pueden crear eventos nuevos
-            'select' => [
-                'enabled' => false,
-            ],
-            'dayMaxEvents' => true,
-            'locale' => 'es',
-            'timeZone' => config('app.timezone'),
-            'eventClick' => [
-                'enabled' => true,
-                'function' => "
-                    function(info) {
-                        info.jsEvent.preventDefault();
-                        info.jsEvent.stopPropagation();
-                        console.log('Emitiendo book-appointment con datos:', {
-                            scheduleId: info.event.extendedProps.schedule_id,
-                            date: info.event.extendedProps.date,
-                            startTime: info.event.extendedProps.start_time,
-                            endTime: info.event.extendedProps.end_time
-                        });
-                        Livewire.dispatch('book-appointment', {
-                            scheduleId: info.event.extendedProps.schedule_id,
-                            date: info.event.extendedProps.date,
-                            startTime: info.event.extendedProps.start_time,
-                            endTime: info.event.extendedProps.end_time
-                        });
-                    }
-                ",
-            ],
-            'eventDidMount' => [
-                'enabled' => true,
-                'function' => "
-                    function(info) {
-                        // Añadir tooltip con información del horario
-                        tippy(info.el, {
-                            content: 'Haz clic para reservar este horario: ' + info.event.title,
-                            placement: 'top',
-                            arrow: true,
-                            theme: 'light',
-                        });
-                        
-                        // Añadir cursor pointer para indicar que es clickeable
-                        info.el.style.cursor = 'pointer';
-                    }
-                ",
-            ],
-            'buttonText' => [
-                'today' => 'Hoy',
-                'month' => 'Mes',
-                'week' => 'Semana',
-                'day' => 'Día',
-            ],
-            'views' => [
-                'timeGridWeek' => [
-                    'titleFormat' => [
-                        'year' => 'numeric',
-                        'month' => 'long',
-                        'day' => '2-digit',
-                    ],
-                ],
-                'timeGridDay' => [
-                    'titleFormat' => [
-                        'year' => 'numeric',
-                        'month' => 'long',
-                        'day' => '2-digit',
-                    ],
-                ],
-            ],
+            Forms\Components\Hidden::make('schedule_id')
+                ->required(),
+            Forms\Components\Section::make('Detalles de la cita')
+                ->description('Información sobre el horario seleccionado')
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\DatePicker::make('date')
+                                ->label('Fecha')
+                                ->disabled()
+                                ->required(),
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\TextInput::make('start_time')
+                                        ->label('Hora de inicio')
+                                        ->disabled()
+                                        ->required(),
+                                    Forms\Components\TextInput::make('end_time')
+                                        ->label('Hora de fin')
+                                        ->disabled()
+                                        ->required(),
+                                ]),
+                        ]),
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Motivo o notas de la cita')
+                        ->placeholder('Describe brevemente el motivo de tu cita...')
+                        ->maxLength(500)
+                        ->columnSpanFull(),
+                ]),
         ];
     }
 
-    /**
-     * Configuración de los eventos
-     */
-
-    protected function headerActions(): array
+    // Qué pasa al guardar la cita
+    public function create(array $data): void
     {
-        return [];
+        Log::info('Creando cita con datos: ' . json_encode($data));
+
+        $schedule = Schedule::findOrFail($data['schedule_id']);
+
+        // Crear la cita
+        $appointment = Appointment::create([
+            'professional_id' => $schedule->user_id,
+            'client_id' => auth()->user()->id,
+            'date' => $data['date'],
+            'start_time' => $data['start_time'],
+            'end_time' => $data['end_time'],
+            'notes' => $data['notes'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        // Notificar éxito
+        $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
+
+        // Redirigir a la página de pago
+        $this->redirect(route('client.payment.process', [
+            'appointment' => $appointment->id,
+        ]));
     }
 
-    public function modalActions(): array
+    public function getActions(): array
     {
-        return [];
+        return [
+            \Filament\Actions\Action::make('create')
+                ->label('Reservar cita')
+                ->form($this->getFormSchema())
+                ->action(fn(array $data) => $this->create($data))
+                ->modalHeading('Reservar cita')
+                ->modalSubmitActionLabel('Confirmar reserva')
+        ];
     }
 
-    protected function viewAction(): Action
-    {
-        return Action::make('view')->hidden();
-    }
+    protected static bool $isLazy = false;
 }

@@ -2,30 +2,15 @@
     <div class="p-4 bg-white rounded-xl shadow-sm dark:bg-gray-800">
         <div class="mb-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Disponibilidad de {{ $record->name }} {{ $record->last_name }}
+                Disponibilidad del profesional
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ $record->profession }} - {{ $record->especialty ?? 'Profesional' }}
+                Haz clic en un horario disponible para agendar tu cita
             </p>
         </div>
         
-        <div class="min-h-[500px]" wire:ignore>
-            <div
-                x-data="{}"
-                x-on:livewire:initialized="
-                    $wire.getFullCalendarOptions().then(options => {
-                        options.events = $wire.getEvents.bind($wire);
-                        options.initialDate = $wire.initialDate;
-                        
-                        fullCalendar = new FullCalendar.Calendar($el, options);
-                        fullCalendar.render();
-                        
-                        $wire.on('refreshCalendar', () => {
-                            fullCalendar.refetchEvents();
-                        });
-                    })
-                "
-            ></div>
+        <div class="min-h-[500px]">
+            {{ $this->fullCalendar }}
         </div>
         
         <div class="mt-4 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
