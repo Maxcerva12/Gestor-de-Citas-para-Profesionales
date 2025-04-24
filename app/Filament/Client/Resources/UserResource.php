@@ -175,11 +175,11 @@ class UserResource extends Resource
                     ->modalWidth('5xl')
                     ->modalIcon('heroicon-o-user-circle')
                     ->slideOver(),
-                Tables\Actions\Action::make('view_availability')
-                    ->label('Ver Disponibilidad')
+                Tables\Actions\Action::make('ver_disponibilidad')
+                    ->label('Ver disponibilidad')
                     ->icon('heroicon-o-calendar')
                     ->color('success')
-                    // ->url(fn($record) => route('filament.client.pages.professional-availability', ['professionalId' => $record->id]))
+                    ->url(fn(User $record) => static::getUrl('view-availability', ['record' => $record]))
                     ->openUrlInNewTab(false),
             ])
             ->emptyStateDescription('Lista de profesionales disponibles.')
@@ -192,6 +192,7 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
+            'view-availability' => Pages\ViewAvailability::route('/{record}/disponibilidad'),
         ];
     }
 }

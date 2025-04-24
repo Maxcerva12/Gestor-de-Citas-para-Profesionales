@@ -21,8 +21,9 @@ class Schedule extends Model
 
     protected $casts = [
         'date' => 'date',
-        'start_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i',
+        // Quitar los casts de hora para evitar conversiones automáticas
+        // 'start_time' => 'datetime:H:i',
+        // 'end_time' => 'datetime:H:i',
         'is_available' => 'boolean',
     ];
 

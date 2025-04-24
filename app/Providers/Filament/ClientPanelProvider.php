@@ -45,8 +45,8 @@ class ClientPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentFullCalendarPlugin::make()
-                    ->selectable(true) // Permite seleccionar rangos de fechas
-                    ->editable(true) // Permite editar eventos arrastrando
+                    ->selectable(false) // Cambiado a false para evitar selección
+                    ->editable(false)   // Cambiado a false para evitar edición
                     ->timezone(config('app.timezone')) // Usa la zona horaria de la app
                     ->locale(config('app.locale')), // Usa el idioma de la app
 
