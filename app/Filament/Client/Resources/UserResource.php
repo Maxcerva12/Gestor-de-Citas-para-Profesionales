@@ -21,7 +21,7 @@ class UserResource extends Resource
     // Navigation and labels
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Profesionales';
-    protected static ?string $navigationGroup = 'Gestión Administrativa';
+    protected static ?string $navigationGroup = 'Agendamientos de Citas';
     protected static ?string $label = 'Profesional';
     protected static ?string $pluralLabel = 'Profesionales';
     protected static ?string $recordTitleAttribute = 'name';

@@ -90,10 +90,22 @@ class CalendarWidget extends FullCalendarWidget
 
         Log::info('Generando eventos para profesional ID: ' . $this->record->id);
 
-        // Obtenemos todos los horarios disponibles del profesional
+        // Obtenemos todos los horarios disponibles del profesional, excluyendo los pasados
         $availableSlots = Schedule::where('user_id', $this->record->id)
             ->where('is_available', true)
             ->whereBetween('date', [$fetchInfo['start'], $fetchInfo['end']])
+            ->whereRaw("STRFTIME('%Y-%m-%d', date) || ' ' || CASE 
+            WHEN start_time LIKE '%PM' THEN 
+                CASE 
+                    WHEN CAST(SUBSTR(start_time, 1, 2) AS INTEGER) = 12 THEN '12'
+                    ELSE CAST(CAST(SUBSTR(start_time, 1, 2) AS INTEGER) + 12 AS TEXT)
+                END
+            WHEN start_time LIKE '%AM' THEN 
+                CASE 
+                    WHEN CAST(SUBSTR(start_time, 1, 2) AS INTEGER) = 12 THEN '00'
+                    ELSE SUBSTR(start_time, 1, 2)
+                END
+        END || SUBSTR(start_time, 3, 3) >= ?", [now()->format('Y-m-d H:i:s')])
             ->get();
 
         Log::info('Horarios encontrados: ' . $availableSlots->count());
@@ -113,7 +125,7 @@ class CalendarWidget extends FullCalendarWidget
                 'title' => 'Disponible: ' . $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i'),
                 'start' => $startDateTime->format('Y-m-d H:i:s'),
                 'end' => $endDateTime->format('Y-m-d H:i:s'),
-                'backgroundColor' => '#22c55e', // Verde para disponible
+                'backgroundColor' => '#22c55e', 
                 'borderColor' => '#16a34a',
                 'textColor' => '#ffffff',
                 'extendedProps' => [
@@ -127,7 +139,6 @@ class CalendarWidget extends FullCalendarWidget
 
         return $events;
     }
-
     // Acción al hacer click en un evento del calendario
     public function onEventClick($event): void
     {
@@ -137,6 +148,16 @@ class CalendarWidget extends FullCalendarWidget
 
         if (!$schedule) {
             $this->notify('error', 'No se pudo encontrar el horario seleccionado.');
+            return;
+        }
+
+        // Verificar si el horario ya pasó
+        // Extraer solo la fecha del campo date
+        $dateOnly = Carbon::parse($schedule->date)->format('Y-m-d');
+        $startDateTime = Carbon::parse($dateOnly . ' ' . $schedule->start_time);
+        Log::info('Fecha y hora de inicio parseada: ' . $startDateTime->toDateTimeString());
+        if ($startDateTime->isPast()) {
+            $this->notify('error', 'No se puede agendar una cita en un horario pasado.');
             return;
         }
 
@@ -314,14 +335,22 @@ class CalendarWidget extends FullCalendarWidget
         ];
     }
 
-    // Método create para crear la cita
-    // Método create para crear la cita
     public function create(array $data): void
     {
         Log::info('Creando cita con datos: ' . json_encode($data));
 
         try {
             $schedule = Schedule::findOrFail($data['schedule_id']);
+
+            // Verificar si el horario sigue disponible y no ha pasado
+            if (!$schedule->is_available) {
+                throw new \Exception('El horario seleccionado ya no está disponible.');
+            }
+
+            $startDateTime = Carbon::parse($schedule->date . ' ' . $schedule->start_time);
+            if ($startDateTime->isPast()) {
+                throw new \Exception('No se puede agendar una cita en un horario pasado.');
+            }
 
             // Verificar si hay un usuario autenticado y si es un Client
             $client = auth()->user();
@@ -331,8 +360,8 @@ class CalendarWidget extends FullCalendarWidget
 
             // Crear la cita con todos los campos requeridos
             $appointment = Appointment::create([
-                'user_id' => $schedule->user_id, // Profesional asociado al horario
-                'client_id' => $client->id,      // Cliente autenticado
+                'user_id' => $schedule->user_id, 
+                'client_id' => $client->id,      
                 'schedule_id' => $schedule->id,
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
