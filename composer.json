@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.3",
+        "diogogpinto/filament-auth-ui-enhancer": "*",
         "filament/filament": "^3.3",
         "filament/notifications": "^3.3",
         "google/apiclient": "^2.18",

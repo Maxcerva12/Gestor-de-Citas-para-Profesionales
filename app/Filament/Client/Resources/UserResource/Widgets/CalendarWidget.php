@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Client\Resources\UserResource\Widgets;
+namespace App\Filament\Client\Resources\UserResource\Widgets; 
 
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use App\Models\Schedule;
 use App\Models\Appointment;
+use App\Models\Price;
 use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +26,7 @@ class CalendarWidget extends FullCalendarWidget
     public $selectedStartTimeFormatted = null;
     public $selectedEndTimeFormatted = null;
     public $appointmentNotes = null;
+    public $selectedPriceId = null;
 
     // Configuración del calendario
     public function config(): array
@@ -40,7 +42,7 @@ class CalendarWidget extends FullCalendarWidget
             'slotMaxTime' => '20:00:00',
             'slotDuration' => '00:30:00',
             'businessHours' => [
-                'daysOfWeek' => [1, 2, 3, 4, 5], // Lunes a viernes
+                'daysOfWeek' => [1, 2, 3, 4, 5],
                 'startTime' => '08:00',
                 'endTime' => '18:00',
             ],
@@ -79,10 +81,8 @@ class CalendarWidget extends FullCalendarWidget
         ];
     }
 
-    // Devuelve los eventos (slots disponibles)
     public function fetchEvents(array $fetchInfo): array
     {
-        // Verificamos que el record sea una instancia de User
         if (!$this->record || !$this->record instanceof \App\Models\User) {
             Log::warning('Record no es una instancia de User o está vacío');
             return [];
@@ -90,7 +90,6 @@ class CalendarWidget extends FullCalendarWidget
 
         Log::info('Generando eventos para profesional ID: ' . $this->record->id);
 
-        // Obtenemos todos los horarios disponibles del profesional, excluyendo los pasados
         $availableSlots = Schedule::where('user_id', $this->record->id)
             ->where('is_available', true)
             ->whereBetween('date', [$fetchInfo['start'], $fetchInfo['end']])
@@ -113,10 +112,7 @@ class CalendarWidget extends FullCalendarWidget
         $events = [];
 
         foreach ($availableSlots as $slot) {
-            // Formatear la fecha para el calendario
             $date = Carbon::parse($slot->date)->format('Y-m-d');
-
-            // Convertir horas a formato adecuado para el calendario
             $startDateTime = Carbon::parse($date . ' ' . $slot->start_time);
             $endDateTime = Carbon::parse($date . ' ' . $slot->end_time);
 
@@ -125,7 +121,7 @@ class CalendarWidget extends FullCalendarWidget
                 'title' => 'Disponible: ' . $startDateTime->format('H:i') . ' - ' . $endDateTime->format('H:i'),
                 'start' => $startDateTime->format('Y-m-d H:i:s'),
                 'end' => $endDateTime->format('Y-m-d H:i:s'),
-                'backgroundColor' => '#22c55e', 
+                'backgroundColor' => '#22c55e',
                 'borderColor' => '#16a34a',
                 'textColor' => '#ffffff',
                 'extendedProps' => [
@@ -139,7 +135,7 @@ class CalendarWidget extends FullCalendarWidget
 
         return $events;
     }
-    // Acción al hacer click en un evento del calendario
+
     public function onEventClick($event): void
     {
         Log::info('Evento click recibido con ID: ' . $event['id']);
@@ -151,8 +147,6 @@ class CalendarWidget extends FullCalendarWidget
             return;
         }
 
-        // Verificar si el horario ya pasó
-        // Extraer solo la fecha del campo date
         $dateOnly = Carbon::parse($schedule->date)->format('Y-m-d');
         $startDateTime = Carbon::parse($dateOnly . ' ' . $schedule->start_time);
         Log::info('Fecha y hora de inicio parseada: ' . $startDateTime->toDateTimeString());
@@ -162,36 +156,28 @@ class CalendarWidget extends FullCalendarWidget
         }
 
         try {
-            // Parsear la fecha a formato Y-m-d para guardar
             $date = Carbon::parse($schedule->date)->format('Y-m-d');
-
-            // Fecha formateada para mostrar
             $dateFormatted = Carbon::parse($schedule->date)->format('d/m/Y');
-
-            // Crear objetos Carbon para las horas de inicio y fin
             $startTime = Carbon::createFromFormat('h:i A', $schedule->start_time);
             $endTime = Carbon::createFromFormat('h:i A', $schedule->end_time);
 
-            // Combinar fecha y hora para crear datetime completos
             $startDateTime = Carbon::parse($date)->setTime($startTime->hour, $startTime->minute, 0);
             $endDateTime = Carbon::parse($date)->setTime($endTime->hour, $endTime->minute, 0);
 
-            // Formato para guardar
             $startTimeValue = $startDateTime->format('Y-m-d H:i:s');
             $endTimeValue = $endDateTime->format('Y-m-d H:i:s');
 
-            // Formato para mostrar
             $startTimeFormatted = $startTime->format('H:i');
             $endTimeFormatted = $endTime->format('H:i');
 
-            // Asignar valores a las propiedades del widget
             $this->selectedScheduleId = $schedule->id;
             $this->selectedDate = $dateFormatted;
             $this->selectedStartTime = $startTimeValue;
             $this->selectedEndTime = $endTimeValue;
             $this->selectedStartTimeFormatted = $startTimeFormatted;
             $this->selectedEndTimeFormatted = $endTimeFormatted;
-            $this->appointmentNotes = null; // Resetear notas
+            $this->appointmentNotes = null;
+            $this->selectedPriceId = null;
 
             Log::info('Datos asignados a propiedades del widget:', [
                 'schedule_id' => $this->selectedScheduleId,
@@ -202,7 +188,6 @@ class CalendarWidget extends FullCalendarWidget
                 'end_time_formatted' => $this->selectedEndTimeFormatted,
             ]);
 
-            // Mostrar el modal de la acción
             $this->mountAction('create');
         } catch (\Exception $e) {
             Log::error('Error al procesar las horas: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
@@ -252,7 +237,7 @@ class CalendarWidget extends FullCalendarWidget
                                 })
                                 ->default(fn() => $this->selectedScheduleId)
                                 ->disabled()
-                                ->dehydrated(false) // No se guarda, solo visual
+                                ->dehydrated(false)
                                 ->required(),
                         ]),
 
@@ -281,6 +266,42 @@ class CalendarWidget extends FullCalendarWidget
                                 ->readOnly()
                                 ->required(),
                         ]),
+
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Select::make('price_id')
+                                ->label('Servicio')
+                                ->options(function () {
+                                    // Solo muestra los servicios del profesional actual y activos
+                                    if ($this->record) {
+                                        return Price::where('user_id', $this->record->id)
+                                            ->where('is_active', true)
+                                            ->pluck('name', 'id');
+                                    }
+                                    return [];
+                                })
+                                ->searchable()
+                                ->required()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                    if ($state) {
+                                        $price = Price::find($state);
+                                        if ($price) {
+                                            $set('amount', $price->amount);
+                                        }
+                                    } else {
+                                        $set('amount', null);
+                                    }
+                                })
+                                ->placeholder('Selecciona un servicio'),
+
+                            Forms\Components\TextInput::make('amount')
+                                ->label('Precio')
+                                ->numeric()
+                                ->prefix('€')
+                                ->disabled()
+                                ->dehydrated(true),
+                        ]),
                 ]),
 
             Forms\Components\Tabs::make('Detalles Adicionales')
@@ -297,7 +318,7 @@ class CalendarWidget extends FullCalendarWidget
                                             'confirmed' => 'Confirmada',
                                         ])
                                         ->default('pending')
-                                        ->disabled() // Cliente no debería cambiar esto
+                                        ->disabled()
                                         ->required(),
 
                                     Forms\Components\Select::make('payment_status')
@@ -306,7 +327,7 @@ class CalendarWidget extends FullCalendarWidget
                                             'pending' => 'Pendiente',
                                         ])
                                         ->default('pending')
-                                        ->disabled() // Cliente no cambia esto al crear
+                                        ->disabled()
                                         ->required(),
                                 ]),
 
@@ -341,38 +362,37 @@ class CalendarWidget extends FullCalendarWidget
 
         try {
             $schedule = Schedule::findOrFail($data['schedule_id']);
-
-            // Verificar si el horario sigue disponible y no ha pasado
             if (!$schedule->is_available) {
                 throw new \Exception('El horario seleccionado ya no está disponible.');
             }
-
             $startDateTime = Carbon::parse($schedule->date . ' ' . $schedule->start_time);
             if ($startDateTime->isPast()) {
                 throw new \Exception('No se puede agendar una cita en un horario pasado.');
             }
-
-            // Verificar si hay un usuario autenticado y si es un Client
             $client = auth()->user();
             if (!$client || !$client instanceof \App\Models\Client) {
                 throw new \Exception('No hay un cliente autenticado para reservar la cita.');
             }
+            if (empty($data['price_id'])) {
+                throw new \Exception('Debes seleccionar un servicio.');
+            }
 
-            // Crear la cita con todos los campos requeridos
+            // Obtener el precio para guardar también el amount
+            $price = Price::find($data['price_id']);
+
             $appointment = Appointment::create([
-                'user_id' => $schedule->user_id, 
-                'client_id' => $client->id,      
+                'user_id' => $schedule->user_id,
+                'client_id' => $client->id,
                 'schedule_id' => $schedule->id,
+                'price_id' => $data['price_id'],
+                'amount' => $price ? $price->amount : null,
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
                 'notes' => $data['notes'] ?? null,
                 'status' => 'pending',
                 'payment_status' => 'pending',
             ]);
-
-            // Marcar el horario como no disponible
             $schedule->update(['is_available' => false]);
-
             $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
             $this->redirect(route('client.payment.process', ['appointment' => $appointment->id]));
         } catch (\Exception $e) {

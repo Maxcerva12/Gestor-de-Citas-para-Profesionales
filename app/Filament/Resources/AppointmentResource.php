@@ -237,6 +237,7 @@ class AppointmentResource extends Resource
                                                 'completed' => 'Completada',
                                             ])
                                             ->default('pending')
+                                            ->native(false)
                                             ->required()
                                             ->reactive(),
 
@@ -249,6 +250,7 @@ class AppointmentResource extends Resource
                                                 'cancelled' => 'Cancelado',
                                             ])
                                             ->default('pending')
+                                            ->native(false)
                                             ->required(),
                                     ]),
 
@@ -291,7 +293,7 @@ class AppointmentResource extends Resource
                                             ->numeric()
                                             ->prefix('€')
                                             ->disabled()
-                                            ->dehydrated(true), // Asegura que el valor se guarde aunque el campo esté deshabilitado
+                                            ->dehydrated(true), 
                                     ]),
                             ]),
 

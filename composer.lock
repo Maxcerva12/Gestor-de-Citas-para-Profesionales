@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "214410b50593ef03a95f057bf69388a5",
+    "content-hash": "83022cf131b692b34e555802e08ca074",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -617,6 +617,85 @@
                 "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.3"
             },
             "time": "2024-07-08T12:26:09+00:00"
+        },
+        {
+            "name": "diogogpinto/filament-auth-ui-enhancer",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/diogogpinto/filament-auth-ui-enhancer.git",
+                "reference": "9df96c389b823f987e90455f59f9904e60fcc590"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/diogogpinto/filament-auth-ui-enhancer/zipball/9df96c389b823f987e90455f59f9904e60fcc590",
+                "reference": "9df96c389b823f987e90455f59f9904e60fcc590",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^7.9",
+                "nunomaduro/larastan": "^2.0.1",
+                "orchestra/testbench": "^8.0",
+                "pestphp/pest": "^2.1",
+                "pestphp/pest-plugin-arch": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "AuthUIEnhancer": "DiogoGPinto\\AuthUIEnhancer\\Facades\\AuthUIEnhancer"
+                    },
+                    "providers": [
+                        "DiogoGPinto\\AuthUIEnhancer\\AuthUIEnhancerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "DiogoGPinto\\AuthUIEnhancer\\": "src/",
+                    "DiogoGPinto\\AuthUIEnhancer\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Diogo Pinto",
+                    "role": "Developer"
+                }
+            ],
+            "description": "This Filament plugin empowers you to transform your auth pages with ease, allowing you to make them truly stand out. It offers a flexible alternative to the default auth pages in the Filament Panels package.",
+            "homepage": "https://github.com/diogogpinto/filament-auth-ui-enhancer",
+            "keywords": [
+                "diogogpinto",
+                "filament",
+                "filament-auth-ui-enhancer",
+                "filament-plugin",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/diogogpinto/filament-auth-ui-enhancer/issues",
+                "source": "https://github.com/diogogpinto/filament-auth-ui-enhancer"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/diogogpinto",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-03-17T14:07:54+00:00"
         },
         {
             "name": "doctrine/dbal",
@@ -4628,16 +4707,16 @@
         },
         {
             "name": "openspout/openspout",
-            "version": "v4.29.1",
+            "version": "v4.28.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/openspout/openspout.git",
-                "reference": "ec83106bc3922fe94c9d37976ba6b7259511c4c5"
+                "reference": "ab05a09fe6fce57c90338f83280648a9786ce36b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/openspout/openspout/zipball/ec83106bc3922fe94c9d37976ba6b7259511c4c5",
-                "reference": "ec83106bc3922fe94c9d37976ba6b7259511c4c5",
+                "url": "https://api.github.com/repos/openspout/openspout/zipball/ab05a09fe6fce57c90338f83280648a9786ce36b",
+                "reference": "ab05a09fe6fce57c90338f83280648a9786ce36b",
                 "shasum": ""
             },
             "require": {
@@ -4647,17 +4726,17 @@
                 "ext-libxml": "*",
                 "ext-xmlreader": "*",
                 "ext-zip": "*",
-                "php": "~8.3.0 || ~8.4.0"
+                "php": "~8.2.0 || ~8.3.0 || ~8.4.0"
             },
             "require-dev": {
                 "ext-zlib": "*",
-                "friendsofphp/php-cs-fixer": "^3.71.0",
-                "infection/infection": "^0.29.14",
+                "friendsofphp/php-cs-fixer": "^3.68.3",
+                "infection/infection": "^0.29.10",
                 "phpbench/phpbench": "^1.4.0",
-                "phpstan/phpstan": "^2.1.8",
+                "phpstan/phpstan": "^2.1.2",
                 "phpstan/phpstan-phpunit": "^2.0.4",
-                "phpstan/phpstan-strict-rules": "^2.0.3",
-                "phpunit/phpunit": "^12.0.7"
+                "phpstan/phpstan-strict-rules": "^2",
+                "phpunit/phpunit": "^11.5.4"
             },
             "suggest": {
                 "ext-iconv": "To handle non UTF-8 CSV files (if \"php-mbstring\" is not already installed or is too limited)",
@@ -4705,7 +4784,7 @@
             ],
             "support": {
                 "issues": "https://github.com/openspout/openspout/issues",
-                "source": "https://github.com/openspout/openspout/tree/v4.29.1"
+                "source": "https://github.com/openspout/openspout/tree/v4.28.5"
             },
             "funding": [
                 {
@@ -4717,7 +4796,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-11T14:40:46+00:00"
+            "time": "2025-01-30T13:51:11+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",

@@ -50,11 +50,6 @@ class ClientAppointmentResource extends Resource
             ->count() ?: null;
     }
 
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'warning';
-    }
-
     public static function table(Table $table): Table
     {
         return $table

@@ -34,7 +34,7 @@ class ClientPanelProvider extends PanelProvider
             ->id('client')
             ->path('client')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Indigo,
             ])
             ->login()
             ->registration()
@@ -93,6 +93,6 @@ class ClientPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->authGuard('client')// Usar el guardia 'client'
-            ->databaseNotifications(); 
+            ->databaseNotifications();
     }
 }
