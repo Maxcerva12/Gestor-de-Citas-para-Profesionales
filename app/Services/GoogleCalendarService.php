@@ -66,13 +66,13 @@ class GoogleCalendarService
         $calendarService = $this->getCalendarService();
 
         $event = new \Google\Service\Calendar\Event([
-            'summary' => 'Cita con ' . $appointment->client->name, // o client->name, según quién la ve
+            'summary' => 'Cita con ' . $appointment->client->name,
             'location' => $appointment->location ?? 'Sin ubicación',
             'description' => 
                 "Cliente: {$appointment->client->name}\n" .
                 "Profesional: {$appointment->user->name}\n" .
                 "Notas: {$appointment->notes}",
-    
+
             'start' => [
                 'dateTime' => $appointment->start_time->toRfc3339String(),
                 'timeZone' => config('app.timezone'),
@@ -81,14 +81,28 @@ class GoogleCalendarService
                 'dateTime' => $appointment->end_time->toRfc3339String(),
                 'timeZone' => config('app.timezone'),
             ],
-    
-            // Opcional: cambiar color según tipo de cita
-            'colorId' => '2', // colores del 1 al 11
+
+            'attendees' => [
+                ['email' => $appointment->client->email],
+                ['email' => $appointment->user->email],
+            ],
+
+            'guestsCanModify' => false,
+            'guestsCanInviteOthers' => false,
+            'guestsCanSeeOtherGuests' => true,
+
+            'reminders' => [
+                'useDefault' => true,
+            ],
         ]);
 
         $calendarId = 'primary';
-        $createdEvent = $calendarService->events->insert($calendarId, $event);
 
-        return $createdEvent->id; // Devuelve el ID del evento en Google Calendar
+        $createdEvent = $calendarService->events->insert($calendarId, $event, [
+            'sendUpdates' => 'all',
+        ]);
+
+        return $createdEvent->id;
     }
+
 }
