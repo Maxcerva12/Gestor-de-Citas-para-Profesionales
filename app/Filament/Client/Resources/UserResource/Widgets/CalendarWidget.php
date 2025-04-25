@@ -9,10 +9,25 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Support\Exceptions\Cancel;
+use Filament\Support\Exceptions\Halt;
 
-class CalendarWidget extends FullCalendarWidget
+class CalendarWidget extends FullCalendarWidget implements HasActions
 {
+    use InteractsWithActions;
+
     public Model|string|int|null $record = null;
+
+    public $selectedScheduleId = null;
+    public $selectedDate = null;
+    public $selectedStartTime = null;
+    public $selectedEndTime = null;
+    public $selectedStartTimeFormatted = null;
+    public $selectedEndTimeFormatted = null;
+    public $appointmentNotes = null;
 
     // Configuración del calendario
     public function config(): array
@@ -89,10 +104,10 @@ class CalendarWidget extends FullCalendarWidget
         $events = [];
 
         foreach ($availableSlots as $slot) {
-            // Formatear la fecha y hora para el calendario
+            // Formatear la fecha para el calendario
             $date = Carbon::parse($slot->date)->format('Y-m-d');
 
-            // Convertir hora a formato adecuado
+            // Convertir horas a formato adecuado para el calendario
             $startDateTime = Carbon::parse($date . ' ' . $slot->start_time);
             $endDateTime = Carbon::parse($date . ' ' . $slot->end_time);
 
@@ -121,90 +136,146 @@ class CalendarWidget extends FullCalendarWidget
     {
         Log::info('Evento click recibido con ID: ' . $event['id']);
 
-        // Dispara la acción nativa de "crear"
-        $this->mountAction('create', [
-            'schedule_id' => $event['id'],
-            'date' => $event['extendedProps']['date'],
-            'start_time' => $event['extendedProps']['start_time'],
-            'end_time' => $event['extendedProps']['end_time'],
-        ]);
+        $schedule = Schedule::find($event['id']);
+
+        if (!$schedule) {
+            $this->notify('error', 'No se pudo encontrar el horario seleccionado.');
+            return;
+        }
+
+        try {
+            // Parsear la fecha a formato Y-m-d para guardar
+            $date = Carbon::parse($schedule->date)->format('Y-m-d');
+
+            // Fecha formateada para mostrar
+            $dateFormatted = Carbon::parse($schedule->date)->format('d/m/Y');
+
+            // Crear objetos Carbon para las horas de inicio y fin
+            $startTime = Carbon::createFromFormat('h:i A', $schedule->start_time);
+            $endTime = Carbon::createFromFormat('h:i A', $schedule->end_time);
+
+            // Combinar fecha y hora para crear datetime completos
+            $startDateTime = Carbon::parse($date)->setTime($startTime->hour, $startTime->minute, 0);
+            $endDateTime = Carbon::parse($date)->setTime($endTime->hour, $endTime->minute, 0);
+
+            // Formato para guardar
+            $startTimeValue = $startDateTime->format('Y-m-d H:i:s');
+            $endTimeValue = $endDateTime->format('Y-m-d H:i:s');
+
+            // Formato para mostrar
+            $startTimeFormatted = $startTime->format('H:i');
+            $endTimeFormatted = $endTime->format('H:i');
+
+            // Asignar valores a las propiedades del widget
+            $this->selectedScheduleId = $schedule->id;
+            $this->selectedDate = $dateFormatted;
+            $this->selectedStartTime = $startTimeValue;
+            $this->selectedEndTime = $endTimeValue;
+            $this->selectedStartTimeFormatted = $startTimeFormatted;
+            $this->selectedEndTimeFormatted = $endTimeFormatted;
+            $this->appointmentNotes = null; // Resetear notas
+
+            Log::info('Datos asignados a propiedades del widget:', [
+                'schedule_id' => $this->selectedScheduleId,
+                'date' => $this->selectedDate,
+                'start_time' => $this->selectedStartTime,
+                'end_time' => $this->selectedEndTime,
+                'start_time_formatted' => $this->selectedStartTimeFormatted,
+                'end_time_formatted' => $this->selectedEndTimeFormatted,
+            ]);
+
+            // Mostrar el modal de la acción
+            $this->mountAction('create');
+        } catch (\Exception $e) {
+            Log::error('Error al procesar las horas: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            $this->notify('error', 'Error al procesar el horario seleccionado: ' . $e->getMessage());
+        }
     }
 
-    // Propiedades del formulario de creación de cita
-    // Propiedades del formulario de creación de cita
     public function getFormSchema(): array
     {
         return [
             Forms\Components\Hidden::make('schedule_id')
-                ->required(),
+                ->default(fn() => $this->selectedScheduleId),
             Forms\Components\Section::make('Detalles de la cita')
                 ->description('Información sobre el horario seleccionado')
                 ->schema([
+                    Forms\Components\TextInput::make('date')
+                        ->label('Fecha')
+                        ->default(fn() => $this->selectedDate)
+                        ->readOnly()
+                        ->required(),
                     Forms\Components\Grid::make(2)
                         ->schema([
-                            Forms\Components\DatePicker::make('date')
-                                ->label('Fecha')
-                                ->disabled()
+                            Forms\Components\TextInput::make('start_time_formatted')
+                                ->label('Hora de inicio')
+                                ->default(fn() => $this->selectedStartTimeFormatted)
+                                ->readOnly()
                                 ->required(),
-                            Forms\Components\Grid::make(2)
-                                ->schema([
-                                    Forms\Components\TextInput::make('start_time')
-                                        ->label('Hora de inicio')
-                                        ->disabled()
-                                        ->required(),
-                                    Forms\Components\TextInput::make('end_time')
-                                        ->label('Hora de fin')
-                                        ->disabled()
-                                        ->required(),
-                                ]),
+                            Forms\Components\TextInput::make('end_time_formatted')
+                                ->label('Hora de fin')
+                                ->default(fn() => $this->selectedEndTimeFormatted)
+                                ->readOnly()
+                                ->required(),
                         ]),
+                    // Campos ocultos para mantener los valores originales
+                    Forms\Components\Hidden::make('start_time')
+                        ->default(fn() => $this->selectedStartTime),
+                    Forms\Components\Hidden::make('end_time')
+                        ->default(fn() => $this->selectedEndTime),
                     Forms\Components\Textarea::make('notes')
                         ->label('Motivo o notas de la cita')
                         ->placeholder('Describe brevemente el motivo de tu cita...')
                         ->maxLength(500)
+                        ->default(fn() => $this->appointmentNotes)
                         ->columnSpanFull(),
                 ]),
         ];
     }
 
-    // Qué pasa al guardar la cita
-    public function create(array $data): void
-    {
-        Log::info('Creando cita con datos: ' . json_encode($data));
-
-        $schedule = Schedule::findOrFail($data['schedule_id']);
-
-        // Crear la cita
-        $appointment = Appointment::create([
-            'professional_id' => $schedule->user_id,
-            'client_id' => auth()->user()->id,
-            'date' => $data['date'],
-            'start_time' => $data['start_time'],
-            'end_time' => $data['end_time'],
-            'notes' => $data['notes'] ?? null,
-            'status' => 'pending',
-        ]);
-
-        // Notificar éxito
-        $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
-
-        // Redirigir a la página de pago
-        $this->redirect(route('client.payment.process', [
-            'appointment' => $appointment->id,
-        ]));
-    }
-
-    public function getActions(): array
+    protected function getActions(): array
     {
         return [
-            \Filament\Actions\Action::make('create')
+            Action::make('create')
                 ->label('Reservar cita')
                 ->form($this->getFormSchema())
-                ->action(fn(array $data) => $this->create($data))
+                ->action(function (array $data) {
+                    Log::info('Datos recibidos en la acción create:', $data);
+                    $this->create($data);
+                })
                 ->modalHeading('Reservar cita')
                 ->modalSubmitActionLabel('Confirmar reserva')
         ];
     }
 
-    protected static bool $isLazy = false;
+    // Método create para crear la cita
+    public function create(array $data): void
+    {
+        Log::info('Creando cita con datos: ' . json_encode($data));
+
+        try {
+            $schedule = Schedule::findOrFail($data['schedule_id']);
+
+            // Asegúrate de que estos campos coincidan con los fillable en el modelo Appointment
+            $appointment = Appointment::create([
+                'user_id' => $schedule->user_id,
+                'client_id' => auth()->user()->id,
+                'schedule_id' => $schedule->id,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'notes' => $data['notes'] ?? null,
+                'status' => 'pending',
+                'payment_status' => 'pending',
+            ]);
+
+            // Actualizar el schedule para marcarlo como no disponible
+            $schedule->update(['is_available' => false]);
+
+            $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
+            $this->redirect(route('client.payment.process', ['appointment' => $appointment->id]));
+        } catch (\Exception $e) {
+            Log::error('Error al crear la cita: ' . $e->getMessage());
+            $this->notify('error', 'Error al crear la cita: ' . $e->getMessage());
+        }
+    }
 }

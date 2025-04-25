@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <div class="p-4 bg-white rounded-xl shadow-sm dark:bg-gray-800">
+    {{-- <div class="p-4 bg-white rounded-xl shadow-sm dark:bg-gray-800">
         <div class="mb-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Disponibilidad del profesional
@@ -19,5 +19,5 @@
                 <span>Horarios disponibles</span>
             </div>
         </div>
-    </div>
+    </div> --}}
 </x-filament-widgets::widget>
