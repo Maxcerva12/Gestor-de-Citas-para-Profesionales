@@ -9,16 +9,9 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Support\Exceptions\Cancel;
-use Filament\Support\Exceptions\Halt;
 
-class CalendarWidget extends FullCalendarWidget implements HasActions
+class CalendarWidget extends FullCalendarWidget
 {
-    use InteractsWithActions;
-
     public Model|string|int|null $record = null;
 
     public $selectedScheduleId = null;
@@ -233,10 +226,10 @@ class CalendarWidget extends FullCalendarWidget implements HasActions
         ];
     }
 
-    protected function getActions(): array
+    public function getActions(): array
     {
         return [
-            Action::make('create')
+            \Filament\Actions\Action::make('create')
                 ->label('Reservar cita')
                 ->form($this->getFormSchema())
                 ->action(function (array $data) {
