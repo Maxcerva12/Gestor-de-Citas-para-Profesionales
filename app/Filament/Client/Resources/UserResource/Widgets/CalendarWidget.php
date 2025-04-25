@@ -12,7 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class CalendarWidget extends FullCalendarWidget
 {
+    // El profesional (User) relacionado
     public Model|string|int|null $record = null;
+
+    // ¡El modelo correcto debe ser Appointment!
+    public Model|string|null $model = Appointment::class;
 
     public $selectedScheduleId = null;
     public $selectedDate = null;
@@ -189,39 +193,109 @@ class CalendarWidget extends FullCalendarWidget
     {
         return [
             Forms\Components\Hidden::make('schedule_id')
-                ->default(fn() => $this->selectedScheduleId),
-            Forms\Components\Section::make('Detalles de la cita')
-                ->description('Información sobre el horario seleccionado')
+                ->default(fn() => $this->selectedScheduleId)
+                ->required(),
+
+            Forms\Components\Hidden::make('user_id')
+                ->default(function () {
+                    if ($this->selectedScheduleId) {
+                        $schedule = Schedule::find($this->selectedScheduleId);
+                        return $schedule ? $schedule->user_id : null;
+                    }
+                    return null;
+                })
+                ->required(),
+
+            Forms\Components\Hidden::make('client_id')
+                ->default(fn() => auth()->user() instanceof \App\Models\Client ? auth()->user()->id : null)
+                ->required(),
+
+            Forms\Components\Section::make('Detalles de la Cita')
+                ->description('Información principal de la cita')
                 ->schema([
-                    Forms\Components\TextInput::make('date')
-                        ->label('Fecha')
-                        ->default(fn() => $this->selectedDate)
-                        ->readOnly()
-                        ->required(),
                     Forms\Components\Grid::make(2)
                         ->schema([
-                            Forms\Components\TextInput::make('start_time_formatted')
-                                ->label('Hora de inicio')
-                                ->default(fn() => $this->selectedStartTimeFormatted)
+                            Forms\Components\TextInput::make('client_name')
+                                ->label('Cliente')
+                                ->default(fn() => auth()->user()->name ?? 'Cliente no autenticado')
                                 ->readOnly()
                                 ->required(),
-                            Forms\Components\TextInput::make('end_time_formatted')
-                                ->label('Hora de fin')
-                                ->default(fn() => $this->selectedEndTimeFormatted)
+
+                            Forms\Components\Select::make('schedule_id_display')
+                                ->label('Horario')
+                                ->options(function () {
+                                    return Schedule::where('user_id', $this->record->id)
+                                        ->where('is_available', true)
+                                        ->pluck('date', 'id')
+                                        ->map(fn($date) => \Carbon\Carbon::parse($date)->format('d/m/Y'));
+                                })
+                                ->default(fn() => $this->selectedScheduleId)
+                                ->disabled()
+                                ->dehydrated(false) // No se guarda, solo visual
+                                ->required(),
+                        ]),
+
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\DateTimePicker::make('start_time')
+                                ->label('Hora de Inicio')
+                                ->default(fn() => $this->selectedStartTime)
+                                ->seconds(false)
+                                ->minutesStep(15)
+                                ->displayFormat('d/m/Y H:i')
+                                ->timezone('America/Bogota')
+                                ->native(false)
+                                ->readOnly()
+                                ->required(),
+
+                            Forms\Components\DateTimePicker::make('end_time')
+                                ->label('Hora de Fin')
+                                ->default(fn() => $this->selectedEndTime)
+                                ->seconds(false)
+                                ->minutesStep(15)
+                                ->displayFormat('d/m/Y H:i')
+                                ->timezone('America/Bogota')
+                                ->after('start_time')
+                                ->native(false)
                                 ->readOnly()
                                 ->required(),
                         ]),
-                    // Campos ocultos para mantener los valores originales
-                    Forms\Components\Hidden::make('start_time')
-                        ->default(fn() => $this->selectedStartTime),
-                    Forms\Components\Hidden::make('end_time')
-                        ->default(fn() => $this->selectedEndTime),
-                    Forms\Components\Textarea::make('notes')
-                        ->label('Motivo o notas de la cita')
-                        ->placeholder('Describe brevemente el motivo de tu cita...')
-                        ->maxLength(500)
-                        ->default(fn() => $this->appointmentNotes)
-                        ->columnSpanFull(),
+                ]),
+
+            Forms\Components\Tabs::make('Detalles Adicionales')
+                ->tabs([
+                    Forms\Components\Tabs\Tab::make('Estado y Notas')
+                        ->icon('heroicon-o-clipboard-document-check')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Select::make('status')
+                                        ->label('Estado')
+                                        ->options([
+                                            'pending' => 'Pendiente',
+                                            'confirmed' => 'Confirmada',
+                                        ])
+                                        ->default('pending')
+                                        ->disabled() // Cliente no debería cambiar esto
+                                        ->required(),
+
+                                    Forms\Components\Select::make('payment_status')
+                                        ->label('Estado del Pago')
+                                        ->options([
+                                            'pending' => 'Pendiente',
+                                        ])
+                                        ->default('pending')
+                                        ->disabled() // Cliente no cambia esto al crear
+                                        ->required(),
+                                ]),
+
+                            Forms\Components\Textarea::make('notes')
+                                ->label('Motivo o Notas de la Cita')
+                                ->placeholder('Describe brevemente el motivo de tu cita...')
+                                ->maxLength(500)
+                                ->default(fn() => $this->appointmentNotes)
+                                ->columnSpanFull(),
+                        ]),
                 ]),
         ];
     }
@@ -233,7 +307,6 @@ class CalendarWidget extends FullCalendarWidget
                 ->label('Reservar cita')
                 ->form($this->getFormSchema())
                 ->action(function (array $data) {
-                    Log::info('Datos recibidos en la acción create:', $data);
                     $this->create($data);
                 })
                 ->modalHeading('Reservar cita')
@@ -242,6 +315,7 @@ class CalendarWidget extends FullCalendarWidget
     }
 
     // Método create para crear la cita
+    // Método create para crear la cita
     public function create(array $data): void
     {
         Log::info('Creando cita con datos: ' . json_encode($data));
@@ -249,10 +323,16 @@ class CalendarWidget extends FullCalendarWidget
         try {
             $schedule = Schedule::findOrFail($data['schedule_id']);
 
-            // Asegúrate de que estos campos coincidan con los fillable en el modelo Appointment
+            // Verificar si hay un usuario autenticado y si es un Client
+            $client = auth()->user();
+            if (!$client || !$client instanceof \App\Models\Client) {
+                throw new \Exception('No hay un cliente autenticado para reservar la cita.');
+            }
+
+            // Crear la cita con todos los campos requeridos
             $appointment = Appointment::create([
-                'user_id' => $schedule->user_id,
-                'client_id' => auth()->user()->id,
+                'user_id' => $schedule->user_id, // Profesional asociado al horario
+                'client_id' => $client->id,      // Cliente autenticado
                 'schedule_id' => $schedule->id,
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
@@ -261,7 +341,7 @@ class CalendarWidget extends FullCalendarWidget
                 'payment_status' => 'pending',
             ]);
 
-            // Actualizar el schedule para marcarlo como no disponible
+            // Marcar el horario como no disponible
             $schedule->update(['is_available' => false]);
 
             $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
