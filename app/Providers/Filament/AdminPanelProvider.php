@@ -38,6 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName('Fundacion Odontológica Zoila Padilla')
             ->login()
             ->databaseNotifications()
             ->colors([

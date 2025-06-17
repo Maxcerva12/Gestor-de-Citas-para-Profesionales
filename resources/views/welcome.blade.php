@@ -109,15 +109,15 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">ProAppointments</span>
+                    <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Gestor Médico</span>
                 </div>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#features" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Features</a>
-                    <a href="#testimonials" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Testimonials</a>
-                    <a href="#pricing" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Pricing</a>
-                    <a href="#contact" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contact</a>
+                    <a href="#features" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Características</a>
+                    <a href="#testimonials" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Testimonios</a>
+                    <a href="#pricing" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Precios</a>
+                    <a href="#contact" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contacto</a>
                 </div>
                 
                 <div class="hidden md:flex items-center space-x-4">
@@ -129,10 +129,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                     </button>
-                    <a href="/login" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Log in</a>
-                    <a href="/register" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-sm">
-                        Sign Up Free
-                    </a>
+                    <a href="/admin" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Log in</a>
+                 
                 </div>
                 
                 <!-- Mobile menu button -->
@@ -166,13 +164,12 @@
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 -translate-y-4">
             <div class="pt-2 pb-4 px-4 space-y-1">
-                <a href="#features" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Features</a>
-                <a href="#testimonials" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Testimonials</a>
-                <a href="#pricing" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Pricing</a>
-                <a href="#contact" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Contact</a>
+                <a href="#features" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Características</a>
+                <a href="#testimonials" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Testimonios</a>
+                <a href="#pricing" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Precios</a>
+                <a href="#contact" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Contacto</a>
                 <div class="pt-2 border-t border-gray-200 dark:border-gray-800 mt-4">
                     <a href="/login" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Log in</a>
-                    <a href="/register" class="block mt-2 py-2 px-4 text-base font-medium text-center text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-md transition">Sign Up Free</a>
                 </div>
             </div>
         </div>
@@ -188,36 +185,22 @@
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                         </svg>
-                        Trusted by 10,000+ professionals
+                        Con la confianza de más de 10.000 profesionales
                     </span>
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight">
-                        Manage Appointments <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">With Confidence</span>
+                        Administrar citas <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Con confianza</span>
                     </h1>
                     <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                        Streamline your scheduling, reduce no-shows, and focus on what matters most. The all-in-one appointment system designed for professionals.
-                    </p>
-                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="/register" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-md">
-                            Start Free Trial
-                            <svg class="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                        <a href="#demo" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                            <svg class="mr-2 w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                            </svg>
-                            Watch Demo
-                        </a>
-                    </div>
+                        Optimiza tu agenda, reduce las inasistencias y concéntrate en lo que más importa. El sistema de citas integral diseñado para profesionales.                    </p>
+                    
                     <div class="pt-4">
                         <div class="flex items-center">
-                            <div class="flex -space-x-2">
+                            {{-- <div class="flex -space-x-2">
                                 <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
                                 <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
                                 <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
                                 <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
-                            </div>
+                            </div> --}}
                             <div class="ml-3">
                                 <div class="flex items-center">
                                     <div class="flex text-yellow-400">
@@ -239,7 +222,7 @@
                                     </div>
                                 </div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    <span class="font-medium text-gray-900 dark:text-white">4.9/5</span> from over 1,200 reviews
+                                    <span class="font-medium text-gray-900 dark:text-white">4.9/5</span> de más de 1200 reseñas
                                 </p>
                             </div>
                         </div>
@@ -255,7 +238,7 @@
                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                             <div class="ml-2 text-sm text-gray-500 dark:text-gray-400">ProAppointments Dashboard</div>
                         </div>
-                        <img src="/api/placeholder/600/400" alt="ProAppointments Dashboard" class="w-full h-64 sm:h-80 object-cover object-top">
+                        <img src="https://images.ctfassets.net/pdf29us7flmy/50kVKgdwULKaOgvkJBRic5/68591241ae297e886978aa9f17d16e00/resized.png?w=1440&q=100&fm=avif" alt="ProAppointments Dashboard" class="w-full h-64 sm:h-80 object-cover object-top">
                     </div>
                 </div>
             </div>
@@ -264,14 +247,14 @@
         <!-- Companies banner -->
         <div class="relative border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">Trusted by leading companies worldwide</p>
+                <p class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">Con la confianza de empresas líderes a nivel mundial</p>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 justify-items-center items-center">
-                    <div class="h-8 text-gray-400 dark:text-gray-500">COMPANY</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">BRAND CO.</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">STARTUP INC</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">ENTERPRISE</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">CORP LLC</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">META GROUP</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">ECOPETROL</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">BANCOLOMBIA</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">GRUPO NUTRESA</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">GRUPO ÉXITO</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">AVIANCA</div>
+                    <div class="h-8 text-gray-400 dark:text-gray-500">JUAN VALDEZ</div>
                 </div>
             </div>
         </div>
@@ -281,8 +264,8 @@
     <section id="features" class="w-full py-16 md:py-24 bg-white dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold font-display mb-4">All The Tools You Need</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">Streamline your workflow with our comprehensive features designed specifically for professionals.</p>
+                <h2 class="text-3xl font-bold font-display mb-4">Todas Las Herramientas Que Necesitas</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">Optimiza tu flujo de trabajo con nuestras funciones completas diseñadas específicamente para profesionales.</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -296,26 +279,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Smart Scheduling</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Create customizable booking pages, set buffer times, and manage your availability across multiple locations and services.</p>
+                    <h3 class="text-xl font-semibold mb-3">Programación Inteligente</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">Crea páginas de reserva personalizables, establece tiempos de espera y gestiona tu disponibilidad en múltiples ubicaciones y servicios.</p>
                     <ul class="space-y-2">
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Custom booking windows</span>
+                            <span class="text-sm">Ventanas de reserva personalizadas</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Buffer time between appointments</span>
+                            <span class="text-sm">Tiempo de margen entre citas</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Multiple location support</span>
+                            <span class="text-sm">Soporte para múltiples ubicaciones</span>
                         </li>
                     </ul>
                 </div>
@@ -330,26 +313,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Intelligent Reminders</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Reduce no-shows with automated, customizable reminders that keep your clients informed and prepared.</p>
+                    <h3 class="text-xl font-semibold mb-3">Recordatorios Inteligentes</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">Reduce las inasistencias con recordatorios automáticos y personalizables que mantienen a tus clientes informados y preparados.</p>
                     <ul class="space-y-2">
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Email, SMS & push notifications</span>
+                            <span class="text-sm">Notificaciones por email, SMS y push</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Custom timing & frequency</span>
+                            <span class="text-sm">Frecuencia y tiempo personalizado</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Personalized content & branding</span>
+                            <span class="text-sm">Contenido personalizado y marca</span>
                         </li>
                     </ul>
                 </div>
@@ -364,26 +347,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10m6 0V9m0 10h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v8" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Business Insights</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Track key metrics with powerful analytics that help you optimize your schedule and grow your business.</p>
+                    <h3 class="text-xl font-semibold mb-3">Análisis de Negocio</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">Rastrea métricas clave con análisis potentes que te ayudan a optimizar tu agenda y hacer crecer tu negocio.</p>
                     <ul class="space-y-2">
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Comprehensive reporting</span>
+                            <span class="text-sm">Informes completos</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">No-show & cancellation tracking</span>
+                            <span class="text-sm">Seguimiento de inasistencias y cancelaciones</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-sm">Revenue & utilization insights</span>
+                            <span class="text-sm">Información de ingresos y utilización</span>
                         </li>
                     </ul>
                 </div>
@@ -398,8 +381,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-semibold mb-2">Advanced Security</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Enterprise-grade security with data encryption and compliance with industry standards to protect your and your clients' information.</p>
+                        <h3 class="text-lg font-semibold mb-2">Seguridad Avanzada</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">Seguridad de nivel empresarial con cifrado de datos y cumplimiento de estándares de la industria para proteger tu información y la de tus clientes.</p>
                     </div>
                 </div>
                 
@@ -410,34 +393,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-semibold mb-2">Seamless Payments</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Accept deposits, process full payments, or charge cancellation fees directly through the platform with multiple payment options.</p>
+                        <h3 class="text-lg font-semibold mb-2">Pagos Integrados</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">Acepta depósitos, procesa pagos completos o cobra tarifas de cancelación directamente a través de la plataforma con múltiples opciones de pago.</p>
                     </div>
                 </div>
                 
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 flex items-start space-x-4 hover:shadow-sm transition">
-                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Seamless Integration</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Connect with your favorite tools including Google Calendar, Outlook, Zoom, Microsoft Teams, and many more.</p>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 flex items-start space-x-4 hover:shadow-sm transition">
-                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Mobile Optimized</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Manage your schedule on the go with our fully responsive web app and native mobile applications for iOS and Android.</p>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -446,8 +406,8 @@
     <section id="testimonials" class="w-full py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-12">
-                <h2 class="text-3xl font-bold font-display mb-4">Loved by Professionals</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">Don't take our word for it. See what other professionals have to say about ProAppointments.</p>
+                <h2 class="text-3xl font-bold font-display mb-4">Amado por Profesionales</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">No confíe sólo en nuestra palabra. Vea lo que otros profesionales dicen sobre ProAppointments.</p>
             </div>
             
             <div class="relative">
@@ -465,14 +425,14 @@
                             </svg>
                             
                             <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                ProAppointments has reduced my no-shows by 75% and saves me hours every week on scheduling tasks. Their automated reminders have been a game-changer for my practice.
+                                ProAppointments ha reducido mis inasistencias en un 75% y me ahorra horas cada semana en tareas de programación. Sus recordatorios automáticos han revolucionado mi práctica.
                             </p>
                             
                             <div class="flex items-center">
-                                <img src="/api/placeholder/64/64" alt="Sarah Johnson" class="w-12 h-12 rounded-full mr-4">
+                               
                                 <div>
                                     <h4 class="font-medium text-gray-900 dark:text-white">Sarah Johnson</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Therapist</p>
+                                    <p class="text-gray-600 dark:text-gray-400">Terapeuta</p>
                                 </div>
                             </div>
                         </div>
@@ -483,14 +443,14 @@
                             </svg>
                             
                             <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                The client portal and automated reminders have transformed my practice. My clients love the ease of scheduling and I appreciate the professional impression it creates.
+                                El portal para clientes y los recordatorios automáticos han transformado mi práctica. A mis clientes les encanta la facilidad de programar citas y yo aprecio la impresión profesional que crea.
                             </p>
                             
                             <div class="flex items-center">
-                                <img src="/api/placeholder/64/64" alt="Michael Chen" class="w-12 h-12 rounded-full mr-4">
+                                
                                 <div>
                                     <h4 class="font-medium text-gray-900 dark:text-white">Michael Chen</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Financial Advisor</p>
+                                    <p class="text-gray-600 dark:text-gray-400">Asesor Financiero</p>
                                 </div>
                             </div>
                         </div>
@@ -501,14 +461,14 @@
                             </svg>
                             
                             <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                I can manage my complex schedule across multiple locations seamlessly. The ROI has been incredible — I recovered my annual subscription cost in just the first month.
+                                Puedo gestionar mi compleja agenda en múltiples ubicaciones sin problemas. El retorno de inversión ha sido increíble — recuperé el costo de mi suscripción anual en solo el primer mes.
                             </p>
                             
                             <div class="flex items-center">
-                                <img src="/api/placeholder/64/64" alt="Alicia Rodriguez" class="w-12 h-12 rounded-full mr-4">
+                               
                                 <div>
                                     <h4 class="font-medium text-gray-900 dark:text-white">Alicia Rodriguez</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Legal Consultant</p>
+                                    <p class="text-gray-600 dark:text-gray-400">Consultora Legal</p>
                                 </div>
                             </div>
                         </div>
@@ -529,22 +489,22 @@
             <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
                     <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">96%</div>
-                    <p class="text-gray-600 dark:text-gray-300">Reduction in scheduling workload</p>
+                    <p class="text-gray-600 dark:text-gray-300">Reducción en carga de trabajo de programación</p>
                 </div>
                 <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
                     <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">75%</div>
-                    <p class="text-gray-600 dark:text-gray-300">Fewer appointment no-shows</p>
+                    <p class="text-gray-600 dark:text-gray-300">Menos inasistencias a citas</p>
                 </div>
                 <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
                     <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">10k+</div>
-                    <p class="text-gray-600 dark:text-gray-300">Satisfied professionals</p>
+                    <p class="text-gray-600 dark:text-gray-300">Profesionales satisfechos</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Pricing Section -->
-    <section id="pricing" class="w-full py-16 md:py-24 bg-white dark:bg-gray-900">
+    {{-- <section id="pricing" class="w-full py-16 md:py-24 bg-white dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
                 <h2 class="text-3xl font-bold font-display mb-4">Simple, Transparent Pricing</h2>
@@ -702,10 +662,10 @@
                 </a>
             </div>
         </div>
-    </section>
+    </section> --}}
 
     <!-- Contact Section -->
-    <section id="contact" class="w-full py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
+    {{-- <section id="contact" class="w-full py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
                 <h2 class="text-3xl font-bold font-display mb-4">Get In Touch</h2>
@@ -817,9 +777,9 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> --}}
 
-    <!-- Footer -->
+    <!-- Pie de página -->
     <footer class="w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-12 pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -830,10 +790,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">ProAppointments</span>
+                        <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Gestor Médico</span>
                     </div>
                     <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        Simplifying appointment management for professionals worldwide since 2023.
+                        Simplificando la gestión de citas para profesionales en todo el mundo desde 2023.
                     </p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
@@ -855,40 +815,40 @@
                 </div>
                 
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Product</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Producto</h3>
                     <ul class="space-y-3">
-                        <li><a href="#features" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Features</a></li>
-                        <li><a href="#pricing" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Pricing</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Integrations</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Updates</a></li>
+                        <li><a href="#features" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Características</a></li>
+                        <li><a href="#pricing" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Precios</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Integraciones</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Actualizaciones</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Company</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Empresa</h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">About</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Acerca de</a></li>
                         <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Blog</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Careers</a></li>
-                        <li><a href="#contact" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contact</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Carreras</a></li>
+                        <li><a href="#contact" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contacto</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Resources</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Recursos</h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Help Center</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Documentation</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">API Reference</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Centro de Ayuda</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Documentación</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Referencia de API</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Política de Privacidad</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Términos de Servicio</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-500 dark:text-gray-400 text-sm">
-                    &copy; 2023 ProAppointments. All rights reserved.
+                    &copy; 2023 Gestor Médico. Todos los derechos reservados.
                 </p>
                 <div class="flex items-center mt-4 md:mt-0">
                     <button @click="toggleDarkMode" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400">
