@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use AymanAlhattami\FilamentPageWithSidebar\Traits\HasPageSidebar;
+use Illuminate\Database\Eloquent\Builder;
 
-class ListUsers extends ListRecords
+class AdminStaffList extends ListRecords
 {
     use HasPageSidebar;
 
@@ -17,14 +17,19 @@ class ListUsers extends ListRecords
 
     public function mount($record = null): void
     {
-        parent::mount($record);
+        parent::mount();
         $this->record = $record; // Inicializa la propiedad $record
     }
 
-    protected function getHeaderActions(): array
+    protected function getTableQuery(): Builder
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        return parent::getTableQuery()->whereHas('roles', function (Builder $query) {
+            $query->whereIn('name', [
+                'recepcionista',
+                'secretaria',
+                'asesor-comercial',
+                'contador'
+            ]);
+        });
     }
 }

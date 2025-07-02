@@ -25,7 +25,7 @@ class EditUser extends EditRecord
     {
         // Obtener el usuario que está siendo editado
         $user = $this->getRecord();
-        
+
         // Enviar notificación a la base de datos
         $user->notify(new UserUpdated($user));
 
@@ -34,11 +34,11 @@ class EditUser extends EditRecord
             ->title('Usuario actualizado')
             ->body('El usuario ha sido actualizado correctamente')
             ->sendToDatabase(Auth::user());
-            // ->persistent();
+        // ->persistent();
     }
 
     protected function afterSave(): void
     {
-        // La notificación ya se envía en getSavedNotification
+        $this->redirect(UserResource::getUrl('index')); // Redirige a la vista de tabla
     }
 }

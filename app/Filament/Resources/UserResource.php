@@ -10,6 +10,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use AymanAlhattami\FilamentPageWithSidebar\FilamentPageSidebar;
+use AymanAlhattami\FilamentPageWithSidebar\PageNavigationItem;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource implements HasShieldPermissions
 {
@@ -239,10 +242,78 @@ class UserResource extends Resource implements HasShieldPermissions
                                             ->required(fn(string $operation): bool => $operation === 'create')
                                             ->helperText('Dejar en blanco para mantener la contraseña actual'),
                                         Forms\Components\Select::make('roles')
-                                            ->relationship('roles', 'name')
+                                            ->label('Cargo')
+                                            ->required()
+                                            ->searchable()
                                             ->multiple()
+                                            ->relationship('roles', 'name')
+                                            ->options(function () {
+                                                // Mapeo de nombres bonitos
+                                                $prettyNames = [
+                                                    'odontologo-general' => 'Odontólogo General',
+                                                    'ortodoncista' => 'Ortodoncista',
+                                                    'endodoncista' => 'Endodoncista',
+                                                    'periodoncista' => 'Periodoncista',
+                                                    'cirujano-oral' => 'Cirujano Oral',
+                                                    'higienista-dental' => 'Higienista Dental',
+                                                    'auxiliar-odontologia' => 'Auxiliar de Odontología',
+                                                    'recepcionista' => 'Recepcionista',
+                                                    'secretaria' => 'Secretaria',
+                                                    'asesor-comercial' => 'Asesor Comercial',
+                                                    'contador' => 'Contador',
+                                                    'gerencia' => 'Gerencia',
+                                                    'coordinador-clinica' => 'Coordinador de Clínica',
+                                                ];
+
+                                                $categories = [
+                                                    'Personal Odontológico' => [
+                                                        'odontologo-general',
+                                                        'ortodoncista',
+                                                        'endodoncista',
+                                                        'periodoncista',
+                                                        'cirujano-oral',
+                                                        'higienista-dental',
+                                                        'auxiliar-odontologia',
+                                                    ],
+                                                    'Personal Administrativo' => [
+                                                        'recepcionista',
+                                                        'secretaria',
+                                                        'asesor-comercial',
+                                                        'contador',
+                                                    ],
+                                                    'Gerencia' => [
+                                                        'gerencia',
+                                                        'coordinador-clinica',
+                                                    ],
+                                                ];
+
+                                                $rolesByName = Role::all()->keyBy('name');
+                                                $groupedOptions = [];
+
+                                                foreach ($categories as $category => $roleNames) {
+                                                    foreach ($roleNames as $roleName) {
+                                                        if ($rolesByName->has($roleName)) {
+                                                            $role = $rolesByName->get($roleName);
+                                                            $label = $prettyNames[$roleName] ?? $role->name;
+                                                            $groupedOptions[$category][$role->id] = $label;
+                                                        }
+                                                    }
+                                                }
+
+                                                // Añadir roles no categorizados en "Otros"
+                                                $categorizedRoleNames = collect($categories)->flatten()->toArray();
+                                                $uncategorizedRoles = $rolesByName->whereNotIn('name', $categorizedRoleNames);
+                                                if ($uncategorizedRoles->isNotEmpty()) {
+                                                    foreach ($uncategorizedRoles as $role) {
+                                                        $groupedOptions['Otros'][$role->id] = $prettyNames[$role->name] ?? $role->name;
+                                                    }
+                                                }
+
+                                                return $groupedOptions;
+                                            })
+                                            ->native(false)
                                             ->preload()
-                                            ->searchable(),
+                                            ->allowHtml(),
                                     ]),
                             ]),
                     ])
@@ -286,7 +357,41 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->label('Roles')
                     ->badge()
                     ->color('success')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->formatStateUsing(function ($state, $record) {
+                        // Mapeo de nombres bonitos
+                        $prettyNames = [
+                            'odontologo-general' => 'Odontólogo General',
+                            'ortodoncista' => 'Ortodoncista',
+                            'endodoncista' => 'Endodoncista',
+                            'periodoncista' => 'Periodoncista',
+                            'cirujano-oral' => 'Cirujano Oral',
+                            'higienista-dental' => 'Higienista Dental',
+                            'auxiliar-odontologia' => 'Auxiliar de Odontología',
+                            'recepcionista' => 'Recepcionista',
+                            'secretaria' => 'Secretaria',
+                            'asesor-comercial' => 'Asesor Comercial',
+                            'contador' => 'Contador',
+                            'gerencia' => 'Gerencia',
+                            'coordinador-clinica' => 'Coordinador de Clínica',
+                        ];
+
+                        // $state puede ser string o array dependiendo de la relación
+                        $roles = $record->roles ?? [];
+                        if ($roles instanceof \Illuminate\Support\Collection) {
+                            $roles = $roles->pluck('name')->toArray();
+                        } elseif (is_object($roles)) {
+                            $roles = collect($roles)->pluck('name')->toArray();
+                        } elseif (!is_array($roles)) {
+                            $roles = [$roles];
+                        }
+
+                        $labels = [];
+                        foreach ($roles as $roleName) {
+                            $labels[] = $prettyNames[$roleName] ?? $roleName;
+                        }
+                        return implode(', ', $labels);
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y')
@@ -391,6 +496,44 @@ class UserResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'dental-staff' => Pages\DentalStaffList::route('/dental-staff'),
+            'admin-staff' => Pages\AdminStaffList::route('/admin-staff'),
+            'management' => Pages\ManagementList::route('/management'),
+            'other-roles' => Pages\OtherRolesList::route('/other-roles'),
+
         ];
+    }
+
+    // Modificamos el método sidebar para que no dependa de $record
+    public static function sidebar(): FilamentPageSidebar
+    {
+        return FilamentPageSidebar::make()
+            ->setTitle('Gestión de Personal')
+            ->setDescription('Administra todo el personal de la clínica odontológica')
+            ->setNavigationItems([
+                PageNavigationItem::make('Todos los Usuarios')
+                    ->url(static::getUrl('index'))
+                    ->icon('heroicon-o-users')
+                    ->isActiveWhen(fn() => request()->routeIs('filament.resources.users.index')),
+
+                PageNavigationItem::make('Personal Odontológico')
+                    ->url(static::getUrl('dental-staff'))
+                    ->icon('heroicon-o-user-circle')
+                    ->isActiveWhen(fn() => request()->routeIs('filament.resources.users.dental-staff')),
+
+                PageNavigationItem::make('Personal Administrativo')
+                    ->url(static::getUrl('admin-staff'))
+                    ->icon('heroicon-o-user')
+                    ->isActiveWhen(fn() => request()->routeIs('filament.resources.users.admin-staff')),
+
+                PageNavigationItem::make('Gerencia')
+                    ->url(static::getUrl('management'))
+                    ->icon('heroicon-o-briefcase')
+                    ->isActiveWhen(fn() => request()->routeIs('filament.resources.users.management')),
+                PageNavigationItem::make('Otros Roles')
+                    ->url(static::getUrl('other-roles'))
+                    ->icon('heroicon-o-plus-circle')
+                    ->isActiveWhen(fn() => request()->routeIs('filament.resources.users.other-roles')),
+            ]);
     }
 }
