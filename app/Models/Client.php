@@ -29,6 +29,9 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         'city',
         'country',
         'avatar_url',
+        'odontogram',
+        'dental_notes',
+        'last_dental_visit',
     ];
 
     protected $hidden = [
@@ -38,6 +41,8 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
 
     protected $casts = [
         'password' => 'hashed', // Cifra la contraseña automáticamente
+        'odontogram' => 'array',
+        'last_dental_visit' => 'date',
     ];
 
     public function canAccessPanel(Panel $panel): bool

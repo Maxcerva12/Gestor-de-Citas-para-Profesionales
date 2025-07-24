@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
+use App\Forms\Components\Odontogram;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -218,6 +219,33 @@ class ClientResource extends Resource
                                                 'attachFiles',
                                             ])
                                             ->helperText('Estas notas son solo visibles para los administradores'),
+                                    ]),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Odontograma')
+                            ->icon('heroicon-o-face-smile')
+                            ->schema([
+                                Forms\Components\Section::make('Información Dental')
+                                    ->description('Datos odontológicos del paciente')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\DatePicker::make('last_dental_visit')
+                                                    ->label('Última Visita Dental')
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false),
+                                                Forms\Components\Textarea::make('dental_notes')
+                                                    ->label('Notas Dentales')
+                                                    ->rows(3)
+                                                    ->helperText('Observaciones generales sobre el estado dental'),
+                                            ]),
+                                    ]),
+                                Forms\Components\Section::make('Odontograma Interactivo')
+                                    ->description('Haz clic en los dientes para actualizar su estado')
+                                    ->schema([
+                                        Odontogram::make('odontogram')
+                                            ->label('')
+                                            ->showPermanent(true)
+                                            ->showTemporary(true),
                                     ]),
                             ]),
                     ])
