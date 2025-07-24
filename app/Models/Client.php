@@ -29,6 +29,9 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         'city',
         'country',
         'avatar_url',
+        'active',
+        'custom_fields',
+        'notes',
         'odontogram',
         'dental_notes',
         'last_dental_visit',
@@ -41,6 +44,8 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
 
     protected $casts = [
         'password' => 'hashed', // Cifra la contraseña automáticamente
+        'active' => 'boolean',
+        'custom_fields' => 'array',
         'odontogram' => 'array',
         'last_dental_visit' => 'date',
     ];

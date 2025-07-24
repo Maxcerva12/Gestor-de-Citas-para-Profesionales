@@ -135,7 +135,8 @@ class ClientResource extends Resource
                                                     ->tel()
                                                     ->prefix('+57')
                                                     ->telRegex('/^[0-9\s\-\+\(\)]+$/')
-                                                    ->maxLength(20),
+                                                    ->maxLength(20)
+                                                    ->helperText('Formato: 3XX XXX XXXX'),
                                             ]),
                                     ]),
                                 Forms\Components\Section::make('Ubicación')
@@ -154,11 +155,12 @@ class ClientResource extends Resource
                                                 Forms\Components\Select::make('country')
                                                     ->label('País')
                                                     ->searchable()
+                                                    ->default('Colombia')
                                                     ->options([
+                                                        'Colombia' => 'Colombia',
                                                         'España' => 'España',
                                                         'Argentina' => 'Argentina',
                                                         'Chile' => 'Chile',
-                                                        'Colombia' => 'Colombia',
                                                         'Ecuador' => 'Ecuador',
                                                         'México' => 'México',
                                                         'Perú' => 'Perú',
@@ -199,13 +201,15 @@ class ClientResource extends Resource
                                         Forms\Components\Toggle::make('active')
                                             ->label('Cliente Activo')
                                             ->default(true)
-                                            ->helperText('Desactive para bloquear el acceso del cliente'),
+                                            ->inline(false)
+                                            ->helperText('Desactive para desactivar el acceso del cliente al sistema'),
                                         Forms\Components\KeyValue::make('custom_fields')
                                             ->label('Campos Personalizados')
                                             ->keyLabel('Campo')
                                             ->valueLabel('Valor')
                                             ->addButtonLabel('Añadir campo')
-                                            ->reorderable(),
+                                            ->reorderable()
+                                            ->helperText('Campos adicionales específicos para este cliente'),
                                     ]),
                             ]),
                         Forms\Components\Tabs\Tab::make('Notas')
@@ -294,6 +298,12 @@ class ClientResource extends Resource
                     ->label('Estado')
                     ->boolean()
                     ->sortable()
+                    ->toggleable(),
+                Tables\Columns\IconColumn::make('has_odontogram')
+                    ->label('Odontograma')
+                    ->icon(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'heroicon-o-face-smile' : 'heroicon-o-face-frown')
+                    ->color(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'success' : 'gray')
+                    ->tooltip(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'Tiene odontograma registrado' : 'Sin odontograma')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Registro')

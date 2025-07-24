@@ -107,10 +107,10 @@ class ViewClient extends ViewRecord
                             ->schema([
                                 Components\Section::make()
                                     ->schema([
-                                        Components\TextEntry::make('notes')
+                                        Components\ViewEntry::make('notes')
                                             ->label('Notas Internas')
-                                            ->html()
-                                            ->placeholder('No hay notas registradas'),
+                                            ->view('infolists.components.rich-text-display')
+                                            ->state(fn($record) => $record->notes),
                                     ]),
                             ]),
                         Components\Tabs\Tab::make('Odontograma')
