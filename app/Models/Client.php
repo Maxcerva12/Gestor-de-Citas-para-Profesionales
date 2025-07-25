@@ -77,4 +77,9 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         }
         return null;
     }
+
+    public function getHasOdontogramAttribute(): bool
+    {
+        return $this->odontogram && !empty($this->odontogram);
+    }
 }

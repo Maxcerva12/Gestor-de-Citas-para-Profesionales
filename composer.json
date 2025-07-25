@@ -9,6 +9,7 @@
         "php": "^8.2",
         "aymanalhattami/filament-page-with-sidebar": "^2.6",
         "bezhansalleh/filament-shield": "^3.3",
+        "blade-ui-kit/blade-heroicons": "^2.6",
         "diogogpinto/filament-auth-ui-enhancer": "*",
         "filament/filament": "^3.3",
         "filament/notifications": "^3.3",

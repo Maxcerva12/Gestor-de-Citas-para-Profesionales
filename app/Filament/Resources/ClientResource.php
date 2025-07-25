@@ -301,9 +301,12 @@ class ClientResource extends Resource
                     ->toggleable(),
                 Tables\Columns\IconColumn::make('has_odontogram')
                     ->label('Odontograma')
-                    ->icon(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'heroicon-o-face-smile' : 'heroicon-o-face-frown')
-                    ->color(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'success' : 'gray')
-                    ->tooltip(fn($record) => $record->odontogram && !empty($record->odontogram) ? 'Tiene odontograma registrado' : 'Sin odontograma')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-face-smile')
+                    ->falseIcon('heroicon-o-face-frown')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->tooltip(fn($record) => $record->has_odontogram ? 'Tiene odontograma registrado' : 'Sin odontograma')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Registro')
