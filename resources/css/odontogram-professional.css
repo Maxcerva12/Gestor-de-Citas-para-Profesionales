@@ -1,0 +1,1101 @@
+/* Professional Odontogram CSS - Ultra Modern Design */
+:root {
+    /* Primary Color Palette - Medical Blue */
+    --odont-primary: #0066cc;
+    --odont-primary-light: #3389db;
+    --odont-primary-dark: #004499;
+    --odont-primary-alpha: rgba(0, 102, 204, 0.1);
+    
+    /* Secondary Colors */
+    --odont-secondary: #6366f1;
+    --odont-success: #10b981;
+    --odont-warning: #f59e0b;
+    --odont-danger: #ef4444;
+    --odont-info: #3b82f6;
+    
+    /* Neutral Colors */
+    --odont-white: #ffffff;
+    --odont-gray-50: #f9fafb;
+    --odont-gray-100: #f3f4f6;
+    --odont-gray-200: #e5e7eb;
+    --odont-gray-300: #d1d5db;
+    --odont-gray-400: #9ca3af;
+    --odont-gray-500: #6b7280;
+    --odont-gray-600: #4b5563;
+    --odont-gray-700: #374151;
+    --odont-gray-800: #1f2937;
+    --odont-gray-900: #111827;
+    
+    /* Glass Effects */
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Typography */
+    --font-xs: 0.75rem;
+    --font-sm: 0.875rem;
+    --font-base: 1rem;
+    --font-lg: 1.125rem;
+    --font-xl: 1.25rem;
+    --font-2xl: 1.5rem;
+    --font-3xl: 1.875rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    
+    /* Borders */
+    --border-radius-sm: 0.375rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --border-radius-2xl: 1.5rem;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.25s ease-in-out;
+    --transition-slow: 0.35s ease-in-out;
+}
+
+/* Base Professional Container */
+.professional-odontogram {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--odont-gray-50) 0%, var(--odont-white) 100%);
+    border-radius: var(--border-radius-2xl);
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.professional-odontogram::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--odont-primary), var(--odont-secondary), var(--odont-success));
+    border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+}
+
+/* Elegant Header with Glass Effect */
+.odontogram-header-professional {
+    position: relative;
+    margin-bottom: var(--spacing-2xl);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+}
+
+.header-glass-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 102, 204, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+    pointer-events: none;
+}
+
+.header-content-professional {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.header-icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, var(--odont-primary), var(--odont-primary-light));
+    border-radius: var(--border-radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.header-icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--odont-white);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.header-title {
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0;
+    background: linear-gradient(135deg, var(--odont-gray-900), var(--odont-gray-700));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-subtitle {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-600);
+    margin: 0;
+}
+
+.header-actions-professional {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+/* Professional Buttons */
+.btn-professional {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    font-weight: 600;
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-slow);
+}
+
+.btn-professional:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--odont-primary), var(--odont-primary-light));
+    color: var(--odont-white);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+    background: var(--odont-white);
+    color: var(--odont-gray-700);
+    border: 1px solid var(--odont-gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+    background: var(--odont-gray-50);
+    border-color: var(--odont-gray-400);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--odont-danger), #dc2626);
+    color: var(--odont-white);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.btn-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Professional Type Selector */
+.odontogram-types-professional {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.types-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.types-title {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0 0 var(--spacing-sm);
+}
+
+.types-description {
+    font-size: var(--font-base);
+    color: var(--odont-gray-600);
+    margin: 0;
+}
+
+.types-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.type-card-professional {
+    background: var(--odont-white);
+    border: 2px solid var(--odont-gray-200);
+    border-radius: var(--border-radius-xl);
+    padding: var(--spacing-xl);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.type-card-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--odont-primary), var(--odont-secondary));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition-normal);
+}
+
+.type-card-professional:hover::before,
+.type-card-professional.active::before {
+    transform: scaleX(1);
+}
+
+.type-card-professional:hover {
+    border-color: var(--odont-primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+.type-card-professional.active {
+    border-color: var(--odont-primary);
+    background: linear-gradient(135deg, var(--odont-primary-alpha), rgba(99, 102, 241, 0.05));
+    box-shadow: var(--shadow-lg);
+}
+
+.type-card-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--odont-primary), var(--odont-primary-light));
+    border-radius: var(--border-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.type-card-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--odont-white);
+}
+
+.type-card-content {
+    margin-bottom: var(--spacing-lg);
+}
+
+.type-card-title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0 0 var(--spacing-sm);
+}
+
+.type-card-description {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-600);
+    margin: 0 0 var(--spacing-sm);
+}
+
+.type-card-detail {
+    font-size: var(--font-xs);
+    color: var(--odont-gray-500);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.type-card-indicator {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--odont-gray-300);
+    transition: all var(--transition-normal);
+}
+
+.type-card-professional.active .type-card-indicator {
+    background: var(--odont-primary);
+    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.2);
+}
+
+/* Professional Legend */
+.legend-professional {
+    margin-bottom: var(--spacing-2xl);
+    background: var(--odont-white);
+    border: 1px solid var(--odont-gray-200);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.legend-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--odont-gray-50), var(--odont-white));
+    border-bottom: 1px solid var(--odont-gray-200);
+}
+
+.legend-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.legend-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--odont-primary);
+}
+
+.legend-description {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-600);
+    margin: 0;
+}
+
+.legend-grid-professional {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
+}
+
+.legend-item-professional {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border: 1px solid var(--odont-gray-200);
+    border-radius: var(--border-radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.legend-item-professional:hover {
+    border-color: var(--odont-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.legend-item-professional.active {
+    border-color: var(--odont-primary);
+    background: var(--odont-primary-alpha);
+    box-shadow: var(--shadow-md);
+}
+
+.legend-icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid;
+    border-radius: var(--border-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.legend-status-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--odont-white);
+    font-size: var(--font-xs);
+    font-weight: 700;
+}
+
+.legend-content {
+    flex: 1;
+}
+
+.legend-item-title {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--odont-gray-900);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.legend-item-description {
+    font-size: var(--font-xs);
+    color: var(--odont-gray-600);
+    margin: 0;
+}
+
+.legend-item-indicator {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--odont-gray-300);
+    transition: all var(--transition-normal);
+}
+
+.legend-item-professional.active .legend-item-indicator {
+    background: var(--odont-primary);
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* Professional Odontogram Grid */
+.odontogram-grid-professional {
+    background: var(--odont-white);
+    border: 1px solid var(--odont-gray-200);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.grid-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--odont-gray-50), var(--odont-white));
+    border-bottom: 1px solid var(--odont-gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.grid-title {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0;
+}
+
+.grid-subtitle {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-600);
+    font-weight: 500;
+    margin-left: var(--spacing-sm);
+}
+
+.grid-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.grid-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--odont-primary);
+}
+
+.stat-label {
+    font-size: var(--font-xs);
+    color: var(--odont-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Professional Teeth Grid */
+.teeth-grid-professional {
+    padding: var(--spacing-xl);
+}
+
+.jaw-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.jaw-section:last-child {
+    margin-bottom: 0;
+}
+
+.jaw-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--odont-gray-200);
+}
+
+.jaw-title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--odont-gray-900);
+    margin: 0;
+}
+
+.jaw-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.jaw-control-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--odont-gray-300);
+    background: var(--odont-white);
+    color: var(--odont-gray-700);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-xs);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.jaw-control-btn:hover {
+    border-color: var(--odont-primary);
+    color: var(--odont-primary);
+}
+
+.teeth-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: var(--spacing-md);
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Professional Tooth Design */
+.tooth-professional {
+    background: var(--odont-white);
+    border: 2px solid var(--odont-gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.tooth-professional:hover {
+    border-color: var(--odont-primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.tooth-professional.has-selections {
+    border-color: var(--odont-primary);
+    background-color: var(--odont-primary-alpha);
+}
+
+.tooth-number-professional {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--odont-gray-700);
+    margin-bottom: var(--spacing-xs);
+    text-align: center;
+}
+
+.tooth-faces-professional {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 2px;
+    width: 100%;
+    max-width: 60px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.tooth-face {
+    width: 100%;
+    height: 16px;
+    border: 1px solid var(--odont-gray-300);
+    border-radius: var(--border-radius-sm);
+    background: var(--odont-gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.tooth-face:hover {
+    border-color: var(--odont-primary);
+    transform: scale(1.05);
+}
+
+.tooth-face.selected {
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+.oclusal-face {
+    grid-column: 1 / -1;
+    grid-row: 1;
+}
+
+.vestibular-face {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.central-face {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.lingual-face {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.mesial-face {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.face-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--odont-gray-600);
+    pointer-events: none;
+}
+
+.tooth-type-indicator {
+    font-size: var(--font-xs);
+    color: var(--odont-gray-500);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Professional Face Tooltip */
+.face-tooltip-professional {
+    position: fixed;
+    z-index: 1000;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--odont-gray-900);
+    color: var(--odont-white);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-sm);
+    box-shadow: var(--shadow-xl);
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-100%);
+    margin-top: -8px;
+}
+
+.face-tooltip-professional::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--odont-gray-900);
+}
+
+.tooltip-content {
+    text-align: center;
+}
+
+.tooltip-title {
+    font-weight: 700;
+    margin: 0 0 var(--spacing-xs);
+}
+
+.tooltip-description {
+    font-size: var(--font-xs);
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Professional Summary Panel */
+.summary-panel-professional {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: var(--odont-white);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-xl);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.summary-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: linear-gradient(135deg, var(--odont-primary), var(--odont-primary-light));
+    color: var(--odont-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-summary-btn {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--odont-white);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.close-summary-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.close-summary-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.summary-content {
+    padding: var(--spacing-xl);
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.stat-card {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: var(--odont-gray-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--odont-gray-200);
+}
+
+.stat-number {
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    color: var(--odont-primary);
+    display: block;
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-label {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-600);
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .professional-odontogram {
+        padding: var(--spacing-lg);
+    }
+    
+    .header-content-professional {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+        text-align: center;
+    }
+    
+    .types-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .legend-grid-professional {
+        grid-template-columns: 1fr;
+    }
+    
+    .teeth-row {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: var(--spacing-sm);
+    }
+    
+    .tooth-professional {
+        min-height: 100px;
+        padding: var(--spacing-xs);
+    }
+    
+    .tooth-faces-professional {
+        max-width: 50px;
+    }
+    
+    .tooth-face {
+        height: 14px;
+    }
+    
+    .grid-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation Classes */
+.animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Print Styles */
+@media print {
+    .professional-odontogram {
+        box-shadow: none;
+        border: 1px solid var(--odont-gray-300);
+    }
+    
+    .header-actions-professional,
+    .jaw-controls,
+    .btn-professional {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   READONLY MODE SPECIFIC STYLES
+   ============================================ */
+
+.professional-odontogram.readonly-mode {
+    /* Indica que es de solo lectura con un estilo más sutil */
+    background: linear-gradient(135deg, var(--odont-gray-50) 0%, var(--odont-white) 100%);
+    border: 2px solid var(--odont-gray-200);
+}
+
+.readonly-mode .header-subtitle::after {
+    content: " (Solo Lectura)";
+    color: var(--odont-warning);
+    font-weight: 600;
+}
+
+.readonly-mode .types-description {
+    color: var(--odont-gray-500);
+    font-style: italic;
+}
+
+.readonly-mode .legend-description {
+    color: var(--odont-gray-500);
+    font-style: italic;
+}
+
+/* Estilos para dientes en modo readonly */
+.tooth-professional.readonly {
+    cursor: default;
+    position: relative;
+}
+
+.tooth-professional.readonly::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px dashed var(--odont-gray-300);
+    border-radius: 8px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.tooth-face.readonly {
+    cursor: default;
+    position: relative;
+}
+
+.tooth-face.readonly:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tooth-face.readonly .face-label {
+    pointer-events: none;
+}
+
+/* Controles de solo lectura */
+.jaw-info {
+    font-size: var(--font-sm);
+    color: var(--odont-gray-500);
+    font-style: italic;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--odont-gray-100);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Tooltip mejorado para readonly */
+.readonly-mode .face-tooltip-professional {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    border: none;
+}
+
+.readonly-mode .tooltip-status {
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+    color: var(--odont-primary-light);
+}
+
+/* Ajustes en la leyenda para readonly */
+.readonly-mode .legend-item-professional {
+    cursor: default;
+    opacity: 0.9;
+}
+
+.readonly-mode .legend-item-professional:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Cards de tipo para readonly */
+.readonly-mode .type-card-professional {
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.readonly-mode .type-card-professional:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.15);
+}
+
+/* Botones específicos para readonly */
+.readonly-mode .btn-professional.btn-secondary,
+.readonly-mode .btn-professional.btn-primary {
+    display: inline-flex !important;
+}
+
+.readonly-mode .btn-professional.btn-danger {
+    display: none !important;
+}
+
+/* Estadísticas en readonly */
+.readonly-mode .stat-label {
+    color: var(--odont-gray-600);
+}
+
+.readonly-mode .stat-number {
+    color: var(--odont-primary);
+}
+
+/* Indicador visual de modo readonly */
+.readonly-mode::before {
+    content: "SOLO LECTURA";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--odont-warning);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 1000;
+    opacity: 0.8;
+}
