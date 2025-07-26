@@ -16,7 +16,7 @@
         </style>
 
         @filamentStyles
-        @vite('resources/css/app.css')
+        @vite(['resources/css/app.css', 'resources/css/odontogram-professional.css'])
     </head>
 
     <body class="antialiased">
