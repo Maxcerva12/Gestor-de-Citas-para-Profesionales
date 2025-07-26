@@ -619,7 +619,10 @@
     margin: 0 auto;
 }
 
-/* Professional Tooth Design */
+/* ============================================
+   DISEÑO CIRCULAR PROFESIONAL PARA DIENTES
+   ============================================ */
+
 .tooth-professional {
     background: var(--odont-white);
     border: 2px solid var(--odont-gray-200);
@@ -628,7 +631,7 @@
     cursor: pointer;
     transition: all var(--transition-normal);
     position: relative;
-    min-height: 120px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -648,71 +651,231 @@
 }
 
 .tooth-number-professional {
-    font-size: var(--font-xs);
+    font-size: var(--font-sm);
     font-weight: 700;
     color: var(--odont-gray-700);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
     text-align: center;
 }
 
+/* Contenedor circular para las caras del diente */
 .tooth-faces-professional {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 2px;
-    width: 100%;
-    max-width: 60px;
-    margin-bottom: var(--spacing-xs);
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-sm);
 }
 
-.tooth-face {
+/* Diseño circular base */
+.tooth-circle {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 16px;
-    border: 1px solid var(--odont-gray-300);
-    border-radius: var(--border-radius-sm);
-    background: var(--odont-gray-100);
+    height: 100%;
+    border: 3px solid var(--odont-gray-300);
+    border-radius: 50%;
+    background: var(--odont-gray-50);
+    transition: all var(--transition-fast);
+}
+
+.tooth-professional:hover .tooth-circle {
+    border-color: var(--odont-primary);
+}
+
+/* Cara Oclusal (Centro) */
+.tooth-face.oclusal-face {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--odont-gray-400);
+    border-radius: 50%;
+    background: var(--odont-white);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all var(--transition-fast);
-    position: relative;
-    overflow: hidden;
+    z-index: 10;
 }
 
+/* Cara Vestibular (Arriba) */
+.tooth-face.vestibular-face {
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 25px;
+    border: 2px solid var(--odont-gray-400);
+    border-radius: 15px 15px 8px 8px;
+    background: var(--odont-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 5;
+}
+
+/* Cara Lingual (Abajo) */
+.tooth-face.lingual-face {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 25px;
+    border: 2px solid var(--odont-gray-400);
+    border-radius: 8px 8px 15px 15px;
+    background: var(--odont-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 5;
+}
+
+/* Cara Mesial (Derecha) */
+.tooth-face.mesial-face {
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 25px;
+    height: 30px;
+    border: 2px solid var(--odont-gray-400);
+    border-radius: 8px 15px 15px 8px;
+    background: var(--odont-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 5;
+}
+
+/* Cara Central/Distal (Izquierda) */
+.tooth-face.central-face {
+    position: absolute;
+    left: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 25px;
+    height: 30px;
+    border: 2px solid var(--odont-gray-400);
+    border-radius: 15px 8px 8px 15px;
+    background: var(--odont-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 5;
+}
+
+/* Estados de hover para las caras */
 .tooth-face:hover {
     border-color: var(--odont-primary);
     transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+    z-index: 15;
+}
+
+.tooth-face.oclusal-face:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.tooth-face.vestibular-face:hover {
+    transform: translateX(-50%) translateY(-2px) scale(1.05);
+}
+
+.tooth-face.lingual-face:hover {
+    transform: translateX(-50%) translateY(2px) scale(1.05);
+}
+
+.tooth-face.mesial-face:hover {
+    transform: translateY(-50%) translateX(2px) scale(1.05);
+}
+
+.tooth-face.central-face:hover {
+    transform: translateY(-50%) translateX(-2px) scale(1.05);
+}
+
+/* Estados seleccionados */
+.tooth-face.selected {
+    border-width: 3px;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2), 0 2px 8px rgba(0, 102, 204, 0.3);
+    z-index: 12;
+}
+
+/* Etiquetas de las caras */
+.face-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--odont-gray-600);
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.tooth-type-indicator {
+    font-size: var(--font-xs);
+    color: var(--odont-gray-500);
+    text-align: center;
+    font-weight: 500;
+    margin-top: var(--spacing-xs);
+}
+
+/* Responsive Design para el diseño circular */
+@media (max-width: 768px) {
+    .tooth-professional {
+        min-height: 120px;
+        padding: var(--spacing-xs);
+    }
+    
+    .tooth-faces-professional {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .tooth-face.oclusal-face {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .tooth-face.vestibular-face,
+    .tooth-face.lingual-face {
+        width: 26px;
+        height: 20px;
+    }
+    
+    .tooth-face.mesial-face,
+    .tooth-face.central-face {
+        width: 20px;
+        height: 26px;
+    }
+    
+    .face-label {
+        font-size: 8px;
+    }
+}
+
+/* Animaciones mejoradas */
+@keyframes pulseSelection {
+    0%, 100% {
+        box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.4);
+    }
 }
 
 .tooth-face.selected {
-    border-width: 2px;
-    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
-}
-
-.oclusal-face {
-    grid-column: 1 / -1;
-    grid-row: 1;
-}
-
-.vestibular-face {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-.central-face {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-.lingual-face {
-    grid-column: 1;
-    grid-row: 3;
-}
-
-.mesial-face {
-    grid-column: 2;
-    grid-row: 3;
+    animation: pulseSelection 2s infinite;
 }
 
 .face-label {
@@ -1159,4 +1322,3 @@
     color: #374151;
     font-weight: 500;
 }
-
