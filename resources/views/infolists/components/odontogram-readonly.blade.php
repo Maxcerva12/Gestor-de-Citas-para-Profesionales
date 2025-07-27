@@ -1,289 +1,530 @@
-<div class="odontogram-container">
-    @php
-        $record = $getState(); // Obtener el record desde el state
-        $odontogramData = $record->odontogram ?? ['permanent' => [], 'temporary' => []];
+@php
+    $record = $getState(); // Obtener el record desde el state
+    $odontogramData = $record->odontogram ?? ['permanent' => [], 'temporal' => []];
 
-        $toothStatuses = [
-            'healthy' => ['label' => 'Sano', 'color' => '#10B981'],
-            'cavity' => ['label' => 'Caries', 'color' => '#EF4444'],
-            'treated' => ['label' => 'Tratado', 'color' => '#3B82F6'],
-            'missing' => ['label' => 'Ausente', 'color' => '#6B7280'],
-            'implant' => ['label' => 'Implante', 'color' => '#8B5CF6'],
-            'crown' => ['label' => 'Corona', 'color' => '#F59E0B'],
-            'root_canal' => ['label' => 'Endodoncia', 'color' => '#EC4899'],
-        ];
-    @endphp
+    $toothStatuses = [
+        'healthy' => ['label' => 'Sano', 'color' => '#10B981', 'icon' => '✓'],
+        'cavity' => ['label' => 'Caries', 'color' => '#EF4444', 'icon' => '●'],
+        'treated' => ['label' => 'Tratado', 'color' => '#3B82F6', 'icon' => '■'],
+        'missing' => ['label' => 'Ausente', 'color' => '#6B7280', 'icon' => '✗'],
+        'implant' => ['label' => 'Implante', 'color' => '#8B5CF6', 'icon' => '◆'],
+        'crown' => ['label' => 'Corona', 'color' => '#F59E0B', 'icon' => '♦'],
+        'root_canal' => ['label' => 'Endodoncia', 'color' => '#EC4899', 'icon' => '◊'],
+        'fracture' => ['label' => 'Fractura', 'color' => '#DC2626', 'icon' => '⚡'],
+        'bridge' => ['label' => 'Puente', 'color' => '#059669', 'icon' => '⌒'],
+    ];
 
-    <!-- Header -->
-    <div class="odontogram-header">
-        <h3 class="odontogram-title">Odontograma Digital Profesional</h3>
-        <p class="odontogram-subtitle">Sistema de notación FDI - Haz clic en los dientes para cambiar su estado</p>
+    // Determinar qué tipo de dentición mostrar basado en los datos
+    $showPermanent = !empty($odontogramData['permanent']);
+    $showTemporary = !empty($odontogramData['temporal']);
+    $defaultView = $showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent');
+@endphp
 
-        <div class="odontogram-controls">
-            <button type="button"
-                    class="odontogram-btn"
-                    onclick="exportOdontogramData()">
-                📋 Exportar JSON
+<!-- Carga directa del CSS desde la carpeta pública -->
+<link rel="stylesheet" href="{{ asset('css/odontogram-professional.css') }}">
+
+<div 
+    x-data="readonlyOdontogramComponent()"
+    x-init="init()"
+    class="professional-odontogram readonly-mode">
+
+    <!-- Elegant Header with Glass Effect -->
+    <div class="odontogram-header-professional">
+        <div class="header-glass-overlay"></div>
+        <div class="header-content-professional">
+            <div class="header-left">
+                <div class="header-icon-wrapper">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h2 class="header-title">Odontograma Digital - {{ $record->name }}</h2>
+                    <p class="header-subtitle">Sistema FDI • Vista de solo lectura • Registro profesional</p>
+                </div>
+            </div>
+            <div class="header-actions-professional">
+                <button type="button" class="btn-professional btn-secondary" x-on:click="showSummary = !showSummary">
+                    <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                    </svg>
+                    <span>Resumen</span>
+                </button>
+                <button type="button" class="btn-professional btn-primary" x-on:click="exportOdontogramData()">
+                    <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/>
+                    </svg>
+                    <span>Exportar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Type Selector (Readonly) -->
+    <div class="odontogram-types-professional">
+        <div class="types-header">
+            <h3 class="types-title">Tipos de Odontograma Registrados</h3>
+            <p class="types-description">Información dental disponible para {{ $record->name }}</p>
+        </div>
+        <div class="types-cards-grid">
+            @if($showPermanent)
+                <div class="type-card-professional" 
+                     :class="{ 'active': selectedType === 'permanent' }"
+                     x-on:click="changeType('permanent')">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Dentición Permanente</h4>
+                        <p class="type-card-description">32 dientes • Registros disponibles</p>
+                        <div class="type-card-detail">Numeración FDI: 11-48</div>
+                    </div>
+                    <div class="type-card-indicator"></div>
+                </div>
+            @endif
+
+            @if($showTemporary)
+                <div class="type-card-professional" 
+                     :class="{ 'active': selectedType === 'temporal' }"
+                     x-on:click="changeType('temporal')">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Dentición Temporal</h4>
+                        <p class="type-card-description">20 dientes • Registros disponibles</p>
+                        <div class="type-card-detail">Numeración FDI: 51-85</div>
+                    </div>
+                    <div class="type-card-indicator"></div>
+                </div>
+            @endif
+
+            @if(!$showPermanent && !$showTemporary)
+                <div class="type-card-professional">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Sin Registros</h4>
+                        <p class="type-card-description">No hay información dental registrada</p>
+                        <div class="type-card-detail">Crear un registro para comenzar</div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Professional Legend -->
+    <div class="legend-professional">
+        <div class="legend-header">
+            <h3 class="legend-title">
+                <svg class="legend-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Estados Dentales
+            </h3>
+            <p class="legend-description">Leyenda de estados registrados en el odontograma</p>
+        </div>
+        
+        <div class="legend-grid-professional">
+            @foreach ($toothStatuses as $status => $config)
+                <div class="legend-item-professional">
+                    <div class="legend-icon-wrapper" 
+                         style="background-color: {{ $config['color'] }}15; border-color: {{ $config['color'] }};">
+                        <div class="legend-status-icon" 
+                             style="background-color: {{ $config['color'] }};">
+                            {{ $config['icon'] ?? '' }}
+                        </div>
+                    </div>
+                    <div class="legend-content">
+                        <h4 class="legend-item-title">{{ $config['label'] }}</h4>
+                        <p class="legend-item-description">Estado registrado en el odontograma</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Professional Odontogram Grid -->
+    <div class="odontogram-grid-professional">
+        <div class="grid-header">
+            <h3 class="grid-title">
+                <span x-text="getGridTitle()"></span>
+                <span class="grid-subtitle" x-text="getGridSubtitle()"></span>
+            </h3>
+            <div class="grid-controls">
+                <div class="grid-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" x-text="getTotalTeeth()"></span>
+                        <span class="stat-label">Dientes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" x-text="getAffectedFacesCount()"></span>
+                        <span class="stat-label">Caras con Estado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Teeth Grid -->
+        <div class="teeth-grid-professional">
+            <!-- Upper Jaw -->
+            <div class="jaw-section upper-jaw">
+                <div class="jaw-header">
+                    <h4 class="jaw-title">Maxilar Superior</h4>
+                    <div class="jaw-info">
+                        <span class="jaw-control-btn readonly">Solo lectura</span>
+                    </div>
+                </div>
+                <div class="teeth-row">
+                    <template x-for="tooth in getTeethForView('upper')" :key="tooth.number">
+                        <div class="tooth-professional readonly" 
+                             :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                            
+                            <!-- Número del diente -->
+                            <div class="tooth-number-professional" x-text="tooth.number"></div>
+                            
+                            <!-- Diseño circular con 5 caras -->
+                            <div class="tooth-faces-professional">
+                                <!-- Círculo base -->
+                                <div class="tooth-circle"></div>
+                                
+                                <!-- Cara Oclusal (Centro) -->
+                                <div class="tooth-face oclusal-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'oclusal')"
+                                     :style="getFaceStyle(tooth.number, 'oclusal')"
+                                     x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">O</span>
+                                </div>
+                                
+                                <!-- Cara Vestibular (Arriba) -->
+                                <div class="tooth-face vestibular-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'vestibular')"
+                                     :style="getFaceStyle(tooth.number, 'vestibular')"
+                                     x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">V</span>
+                                </div>
+                                
+                                <!-- Cara Lingual (Abajo) -->
+                                <div class="tooth-face lingual-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'lingual')"
+                                     :style="getFaceStyle(tooth.number, 'lingual')"
+                                     x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">L</span>
+                                </div>
+                                
+                                <!-- Cara Mesial (Derecha) -->
+                                <div class="tooth-face mesial-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'mesial')"
+                                     :style="getFaceStyle(tooth.number, 'mesial')"
+                                     x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">M</span>
+                                </div>
+                                
+                                <!-- Cara Central/Distal (Izquierda) -->
+                                <div class="tooth-face central-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'central')"
+                                     :style="getFaceStyle(tooth.number, 'central')"
+                                     x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">C</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Indicador del tipo de diente -->
+                            <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Lower Jaw -->
+            <div class="jaw-section lower-jaw">
+                <div class="jaw-header">
+                    <h4 class="jaw-title">Maxilar Inferior</h4>
+                    <div class="jaw-info">
+                        <span class="jaw-control-btn readonly">Solo lectura</span>
+                    </div>
+                </div>
+                <div class="teeth-row">
+                    <template x-for="tooth in getTeethForView('lower')" :key="tooth.number">
+                        <div class="tooth-professional readonly" 
+                             :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                            
+                            <!-- Número del diente -->
+                            <div class="tooth-number-professional" x-text="tooth.number"></div>
+                            
+                            <!-- Diseño circular con 5 caras -->
+                            <div class="tooth-faces-professional">
+                                <!-- Círculo base -->
+                                <div class="tooth-circle"></div>
+                                
+                                <!-- Cara Oclusal (Centro) -->
+                                <div class="tooth-face oclusal-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'oclusal')"
+                                     :style="getFaceStyle(tooth.number, 'oclusal')"
+                                     x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">O</span>
+                                </div>
+                                
+                                <!-- Cara Vestibular (Arriba) -->
+                                <div class="tooth-face vestibular-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'vestibular')"
+                                     :style="getFaceStyle(tooth.number, 'vestibular')"
+                                     x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">V</span>
+                                </div>
+                                
+                                <!-- Cara Lingual (Abajo) -->
+                                <div class="tooth-face lingual-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'lingual')"
+                                     :style="getFaceStyle(tooth.number, 'lingual')"
+                                     x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">L</span>
+                                </div>
+                                
+                                <!-- Cara Mesial (Derecha) -->
+                                <div class="tooth-face mesial-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'mesial')"
+                                     :style="getFaceStyle(tooth.number, 'mesial')"
+                                     x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">M</span>
+                                </div>
+                                
+                                <!-- Cara Central/Distal (Izquierda) -->
+                                <div class="tooth-face central-face readonly" 
+                                     :class="getFaceClass(tooth.number, 'central')"
+                                     :style="getFaceStyle(tooth.number, 'central')"
+                                     x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                     x-on:mouseout="hideFaceTooltip()">
+                                    <span class="face-label">C</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Indicador del tipo de diente -->
+                            <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Face Tooltip -->
+    <div class="face-tooltip-professional" 
+         x-show="showTooltip" 
+         x-transition
+         :style="tooltipStyle">
+        <div class="tooltip-content">
+            <h5 class="tooltip-title" x-text="tooltipTitle"></h5>
+            <p class="tooltip-description" x-text="tooltipDescription"></p>
+            <div class="tooltip-status" x-show="tooltipStatus" x-text="tooltipStatus"></div>
+        </div>
+    </div>
+
+    <!-- Professional Summary Panel -->
+    <div class="summary-panel-professional" x-show="showSummary" x-transition>
+        <div class="summary-header">
+            <h3 class="summary-title">Resumen del Odontograma - {{ $record->name }}</h3>
+            <button type="button" class="close-summary-btn" x-on:click="showSummary = false">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                </svg>
             </button>
         </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="odontogram-legend">
-        <h4 class="legend-title">Leyenda de Estados Dentales</h4>
-        <div class="legend-grid">
-            @foreach($toothStatuses as $status => $config)
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: {{ $config['color'] }}"></div>
-                    <span class="legend-label">{{ $config['label'] }}</span>
+        <div class="summary-content">
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-number" x-text="getTotalTeeth()"></div>
+                    <div class="stat-label">Total Dientes</div>
                 </div>
-            @endforeach
-        </div>
-    </div>
-
-    <!-- Permanent Teeth Section -->
-    <div class="dentition-section">
-        <div class="dentition-header">
-            <h4 class="dentition-title">Dentición Permanente (32 dientes)</h4>
-            <span class="dentition-info">Sistema FDI</span>
-        </div>
-
-        <div class="odontogram-chart">
-            <svg class="odontogram-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
-                <!-- Upper jaw -->
-                <g class="upper-jaw">
-                    <!-- Quadrant 1 (Upper Right) -->
-                    <g class="quadrant-1" transform="translate(300, 55)">
-                        <text x="175" y="-15" text-anchor="middle" class="quadrant-label">Cuadrante 1</text>
-                        @for ($i = 11; $i <= 18; $i++)
-                            @php
-                                $toothData = $odontogramData['permanent'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ ($i - 11) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="40" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-
-                    <!-- Quadrant 2 (Upper Left) -->
-                    <g class="quadrant-2" transform="translate(300, 55)">
-                        <text x="-175" y="-15" text-anchor="middle" class="quadrant-label">Cuadrante 2</text>
-                        @for ($i = 21; $i <= 28; $i++)
-                            @php
-                                $toothData = $odontogramData['permanent'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ -($i - 21 + 1) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="40" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-                </g>
-
-                <!-- Lower jaw -->
-                <g class="lower-jaw">
-                    <!-- Quadrant 3 (Lower Left) -->
-                    <g class="quadrant-3" transform="translate(300, 195)">
-                        <text x="-175" y="45" text-anchor="middle" class="quadrant-label">Cuadrante 3</text>
-                        @for ($i = 31; $i <= 38; $i++)
-                            @php
-                                $toothData = $odontogramData['permanent'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ -($i - 31 + 1) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="-10" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-
-                    <!-- Quadrant 4 (Lower Right) -->
-                    <g class="quadrant-4" transform="translate(300, 195)">
-                        <text x="175" y="45" text-anchor="middle" class="quadrant-label">Cuadrante 4</text>
-                        @for ($i = 41; $i <= 48; $i++)
-                            @php
-                                $toothData = $odontogramData['permanent'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ ($i - 41) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="-10" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-                </g>
-
-                <!-- Central dividing line -->
-                <line x1="300" y1="40" x2="300" y2="240" class="divider-line"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Temporary Teeth Section -->
-    <div class="dentition-section">
-        <div class="dentition-header">
-            <h4 class="dentition-title">Dentición Temporal (20 dientes)</h4>
-            <span class="dentition-info">Sistema FDI</span>
-        </div>
-
-        <div class="odontogram-chart">
-            <svg class="odontogram-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
-                <!-- Upper jaw -->
-                <g class="upper-jaw">
-                    <!-- Quadrant 5 (Upper Right) -->
-                    <g class="quadrant-5" transform="translate(300, 55)">
-                        <text x="87.5" y="-15" text-anchor="middle" class="quadrant-label">Cuadrante 5</text>
-                        @for ($i = 51; $i <= 55; $i++)
-                            @php
-                                $toothData = $odontogramData['temporary'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ ($i - 51) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="40" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-
-                    <!-- Quadrant 6 (Upper Left) -->
-                    <g class="quadrant-6" transform="translate(300, 55)">
-                        <text x="-87.5" y="-15" text-anchor="middle" class="quadrant-label">Cuadrante 6</text>
-                        @for ($i = 61; $i <= 65; $i++)
-                            @php
-                                $toothData = $odontogramData['temporary'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ -($i - 61 + 1) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="40" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-                </g>
-
-                <!-- Lower jaw -->
-                <g class="lower-jaw">
-                    <!-- Quadrant 7 (Lower Left) -->
-                    <g class="quadrant-7" transform="translate(300, 195)">
-                        <text x="-87.5" y="45" text-anchor="middle" class="quadrant-label">Cuadrante 7</text>
-                        @for ($i = 71; $i <= 75; $i++)
-                            @php
-                                $toothData = $odontogramData['temporary'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ -($i - 71 + 1) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="-10" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-
-                    <!-- Quadrant 8 (Lower Right) -->
-                    <g class="quadrant-8" transform="translate(300, 195)">
-                        <text x="87.5" y="45" text-anchor="middle" class="quadrant-label">Cuadrante 8</text>
-                        @for ($i = 81; $i <= 85; $i++)
-                            @php
-                                $toothData = $odontogramData['temporary'][$i] ?? null;
-                                $status = $toothData['status'] ?? 'healthy';
-                                $color = $toothStatuses[$status]['color'] ?? '#10B981';
-                                $label = $toothStatuses[$status]['label'] ?? 'Sano';
-                            @endphp
-                            <g class="tooth-group" transform="translate({{ ($i - 81) * 35 }}, 0)">
-                                <rect x="-12" y="0" width="24" height="25" rx="4"
-                                      class="tooth-rect"
-                                      fill="{{ $color }}"
-                                      stroke="#e5e7eb" stroke-width="1"/>
-                                <text x="0" y="17" text-anchor="middle" class="tooth-number">{{ $i }}</text>
-                                <text x="0" y="-10" text-anchor="middle" class="tooth-status">{{ $label }}</text>
-                            </g>
-                        @endfor
-                    </g>
-                </g>
-
-                <!-- Central dividing line -->
-                <line x1="300" y1="40" x2="300" y2="240" class="divider-line"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Summary Statistics -->
-    <div class="stats-section">
-        <h4 class="stats-title">Estadísticas del Odontograma</h4>
-        <div class="stats-grid">
-            @foreach($toothStatuses as $status => $config)
-                @php
-                    $permanentCount = collect($odontogramData['permanent'] ?? [])
-                        ->where('status', $status)
-                        ->count();
-                    $temporaryCount = collect($odontogramData['temporary'] ?? [])
-                        ->where('status', $status)
-                        ->count();
-                    $totalCount = $permanentCount + $temporaryCount;
-                @endphp
-                <div class="stat-item">
-                    <div class="stat-number">{{ $totalCount }}</div>
-                    <div class="stat-label">{{ $config['label'] }}</div>
+                <div class="stat-card">
+                    <div class="stat-number" x-text="getAffectedFacesCount()"></div>
+                    <div class="stat-label">Caras con Estado</div>
                 </div>
-            @endforeach
+                @foreach ($toothStatuses as $status => $config)
+                    <div class="stat-card">
+                        <div class="stat-number" x-text="getStatusCount('{{ $status }}')"></div>
+                        <div class="stat-label">{{ $config['label'] }}</div>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </div>
+
+    <script>
+        function readonlyOdontogramComponent() {
+            return {
+                selectedType: '{{ $defaultView }}',
+                odontogramData: @json($odontogramData),
+                toothStatuses: @json($toothStatuses),
+                showTooltip: false,
+                tooltipTitle: '',
+                tooltipDescription: '',
+                tooltipStatus: '',
+                tooltipStyle: '',
+                showSummary: false,
+
+                init() {
+                    // Inicialización para modo readonly
+                    console.log('Odontograma readonly inicializado', this.odontogramData);
+                },
+
+                changeType(type) {
+                    this.selectedType = type;
+                },
+
+                getTeethForView(jaw) {
+                    const teethMap = {
+                        permanent: {
+                            upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+                            lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+                        },
+                        temporal: {
+                            upper: [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+                            lower: [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+                        }
+                    };
+
+                    const teeth = teethMap[this.selectedType] || teethMap.permanent;
+                    return (teeth[jaw] || []).map(number => ({ number }));
+                },
+
+                getFaceClass(toothNumber, face) {
+                    const status = this.getFaceStatus(toothNumber, face);
+                    return status ? `selected status-${status}` : '';
+                },
+
+                getFaceStyle(toothNumber, face) {
+                    const status = this.getFaceStatus(toothNumber, face);
+                    if (!status) return '';
+
+                    const config = this.getStatusConfig(status);
+                    return `background-color: ${config.color}; border-color: ${config.color};`;
+                },
+
+                getFaceStatus(toothNumber, face) {
+                    return this.odontogramData[this.selectedType]?.[toothNumber]?.faces?.[face];
+                },
+
+                hasAffectedFaces(toothNumber) {
+                    const tooth = this.odontogramData[this.selectedType]?.[toothNumber];
+                    return tooth && Object.keys(tooth.faces || {}).length > 0;
+                },
+
+                getStatusConfig(status) {
+                    return this.toothStatuses[status] || { color: '#E5E7EB', label: 'Sin estado' };
+                },
+
+                showFaceTooltip(event, face, toothNumber) {
+                    const faceNames = {
+                        oclusal: { title: 'Cara Oclusal', description: 'Superficie de masticación del diente' },
+                        vestibular: { title: 'Cara Vestibular', description: 'Superficie externa hacia los labios/mejillas' },
+                        central: { title: 'Cara Central', description: 'Superficie central del diente' },
+                        lingual: { title: 'Cara Lingual', description: 'Superficie interna hacia la lengua' },
+                        mesial: { title: 'Cara Mesial', description: 'Superficie hacia el centro de la arcada' }
+                    };
+
+                    const status = this.getFaceStatus(toothNumber, face);
+                    const statusConfig = status ? this.getStatusConfig(status) : null;
+
+                    this.tooltipTitle = `${faceNames[face].title} - Diente ${toothNumber}`;
+                    this.tooltipDescription = faceNames[face].description;
+                    this.tooltipStatus = statusConfig ? `Estado: ${statusConfig.label}` : 'Estado: Normal';
+                    this.showTooltip = true;
+
+                    const rect = event.target.getBoundingClientRect();
+                    this.tooltipStyle = `left: ${rect.left + rect.width / 2}px; top: ${rect.top - 10}px;`;
+                },
+
+                hideFaceTooltip() {
+                    this.showTooltip = false;
+                },
+
+                getTotalTeeth() {
+                    const counts = { permanent: 32, temporal: 20 };
+                    return counts[this.selectedType] || 0;
+                },
+
+                getAffectedFacesCount() {
+                    let count = 0;
+                    const typeData = this.odontogramData[this.selectedType] || {};
+                    Object.values(typeData).forEach(tooth => {
+                        if (tooth.faces) {
+                            count += Object.keys(tooth.faces).length;
+                        }
+                    });
+                    return count;
+                },
+
+                getToothType(number) {
+                    if (number >= 11 && number <= 18) return 'Sup. Der.';
+                    if (number >= 21 && number <= 28) return 'Sup. Izq.';
+                    if (number >= 31 && number <= 38) return 'Inf. Izq.';
+                    if (number >= 41 && number <= 48) return 'Inf. Der.';
+                    if (number >= 51 && number <= 55) return 'Temp. S.D.';
+                    if (number >= 61 && number <= 65) return 'Temp. S.I.';
+                    if (number >= 71 && number <= 75) return 'Temp. I.I.';
+                    if (number >= 81 && number <= 85) return 'Temp. I.D.';
+                    return '';
+                },
+
+                getGridTitle() {
+                    const titles = {
+                        permanent: 'Dentición Permanente',
+                        temporal: 'Dentición Temporal'
+                    };
+                    return titles[this.selectedType] || 'Odontograma';
+                },
+
+                getGridSubtitle() {
+                    const subtitles = {
+                        permanent: '32 dientes adultos - Vista de solo lectura',
+                        temporal: '20 dientes infantiles - Vista de solo lectura'
+                    };
+                    return subtitles[this.selectedType] || '';
+                },
+
+                getStatusCount(status) {
+                    let count = 0;
+                    Object.values(this.odontogramData).forEach(typeData => {
+                        Object.values(typeData).forEach(tooth => {
+                            if (tooth.faces) {
+                                const hasStatus = Object.values(tooth.faces).some(faceStatus => faceStatus === status);
+                                if (hasStatus) count++;
+                            }
+                        });
+                    });
+                    return count;
+                }
+            }
+        }
+
+        function exportOdontogramData() {
+            const odontogramData = @json($odontogramData);
+            const recordName = '{{ $record->name }}';
+            const data = JSON.stringify(odontogramData, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `odontogram_${recordName.replace(/\s+/g, '_')}_{{ now()->format("Y-m-d") }}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
 </div>
-
-<script>
-    function exportOdontogramData() {
-        const odontogramData = @json($odontogramData);
-        const data = JSON.stringify(odontogramData, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'odontogram_{{ $record->name }}_{{ now()->format("Y-m-d") }}.json';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-</script>
