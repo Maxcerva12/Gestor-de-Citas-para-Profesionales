@@ -17,7 +17,8 @@
     // Determinar qué tipo de dentición mostrar basado en los datos
     $showPermanent = !empty($odontogramData['permanent']);
     $showTemporary = !empty($odontogramData['temporal']);
-    $defaultView = $showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent');
+    $showMixed = !empty($odontogramData['mixed']);
+    $defaultView = $showMixed ? 'mixed' : ($showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent'));
 @endphp
 
 <!-- Carga directa del CSS desde la carpeta pública -->
@@ -67,6 +68,24 @@
             <p class="types-description">Información dental disponible para {{ $record->name }}</p>
         </div>
         <div class="types-cards-grid">
+
+            @if($showMixed)
+                <div class="type-card-professional"
+                     :class="{ 'active': selectedType === 'mixed' }"
+                     x-on:click="changeType('mixed')">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Dentición Mixta</h4>
+                        <p class="type-card-description">Permanentes + Temporales • Registros disponibles</p>
+                        <div class="type-card-detail">Transición gradual</div>
+                    </div>
+                    <div class="type-card-indicator"></div>
+                </div>
+            @endif
             @if($showPermanent)
                 <div class="type-card-professional" 
                      :class="{ 'active': selectedType === 'permanent' }"
@@ -84,7 +103,6 @@
                     <div class="type-card-indicator"></div>
                 </div>
             @endif
-
             @if($showTemporary)
                 <div class="type-card-professional" 
                      :class="{ 'active': selectedType === 'temporal' }"
@@ -103,7 +121,7 @@
                 </div>
             @endif
 
-            @if(!$showPermanent && !$showTemporary)
+            @if(!$showPermanent && !$showTemporary && !$showMixed)
                 <div class="type-card-professional">
                     <div class="type-card-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -370,7 +388,13 @@
         function readonlyOdontogramComponent() {
             return {
                 selectedType: '{{ $defaultView }}',
-                odontogramData: @json($odontogramData),
+                odontogramData: (() => {
+                    const data = @json($odontogramData);
+                    if (data.mixed) {
+                        return { mixed: data.mixed };
+                    }
+                    return data;
+                })(),
                 toothStatuses: @json($toothStatuses),
                 showTooltip: false,
                 tooltipTitle: '',
@@ -397,9 +421,12 @@
                         temporal: {
                             upper: [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
                             lower: [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+                        },
+                        mixed: {
+                            upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28, 55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+                            lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38, 85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
                         }
                     };
-
                     const teeth = teethMap[this.selectedType] || teethMap.permanent;
                     return (teeth[jaw] || []).map(number => ({ number }));
                 },

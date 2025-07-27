@@ -378,7 +378,7 @@
         <script>
             function professionalOdontogramComponent(state) {
             return {
-                selectedType: 'permanent',
+                selectedType: 'permanent', // Se ajustará en init()
                 selectedStatus: 'healthy',
                 odontogramState: {},
                 showTooltip: false,
@@ -389,6 +389,16 @@
 
                 init() {
                     this.odontogramState = this.$wire.get(state) || {};
+                    // Selección automática del tipo según los datos
+                    if (this.odontogramState.mixed && Object.keys(this.odontogramState.mixed).length > 0) {
+                        this.selectedType = 'mixed';
+                    } else if (this.odontogramState.permanent && Object.keys(this.odontogramState.permanent).length > 0) {
+                        this.selectedType = 'permanent';
+                    } else if (this.odontogramState.temporal && Object.keys(this.odontogramState.temporal).length > 0) {
+                        this.selectedType = 'temporal';
+                    } else {
+                        this.selectedType = 'permanent';
+                    }
                     this.watchStateChanges(state);
                 },
 
@@ -415,11 +425,23 @@
                         temporal: {
                             upper: [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
                             lower: [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+                        },
+                        mixed: {
+                            upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28, 55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+                            lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38, 85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
                         }
                     };
 
-                    const teeth = teethMap[this.selectedType] || teethMap.permanent;
-                    return (teeth[jaw] || []).map(number => ({ number }));
+                    if (this.selectedType === 'mixed') {
+                        // Unir ambos tipos para la mandíbula correspondiente
+                        const upper = [...teethMap.permanent.upper, ...teethMap.temporal.upper];
+                        const lower = [...teethMap.permanent.lower, ...teethMap.temporal.lower];
+                        const teeth = jaw === 'upper' ? upper : lower;
+                        return teeth.map(number => ({ number }));
+                    } else {
+                        const teeth = teethMap[this.selectedType] || teethMap.permanent;
+                        return (teeth[jaw] || []).map(number => ({ number }));
+                    }
                 },
 
                 toggleFace(toothNumber, face) {
