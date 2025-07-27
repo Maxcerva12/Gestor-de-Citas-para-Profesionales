@@ -21,13 +21,19 @@
     $defaultView = $showMixed ? 'mixed' : ($showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent'));
 @endphp
 
+
 <!-- Carga directa del CSS desde la carpeta pública -->
 <link rel="stylesheet" href="{{ asset('css/odontogram-professional.css') }}">
+<!-- Incluir html2canvas para exportar como imagen -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 
 <div 
     x-data="readonlyOdontogramComponent()"
     x-init="init()"
-    class="professional-odontogram readonly-mode">
+    class="professional-odontogram readonly-mode"
+    id="odontogram-capture"
+>
 
     <!-- Elegant Header with Glass Effect -->
     <div class="odontogram-header-professional">
@@ -541,17 +547,30 @@
             }
         }
 
-        function exportOdontogramData() {
-            const odontogramData = @json($odontogramData);
-            const recordName = '{{ $record->name }}';
-            const data = JSON.stringify(odontogramData, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `odontogram_${recordName.replace(/\s+/g, '_')}_{{ now()->format("Y-m-d") }}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+function exportOdontogramData() {
+    // Selecciona el contenedor visual del odontograma
+    const odontogramElement = document.getElementById('odontogram-capture');
+    if (!odontogramElement) {
+        alert('No se encontró el odontograma para exportar.');
+        return;
+    }
+    // Opciones para mejor calidad
+    const options = {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true,
+        useCORS: true
+    };
+    html2canvas(odontogramElement, options).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `odontograma_{{ $record->name }}_{{ now()->format('Y-m-d') }}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(error => {
+        alert('Error al generar la imagen. Inténtalo de nuevo.');
+        console.error(error);
+    });
+}
     </script>
 </div>
