@@ -21,19 +21,16 @@
     $defaultView = $showMixed ? 'mixed' : ($showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent'));
 @endphp
 
-
-<!-- Carga directa del CSS desde la carpeta pública -->
-<link rel="stylesheet" href="{{ asset('css/odontogram-professional.css') }}">
-<!-- Incluir html2canvas para exportar como imagen -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-
 <div 
     x-data="readonlyOdontogramComponent()"
     x-init="init()"
     class="professional-odontogram readonly-mode"
     id="odontogram-capture"
 >
+    <!-- Carga directa del CSS desde la carpeta pública -->
+    <link rel="stylesheet" href="{{ asset('css/odontogram-professional.css') }}">
+    <!-- Incluir html2canvas para exportar como imagen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- Elegant Header with Glass Effect -->
     <div class="odontogram-header-professional">
@@ -206,71 +203,154 @@
                         <span class="jaw-control-btn readonly">Solo lectura</span>
                     </div>
                 </div>
-                <div class="teeth-row">
-                    <template x-for="tooth in getTeethForView('upper')" :key="tooth.number">
-                        <div class="tooth-professional readonly" 
-                             :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
-                            
-                            <!-- Número del diente -->
-                            <div class="tooth-number-professional" x-text="tooth.number"></div>
-                            
-                            <!-- Diseño circular con 5 caras -->
-                            <div class="tooth-faces-professional">
-                                <!-- Círculo base -->
-                                <div class="tooth-circle"></div>
-                                
-                                <!-- Cara Oclusal (Centro) -->
-                                <div class="tooth-face oclusal-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'oclusal')"
-                                     :style="getFaceStyle(tooth.number, 'oclusal')"
-                                     x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">O</span>
+                
+                <!-- Cuadrantes Superior -->
+                <div class="quadrants-container">
+                    <!-- Cuadrante 1 (Superior Derecho) -->
+                    <div class="quadrant-section" data-quadrant="1">
+                        <div class="quadrant-label">Cuadrante 1</div>
+                        <div class="teeth-row quadrant-teeth">
+                            <template x-for="tooth in getTeethForQuadrant(1)" :key="tooth.number">
+                                <div class="tooth-professional readonly" 
+                                     :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                                    
+                                    <!-- Número del diente -->
+                                    <div class="tooth-number-professional" x-text="tooth.number"></div>
+                                    
+                                    <!-- Diseño circular con 5 caras -->
+                                    <div class="tooth-faces-professional">
+                                        <!-- Círculo base -->
+                                        <div class="tooth-circle"></div>
+                                        
+                                        <!-- Cara Oclusal (Centro) -->
+                                        <div class="tooth-face oclusal-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'oclusal')"
+                                             :style="getFaceStyle(tooth.number, 'oclusal')"
+                                             x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">O</span>
+                                        </div>
+                                        
+                                        <!-- Cara Vestibular (Arriba) -->
+                                        <div class="tooth-face vestibular-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'vestibular')"
+                                             :style="getFaceStyle(tooth.number, 'vestibular')"
+                                             x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">V</span>
+                                        </div>
+                                        
+                                        <!-- Cara Lingual (Abajo) -->
+                                        <div class="tooth-face lingual-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'lingual')"
+                                             :style="getFaceStyle(tooth.number, 'lingual')"
+                                             x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">L</span>
+                                        </div>
+                                        
+                                        <!-- Cara Mesial (Derecha) -->
+                                        <div class="tooth-face mesial-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'mesial')"
+                                             :style="getFaceStyle(tooth.number, 'mesial')"
+                                             x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">M</span>
+                                        </div>
+                                        
+                                        <!-- Cara Central/Distal (Izquierda) -->
+                                        <div class="tooth-face central-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'central')"
+                                             :style="getFaceStyle(tooth.number, 'central')"
+                                             x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">C</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Indicador del tipo de diente -->
+                                    <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
                                 </div>
-                                
-                                <!-- Cara Vestibular (Arriba) -->
-                                <div class="tooth-face vestibular-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'vestibular')"
-                                     :style="getFaceStyle(tooth.number, 'vestibular')"
-                                     x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">V</span>
-                                </div>
-                                
-                                <!-- Cara Lingual (Abajo) -->
-                                <div class="tooth-face lingual-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'lingual')"
-                                     :style="getFaceStyle(tooth.number, 'lingual')"
-                                     x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">L</span>
-                                </div>
-                                
-                                <!-- Cara Mesial (Derecha) -->
-                                <div class="tooth-face mesial-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'mesial')"
-                                     :style="getFaceStyle(tooth.number, 'mesial')"
-                                     x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">M</span>
-                                </div>
-                                
-                                <!-- Cara Central/Distal (Izquierda) -->
-                                <div class="tooth-face central-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'central')"
-                                     :style="getFaceStyle(tooth.number, 'central')"
-                                     x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">C</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Indicador del tipo de diente -->
-                            <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                            </template>
                         </div>
-                    </template>
+                    </div>
+
+                    <!-- Divisor vertical central -->
+                    <div class="quadrant-divider vertical-divider"></div>
+
+                    <!-- Cuadrante 2 (Superior Izquierdo) -->
+                    <div class="quadrant-section" data-quadrant="2">
+                        <div class="quadrant-label">Cuadrante 2</div>
+                        <div class="teeth-row quadrant-teeth">
+                            <template x-for="tooth in getTeethForQuadrant(2)" :key="tooth.number">
+                                <div class="tooth-professional readonly" 
+                                     :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                                    
+                                    <!-- Número del diente -->
+                                    <div class="tooth-number-professional" x-text="tooth.number"></div>
+                                    
+                                    <!-- Diseño circular con 5 caras -->
+                                    <div class="tooth-faces-professional">
+                                        <!-- Círculo base -->
+                                        <div class="tooth-circle"></div>
+                                        
+                                        <!-- Cara Oclusal (Centro) -->
+                                        <div class="tooth-face oclusal-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'oclusal')"
+                                             :style="getFaceStyle(tooth.number, 'oclusal')"
+                                             x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">O</span>
+                                        </div>
+                                        
+                                        <!-- Cara Vestibular (Arriba) -->
+                                        <div class="tooth-face vestibular-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'vestibular')"
+                                             :style="getFaceStyle(tooth.number, 'vestibular')"
+                                             x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">V</span>
+                                        </div>
+                                        
+                                        <!-- Cara Lingual (Abajo) -->
+                                        <div class="tooth-face lingual-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'lingual')"
+                                             :style="getFaceStyle(tooth.number, 'lingual')"
+                                             x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">L</span>
+                                        </div>
+                                        
+                                        <!-- Cara Mesial (Derecha) -->
+                                        <div class="tooth-face mesial-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'mesial')"
+                                             :style="getFaceStyle(tooth.number, 'mesial')"
+                                             x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">M</span>
+                                        </div>
+                                        
+                                        <!-- Cara Central/Distal (Izquierda) -->
+                                        <div class="tooth-face central-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'central')"
+                                             :style="getFaceStyle(tooth.number, 'central')"
+                                             x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">C</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Indicador del tipo de diente -->
+                                    <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Divisor horizontal entre maxilares -->
+            <div class="jaw-divider horizontal-divider"></div>
 
             <!-- Lower Jaw -->
             <div class="jaw-section lower-jaw">
@@ -280,69 +360,149 @@
                         <span class="jaw-control-btn readonly">Solo lectura</span>
                     </div>
                 </div>
-                <div class="teeth-row">
-                    <template x-for="tooth in getTeethForView('lower')" :key="tooth.number">
-                        <div class="tooth-professional readonly" 
-                             :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
-                            
-                            <!-- Número del diente -->
-                            <div class="tooth-number-professional" x-text="tooth.number"></div>
-                            
-                            <!-- Diseño circular con 5 caras -->
-                            <div class="tooth-faces-professional">
-                                <!-- Círculo base -->
-                                <div class="tooth-circle"></div>
-                                
-                                <!-- Cara Oclusal (Centro) -->
-                                <div class="tooth-face oclusal-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'oclusal')"
-                                     :style="getFaceStyle(tooth.number, 'oclusal')"
-                                     x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">O</span>
+                
+                <!-- Cuadrantes Inferior -->
+                <div class="quadrants-container">
+                    <!-- Cuadrante 4 (Inferior Derecho) -->
+                    <div class="quadrant-section" data-quadrant="4">
+                        <div class="quadrant-label">Cuadrante 4</div>
+                        <div class="teeth-row quadrant-teeth">
+                            <template x-for="tooth in getTeethForQuadrant(4)" :key="tooth.number">
+                                <div class="tooth-professional readonly" 
+                                     :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                                    
+                                    <!-- Número del diente -->
+                                    <div class="tooth-number-professional" x-text="tooth.number"></div>
+                                    
+                                    <!-- Diseño circular con 5 caras -->
+                                    <div class="tooth-faces-professional">
+                                        <!-- Círculo base -->
+                                        <div class="tooth-circle"></div>
+                                        
+                                        <!-- Cara Oclusal (Centro) -->
+                                        <div class="tooth-face oclusal-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'oclusal')"
+                                             :style="getFaceStyle(tooth.number, 'oclusal')"
+                                             x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">O</span>
+                                        </div>
+                                        
+                                        <!-- Cara Vestibular (Arriba) -->
+                                        <div class="tooth-face vestibular-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'vestibular')"
+                                             :style="getFaceStyle(tooth.number, 'vestibular')"
+                                             x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">V</span>
+                                        </div>
+                                        
+                                        <!-- Cara Lingual (Abajo) -->
+                                        <div class="tooth-face lingual-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'lingual')"
+                                             :style="getFaceStyle(tooth.number, 'lingual')"
+                                             x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">L</span>
+                                        </div>
+                                        
+                                        <!-- Cara Mesial (Derecha) -->
+                                        <div class="tooth-face mesial-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'mesial')"
+                                             :style="getFaceStyle(tooth.number, 'mesial')"
+                                             x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">M</span>
+                                        </div>
+                                        
+                                        <!-- Cara Central/Distal (Izquierda) -->
+                                        <div class="tooth-face central-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'central')"
+                                             :style="getFaceStyle(tooth.number, 'central')"
+                                             x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">C</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Indicador del tipo de diente -->
+                                    <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
                                 </div>
-                                
-                                <!-- Cara Vestibular (Arriba) -->
-                                <div class="tooth-face vestibular-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'vestibular')"
-                                     :style="getFaceStyle(tooth.number, 'vestibular')"
-                                     x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">V</span>
-                                </div>
-                                
-                                <!-- Cara Lingual (Abajo) -->
-                                <div class="tooth-face lingual-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'lingual')"
-                                     :style="getFaceStyle(tooth.number, 'lingual')"
-                                     x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">L</span>
-                                </div>
-                                
-                                <!-- Cara Mesial (Derecha) -->
-                                <div class="tooth-face mesial-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'mesial')"
-                                     :style="getFaceStyle(tooth.number, 'mesial')"
-                                     x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">M</span>
-                                </div>
-                                
-                                <!-- Cara Central/Distal (Izquierda) -->
-                                <div class="tooth-face central-face readonly" 
-                                     :class="getFaceClass(tooth.number, 'central')"
-                                     :style="getFaceStyle(tooth.number, 'central')"
-                                     x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
-                                     x-on:mouseout="hideFaceTooltip()">
-                                    <span class="face-label">C</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Indicador del tipo de diente -->
-                            <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                            </template>
                         </div>
-                    </template>
+                    </div>
+
+                    <!-- Divisor vertical central -->
+                    <div class="quadrant-divider vertical-divider"></div>
+
+                    <!-- Cuadrante 3 (Inferior Izquierdo) -->
+                    <div class="quadrant-section" data-quadrant="3">
+                        <div class="quadrant-label">Cuadrante 3</div>
+                        <div class="teeth-row quadrant-teeth">
+                            <template x-for="tooth in getTeethForQuadrant(3)" :key="tooth.number">
+                                <div class="tooth-professional readonly" 
+                                     :class="{ 'has-selections': hasAffectedFaces(tooth.number) }">
+                                    
+                                    <!-- Número del diente -->
+                                    <div class="tooth-number-professional" x-text="tooth.number"></div>
+                                    
+                                    <!-- Diseño circular con 5 caras -->
+                                    <div class="tooth-faces-professional">
+                                        <!-- Círculo base -->
+                                        <div class="tooth-circle"></div>
+                                        
+                                        <!-- Cara Oclusal (Centro) -->
+                                        <div class="tooth-face oclusal-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'oclusal')"
+                                             :style="getFaceStyle(tooth.number, 'oclusal')"
+                                             x-on:mouseover="showFaceTooltip($event, 'oclusal', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">O</span>
+                                        </div>
+                                        
+                                        <!-- Cara Vestibular (Arriba) -->
+                                        <div class="tooth-face vestibular-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'vestibular')"
+                                             :style="getFaceStyle(tooth.number, 'vestibular')"
+                                             x-on:mouseover="showFaceTooltip($event, 'vestibular', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">V</span>
+                                        </div>
+                                        
+                                        <!-- Cara Lingual (Abajo) -->
+                                        <div class="tooth-face lingual-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'lingual')"
+                                             :style="getFaceStyle(tooth.number, 'lingual')"
+                                             x-on:mouseover="showFaceTooltip($event, 'lingual', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">L</span>
+                                        </div>
+                                        
+                                        <!-- Cara Mesial (Derecha) -->
+                                        <div class="tooth-face mesial-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'mesial')"
+                                             :style="getFaceStyle(tooth.number, 'mesial')"
+                                             x-on:mouseover="showFaceTooltip($event, 'mesial', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">M</span>
+                                        </div>
+                                        
+                                        <!-- Cara Central/Distal (Izquierda) -->
+                                        <div class="tooth-face central-face readonly" 
+                                             :class="getFaceClass(tooth.number, 'central')"
+                                             :style="getFaceStyle(tooth.number, 'central')"
+                                             x-on:mouseover="showFaceTooltip($event, 'central', tooth.number)"
+                                             x-on:mouseout="hideFaceTooltip()">
+                                            <span class="face-label">C</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Indicador del tipo de diente -->
+                                    <div class="tooth-type-indicator" x-text="getToothType(tooth.number)"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -437,6 +597,32 @@
                     return (teeth[jaw] || []).map(number => ({ number }));
                 },
 
+                getTeethForQuadrant(quadrant) {
+                    const teethMap = {
+                        permanent: {
+                            1: [18, 17, 16, 15, 14, 13, 12, 11], // Superior derecho
+                            2: [21, 22, 23, 24, 25, 26, 27, 28], // Superior izquierdo  
+                            3: [31, 32, 33, 34, 35, 36, 37, 38], // Inferior izquierdo
+                            4: [48, 47, 46, 45, 44, 43, 42, 41]  // Inferior derecho
+                        },
+                        temporal: {
+                            1: [55, 54, 53, 52, 51], // Superior derecho temporal
+                            2: [61, 62, 63, 64, 65], // Superior izquierdo temporal  
+                            3: [71, 72, 73, 74, 75], // Inferior izquierdo temporal
+                            4: [85, 84, 83, 82, 81]  // Inferior derecho temporal
+                        },
+                        mixed: {
+                            1: [18, 17, 16, 15, 14, 13, 12, 11, 55, 54, 53, 52, 51], 
+                            2: [21, 22, 23, 24, 25, 26, 27, 28, 61, 62, 63, 64, 65],  
+                            3: [31, 32, 33, 34, 35, 36, 37, 38, 71, 72, 73, 74, 75], 
+                            4: [48, 47, 46, 45, 44, 43, 42, 41, 85, 84, 83, 82, 81]  
+                        }
+                    };
+
+                    const teeth = teethMap[this.selectedType] || teethMap.permanent;
+                    return (teeth[quadrant] || []).map(number => ({ number }));
+                },
+
                 getFaceClass(toothNumber, face) {
                     const status = this.getFaceStatus(toothNumber, face);
                     return status ? `selected status-${status}` : '';
@@ -489,7 +675,7 @@
                 },
 
                 getTotalTeeth() {
-                    const counts = { permanent: 32, temporal: 20 };
+                    const counts = { permanent: 32, temporal: 20, mixed: 52 };
                     return counts[this.selectedType] || 0;
                 },
 
@@ -519,7 +705,8 @@
                 getGridTitle() {
                     const titles = {
                         permanent: 'Dentición Permanente',
-                        temporal: 'Dentición Temporal'
+                        temporal: 'Dentición Temporal',
+                        mixed: 'Dentición Mixta'
                     };
                     return titles[this.selectedType] || 'Odontograma';
                 },
@@ -527,7 +714,8 @@
                 getGridSubtitle() {
                     const subtitles = {
                         permanent: '32 dientes adultos - Vista de solo lectura',
-                        temporal: '20 dientes infantiles - Vista de solo lectura'
+                        temporal: '20 dientes infantiles - Vista de solo lectura',
+                        mixed: '52 dientes (permanentes + temporales) - Vista de solo lectura'
                     };
                     return subtitles[this.selectedType] || '';
                 },

@@ -1349,3 +1349,69 @@
         grid-template-columns: repeat(4, 1fr);
     }
 }
+
+/* ============================================
+   ESTILOS ESPECÍFICOS PARA MODO READONLY
+   ============================================ */
+
+/* Modo readonly general */
+.professional-odontogram.readonly-mode {
+    border: 2px solid var(--odont-gray-300);
+    background: linear-gradient(135deg, var(--odont-gray-50) 0%, var(--odont-white) 100%);
+}
+
+.professional-odontogram.readonly-mode::before {
+    background: linear-gradient(90deg, var(--odont-gray-400), var(--odont-gray-500), var(--odont-gray-400));
+}
+
+
+
+/* Botones readonly */
+.jaw-control-btn.readonly {
+    background: var(--odont-gray-100);
+    color: var(--odont-gray-600);
+    border-color: var(--odont-gray-300);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Tooltip específico para readonly */
+.professional-odontogram.readonly-mode .face-tooltip-professional {
+    background: var(--odont-gray-800);
+    border: 1px solid var(--odont-gray-700);
+}
+
+.professional-odontogram.readonly-mode .tooltip-status {
+    font-weight: 600;
+    color: var(--odont-primary);
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--odont-gray-200);
+}
+
+/* Indicador readonly en el header */
+.professional-odontogram.readonly-mode .header-subtitle::after {
+    content: ' • SOLO LECTURA';
+    font-weight: 700;
+    color: var(--odont-warning);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Ajustes de cuadrantes para readonly */
+.professional-odontogram.readonly-mode .quadrant-label {
+    background: linear-gradient(135deg, var(--odont-gray-100), var(--odont-gray-50));
+    border-color: var(--odont-gray-400);
+    color: var(--odont-gray-700);
+}
+
+.professional-odontogram.readonly-mode .quadrant-divider {
+    background: linear-gradient(135deg, var(--odont-gray-400), var(--odont-gray-500));
+    opacity: 0.8;
+}
+
+/* Estados especiales para readonly */
+.professional-odontogram.readonly-mode .tooth-professional.has-selections {
+    border-color: var(--odont-info);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));
+}
