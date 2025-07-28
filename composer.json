@@ -11,6 +11,8 @@
         "bezhansalleh/filament-shield": "^3.3",
         "blade-ui-kit/blade-heroicons": "^2.6",
         "diogogpinto/filament-auth-ui-enhancer": "*",
+        "elegantly/laravel-invoices": "^4.4",
+        "elegantly/laravel-money": "^2.2",
         "filament/filament": "^3.3",
         "filament/notifications": "^3.3",
         "google/apiclient": "^2.18",

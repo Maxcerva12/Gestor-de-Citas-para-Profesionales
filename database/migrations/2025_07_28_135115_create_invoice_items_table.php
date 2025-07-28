@@ -1,0 +1,55 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('invoice_items', function (Blueprint $table) {
+            $table->id();
+
+            $table->integer('quantity')->default(1);
+            $table->string('quantity_unit')->nullable(); // such as hours, days, number, ...
+
+            /**
+            * All amount are in the same currency
+            **/
+            $table->bigInteger('unit_price')->nullable();
+            $table->string('currency')->nullable();
+            
+            /**
+            * Store taxes as an amount for each unit
+            * Total taxes will be computed by multiplying with quantity
+            * Ideal for complex situation where taxes are combined
+            **/
+            $table->bigInteger('unit_tax')->nullable(); 
+
+            /**
+            * Store taxes as a percentage of the amount
+            * Ideal for most use common situation such as VAT in Europe
+            * Will be overriden by unit_tax if unit_tax is defined
+            **/
+            $table->decimal('tax_percentage', 5, 2)->nullable();
+
+            $table->bigInteger('unit_discount')->nullable();
+            $table->decimal('discount_percentage', 5, 2)->nullable();
+
+            $table->string('label')->nullable();
+            $table->text('description')->nullable();
+
+            $table->foreignId('invoice_id')->index();
+
+            $table->json('metadata')->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('invoice_items');
+    }
+};
