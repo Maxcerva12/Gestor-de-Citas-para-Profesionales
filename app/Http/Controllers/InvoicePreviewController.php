@@ -104,12 +104,14 @@ class InvoicePreviewController extends Controller
                 ],
                 logo: InvoiceSettings::getCompanyLogo(),
                 template: $template,
-                templateData: [
-                    'color' => $color,
-                    'font' => $font,
-                    'watermark' => 'VISTA PREVIA',
-                ],
             );
+
+            // Establecer templateData después de la creación para evitar que sea sobrescrito
+            $pdfInvoice->templateData = [
+                'color' => $color,
+                'font' => $font,
+                'watermark' => 'VISTA PREVIA',
+            ];
 
             // Generar el PDF usando el método correcto
             $pdfOutput = $pdfInvoice->getPdfOutput();
