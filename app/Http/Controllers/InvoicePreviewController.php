@@ -18,11 +18,19 @@ use Illuminate\Http\Response;
 
 class InvoicePreviewController extends Controller
 {
-    public function generatePreview()
+    public function generatePreview(Request $request)
     {
         try {
+            // Limpiar caché para obtener configuración más reciente
+            InvoiceSettings::clearCache();
+
             // Crear una factura de ejemplo para la vista previa
             $sellerInfo = InvoiceSettings::getCompanyInfo();
+
+            // Obtener configuración desde request o fallback a base de datos
+            $template = $request->get('template', InvoiceSettings::get('invoice_template', 'colombia.layout'));
+            $color = $request->get('color', InvoiceSettings::get('pdf_template_color', '#1e40af'));
+            $font = $request->get('font', InvoiceSettings::get('pdf_font', 'Helvetica'));
 
             $pdfInvoice = new PdfInvoice(
                 serial_number: 'PREVIEW-' . now()->format('YmdHis'),
@@ -95,10 +103,10 @@ class InvoicePreviewController extends Controller
                     ),
                 ],
                 logo: InvoiceSettings::getCompanyLogo(),
-                template: InvoiceSettings::get('invoice_template', 'colombia.layout'),
+                template: $template,
                 templateData: [
-                    'color' => InvoiceSettings::get('pdf_template_color', '#1e40af'),
-                    'font' => InvoiceSettings::get('pdf_font', 'Helvetica'),
+                    'color' => $color,
+                    'font' => $font,
                     'watermark' => 'VISTA PREVIA',
                 ],
             );

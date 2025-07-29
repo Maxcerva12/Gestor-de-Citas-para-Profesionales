@@ -1,3 +1,8 @@
+@php
+    $color = data_get($invoice->templateData, 'color', '#1e40af');
+    $font = data_get($invoice->templateData, 'font', 'Helvetica');
+@endphp
+
 <style type="text/css">
     @page {
         margin: 48px 48px 56px 48px;
@@ -7,11 +12,22 @@
         line-height: 1.5;
         margin: 0;
         line-height: inherit;
-        color: #050038;
+        color: {{ $color }};
         background-color: #fff;
         text-align: left;
         font-feature-settings: normal;
         font-variation-settings: normal;
+        font-family: {{ $font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    }
+        background-color: #fff;
+        text-align: left;
+        font-feature-settings: normal;
+        font-variation-settings: normal;
+        font-family: {{ $font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    }
+
+    * {
+        font-family: {{ $font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
     }
 
     h1,

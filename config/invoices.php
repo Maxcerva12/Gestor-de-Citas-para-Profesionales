@@ -120,8 +120,8 @@ return [
         'template_data' => [
             /**
              * The color displayed at the top of the PDF
+             * NOTA: Este valor es overridden dinámicamente en el modelo Invoice
              */
-            'color' => '#050038',
         ],
 
     ],

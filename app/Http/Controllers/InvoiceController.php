@@ -18,6 +18,9 @@ class InvoiceController extends Controller
     public function viewPdf(Invoice $invoice)
     {
         try {
+            // Limpiar caché antes de generar el PDF para asegurar configuración actualizada
+            \App\Models\InvoiceSettings::clearCache();
+
             $pdfInvoice = $invoice->toPdfInvoice();
 
             return response($pdfInvoice->getPdfOutput(), 200, [
@@ -43,6 +46,9 @@ class InvoiceController extends Controller
     public function downloadPdf(Invoice $invoice)
     {
         try {
+            // Limpiar caché antes de generar el PDF para asegurar configuración actualizada
+            \App\Models\InvoiceSettings::clearCache();
+
             $pdfInvoice = $invoice->toPdfInvoice();
 
             return response($pdfInvoice->getPdfOutput(), 200, [

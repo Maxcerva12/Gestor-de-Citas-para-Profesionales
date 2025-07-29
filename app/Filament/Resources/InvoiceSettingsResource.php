@@ -141,7 +141,20 @@ class InvoiceSettingsResource extends Resource
 
                                 Section::make('Tipografía y Colores')
                                     ->description('Personalice la apariencia de las facturas')
+                                    ->native(false)
                                     ->schema([
+                                        Select::make('invoice_template')
+                                            ->label('Plantilla de Factura')
+                                            ->native(false)
+                                            ->options([
+                                                'default.layout' => 'Plantilla por Defecto',
+                                                'colombia.layout' => 'Plantilla Colombia',
+                                            ])
+                                            ->default(fn() => InvoiceSettings::get('invoice_template', 'colombia.layout'))
+                                            ->required()
+                                            ->live()
+                                            ->afterStateUpdated(fn($state) => InvoiceSettings::set('invoice_template', $state)),
+
                                         Select::make('pdf_font')
                                             ->label('Tipografía')
                                             ->options([
@@ -150,6 +163,7 @@ class InvoiceSettingsResource extends Resource
                                                 'Times-Roman' => 'Times New Roman',
                                                 'Courier' => 'Courier',
                                             ])
+                                            ->native(false)
                                             ->default(fn() => InvoiceSettings::get('pdf_font', 'Helvetica'))
                                             ->required()
                                             ->live()
@@ -168,6 +182,7 @@ class InvoiceSettingsResource extends Resource
                             ->icon('heroicon-o-calculator')
                             ->schema([
                                 Section::make('Impuestos y Tasas')
+                                    ->native(false)
                                     ->description('Configure los impuestos aplicables en Colombia')
                                     ->schema([
                                         TextInput::make('tax_rate')
@@ -183,12 +198,14 @@ class InvoiceSettingsResource extends Resource
                                             ->afterStateUpdated(fn($state) => InvoiceSettings::set('tax_rate', $state)),
 
                                         Select::make('currency')
+                                            ->native(false)
                                             ->label('Moneda')
                                             ->options([
                                                 'COP' => 'Peso Colombiano (COP)',
                                                 'USD' => 'Dólar Americano (USD)',
                                                 'EUR' => 'Euro (EUR)',
                                             ])
+                                            ->native(false)
                                             ->default(fn() => InvoiceSettings::get('currency', 'COP'))
                                             ->required()
                                             ->live()
@@ -205,12 +222,20 @@ class InvoiceSettingsResource extends Resource
                                         Forms\Components\Placeholder::make('preview')
                                             ->label('')
                                             ->content(function () {
-                                                return view('filament.components.invoice-preview', [
+                                                $selectedTemplate = InvoiceSettings::get('invoice_template', 'colombia.layout');
+                                                $color = InvoiceSettings::get('pdf_template_color', '#1e40af');
+                                                $font = InvoiceSettings::get('pdf_font', 'Helvetica');
+
+                                                // Determinar qué template usar basado en la selección
+                                                $templateName = str_replace('.layout', '', $selectedTemplate);
+
+                                                return view("filament.components.invoice-template-preview", [
+                                                    'templateName' => $templateName,
                                                     'companyName' => InvoiceSettings::get('company_name', 'Mi Empresa'),
                                                     'companyEmail' => InvoiceSettings::get('company_email', 'email@empresa.com'),
                                                     'companyPhone' => InvoiceSettings::get('company_phone', '+57 123 456 7890'),
-                                                    'color' => InvoiceSettings::get('pdf_template_color', '#1e40af'),
-                                                    'font' => InvoiceSettings::get('pdf_font', 'Helvetica'),
+                                                    'color' => $color,
+                                                    'font' => $font,
                                                     'logo' => InvoiceSettings::getCompanyLogo(),
                                                 ]);
                                             }),

@@ -9,6 +9,11 @@
 <head>
     <title>{{ $invoice->serial_number }}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        * {
+            font-family: {{ $font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        }
+    </style>
 
     @include('invoices::colombia.style')
 </head>

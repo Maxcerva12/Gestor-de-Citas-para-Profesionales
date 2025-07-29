@@ -1,5 +1,6 @@
 @php
-    $color = data_get($invoice->templateData, 'color');
+    $color = data_get($invoice->templateData, 'color', '#1e40af');
+    $font = data_get($invoice->templateData, 'font', 'Helvetica');
 @endphp
 
 <!DOCTYPE html>
@@ -8,6 +9,11 @@
 <head>
     <title>{{ $invoice->serial_number }}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        * {
+            font-family: {{ $font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        }
+    </style>
 
     @include('invoices::default.style')
 </head>

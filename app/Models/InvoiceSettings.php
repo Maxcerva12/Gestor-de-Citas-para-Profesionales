@@ -19,7 +19,7 @@ class InvoiceSettings extends Model
     ];
 
     protected $casts = [
-        'value' => 'json',
+        // Removemos el cast json porque estamos guardando strings simples
     ];
 
     /**
@@ -29,7 +29,27 @@ class InvoiceSettings extends Model
     {
         return Cache::remember("invoice_settings.{$key}", 3600, function () use ($key, $default) {
             $setting = static::where('key', $key)->first();
-            return $setting ? $setting->value : $default;
+            if (!$setting) {
+                return $default;
+            }
+
+            $value = $setting->value;
+
+            // Si el valor es un JSON string (empezar con { [ o "), decodificarlo
+            if (is_string($value)) {
+                // Verificar si es JSON válido
+                if (str_starts_with($value, '"') && str_ends_with($value, '"')) {
+                    // Es un string JSON, decodificar
+                    $decoded = json_decode($value, true);
+                    return $decoded !== null ? $decoded : $value;
+                } elseif (str_starts_with($value, '{') || str_starts_with($value, '[')) {
+                    // Es un objeto/array JSON, decodificar
+                    $decoded = json_decode($value, true);
+                    return $decoded !== null ? $decoded : $value;
+                }
+            }
+
+            return $value ?? $default;
         });
     }
 
@@ -38,17 +58,31 @@ class InvoiceSettings extends Model
      */
     public static function set(string $key, $value, string $type = 'string', string $description = null): void
     {
+        // Para strings simples, no necesitamos JSON encoding
+        $finalValue = $value;
+
+        // Solo hacer JSON encode si es un array o objeto
+        if (is_array($value) || is_object($value)) {
+            $finalValue = json_encode($value);
+        }
+
         static::updateOrCreate(
             ['key' => $key],
             [
-                'value' => $value,
+                'value' => $finalValue,
                 'type' => $type,
                 'description' => $description,
             ]
         );
 
-        // Limpiar caché
+        // Limpiar caché específica y general
         Cache::forget("invoice_settings.{$key}");
+        Cache::forget('invoice_settings.all');
+
+        // Forzar limpieza de toda la caché relacionada
+        if (in_array($key, ['pdf_template_color', 'pdf_font', 'invoice_template'])) {
+            Cache::flush();
+        }
     }
 
     /**

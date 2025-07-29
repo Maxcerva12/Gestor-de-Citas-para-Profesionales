@@ -47,10 +47,30 @@ class Invoice extends BaseInvoice
 
     public function toPdfInvoice(): PdfInvoice
     {
+        // Limpiar caché para obtener la configuración más reciente
+        InvoiceSettings::clearCache();
+
+        // Obtener configuraciones específicamente
+        $template = InvoiceSettings::get('invoice_template', 'colombia.layout');
+        $color = InvoiceSettings::get('pdf_template_color', '#1e40af');
+        $font = InvoiceSettings::get('pdf_font', 'Helvetica');
+
         $sellerInfo = InvoiceSettings::getCompanyInfo();
         $buyerInfo = $this->buyer_information ?? [];
 
-        return new PdfInvoice(
+        $templateData = [
+            'color' => $color,
+            'font' => $font,
+            'watermark' => null, // Para facturas reales no mostrar watermark
+        ];
+
+        $templateData = [
+            'color' => $color,
+            'font' => $font,
+            'watermark' => null, // Para facturas reales no mostrar watermark
+        ];
+
+        $pdfInvoice = new PdfInvoice(
             serial_number: $this->serial_number,
             state: $this->state->value,
             seller: new Seller(
@@ -107,12 +127,13 @@ class Invoice extends BaseInvoice
                 );
             })->toArray(),
             logo: $this->getLogo(),
-            template: InvoiceSettings::get('invoice_template', 'colombia.layout'),
-            templateData: [
-                'color' => InvoiceSettings::get('pdf_template_color', '#1e40af'),
-                'font' => InvoiceSettings::get('pdf_font', 'Helvetica'),
-            ],
+            template: $template,
         );
+
+        // Establecer templateData después de la creación para evitar que sea sobrescrito
+        $pdfInvoice->templateData = $templateData;
+
+        return $pdfInvoice;
     }
     public function getTotalBeforeTaxAttribute()
     {

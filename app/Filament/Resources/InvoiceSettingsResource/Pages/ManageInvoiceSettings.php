@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Storage;
 
 class ManageInvoiceSettings extends Page implements HasForms
 {
@@ -46,6 +47,7 @@ class ManageInvoiceSettings extends Page implements HasForms
             'pdf_template_color' => InvoiceSettings::get('pdf_template_color', '#1e40af'),
             'tax_rate' => InvoiceSettings::get('tax_rate', 19),
             'currency' => InvoiceSettings::get('currency', 'COP'),
+            'invoice_template' => InvoiceSettings::get('invoice_template', 'colombia.layout'),
         ];
 
         $this->settingsForm->fill($this->data);
@@ -141,8 +143,20 @@ class ManageInvoiceSettings extends Page implements HasForms
                             Section::make('Tipografía y Colores')
                                 ->description('Personalice la apariencia de las facturas')
                                 ->schema([
+                                    Select::make('invoice_template')
+                                        ->label('Plantilla de Factura')
+                                        ->native(false)
+                                        ->options([
+                                            'default.layout' => 'Plantilla por Defecto',
+                                            'colombia.layout' => 'Plantilla Colombia',
+                                        ])
+                                        ->default('colombia.layout')
+                                        ->required()
+                                        ->live(),
+
                                     Select::make('pdf_font')
                                         ->label('Tipografía')
+                                        ->native(false)
                                         ->options([
                                             'Helvetica' => 'Helvetica',
                                             'Arial' => 'Arial',
@@ -150,12 +164,14 @@ class ManageInvoiceSettings extends Page implements HasForms
                                             'Courier' => 'Courier',
                                         ])
                                         ->default('Helvetica')
-                                        ->required(),
+                                        ->required()
+                                        ->live(),
 
                                     ColorPicker::make('pdf_template_color')
                                         ->label('Color Principal')
                                         ->default('#1e40af')
-                                        ->required(),
+                                        ->required()
+                                        ->live(),
                                 ])->columns(2),
                         ]),
 
@@ -177,6 +193,7 @@ class ManageInvoiceSettings extends Page implements HasForms
 
                                     Select::make('currency')
                                         ->label('Moneda')
+                                        ->native(false)
                                         ->options([
                                             'COP' => 'Peso Colombiano (COP)',
                                             'USD' => 'Dólar Americano (USD)',
@@ -195,25 +212,44 @@ class ManageInvoiceSettings extends Page implements HasForms
                                 ->schema([
                                     \Filament\Forms\Components\Placeholder::make('preview')
                                         ->label('')
-                                        ->content(function () {
+                                        ->content(function ($get) {
+                                            $selectedTemplate = $get('invoice_template') ?: InvoiceSettings::get('invoice_template', 'colombia.layout');
+                                            $color = $get('pdf_template_color') ?: InvoiceSettings::get('pdf_template_color', '#1e40af');
+                                            $font = $get('pdf_font') ?: InvoiceSettings::get('pdf_font', 'Helvetica');
+
+                                            // Determinar qué template usar basado en la selección
+                                            $templateName = str_replace('.layout', '', $selectedTemplate);
+
                                             return new \Illuminate\Support\HtmlString(
-                                                view('filament.components.invoice-preview', [
-                                                    'companyName' => InvoiceSettings::get('company_name', 'Mi Empresa'),
-                                                    'companyEmail' => InvoiceSettings::get('company_email', 'email@empresa.com'),
-                                                    'companyPhone' => InvoiceSettings::get('company_phone', '+57 123 456 7890'),
-                                                    'color' => InvoiceSettings::get('pdf_template_color', '#1e40af'),
-                                                    'font' => InvoiceSettings::get('pdf_font', 'Helvetica'),
-                                                    'logo' => InvoiceSettings::getCompanyLogo(),
+                                                view("filament.components.invoice-template-preview", [
+                                                    'templateName' => $templateName,
+                                                    'companyName' => $get('company_name') ?: InvoiceSettings::get('company_name', 'Mi Empresa'),
+                                                    'companyEmail' => $get('company_email') ?: InvoiceSettings::get('company_email', 'email@empresa.com'),
+                                                    'companyPhone' => $get('company_phone') ?: InvoiceSettings::get('company_phone', '+57 123 456 7890'),
+                                                    'color' => $color,
+                                                    'font' => $font,
+                                                    'logo' => $this->getLogoForPreview($get),
                                                 ])->render()
                                             );
-                                        }),
+                                        })
+                                        ->live(),
 
                                     \Filament\Forms\Components\Actions::make([
                                         \Filament\Forms\Components\Actions\Action::make('downloadPreview')
                                             ->label('Descargar PDF de Vista Previa')
                                             ->icon('heroicon-o-document-arrow-down')
                                             ->color('primary')
-                                            ->url(fn() => route('invoice.preview'))
+                                            ->url(function ($get) {
+                                                $template = $get('invoice_template') ?: InvoiceSettings::get('invoice_template', 'colombia.layout');
+                                                $color = $get('pdf_template_color') ?: InvoiceSettings::get('pdf_template_color', '#1e40af');
+                                                $font = $get('pdf_font') ?: InvoiceSettings::get('pdf_font', 'Helvetica');
+
+                                                return route('invoice.preview', [
+                                                    'template' => $template,
+                                                    'color' => $color,
+                                                    'font' => $font,
+                                                ]);
+                                            })
                                             ->openUrlInNewTab(),
                                     ])->fullWidth(),
                                 ]),
@@ -257,6 +293,12 @@ class ManageInvoiceSettings extends Page implements HasForms
             }
         }
 
+        // Limpiar toda la caché de configuraciones
+        InvoiceSettings::clearCache();
+
+        // También limpiar la caché general de Laravel
+        \Cache::flush();
+
         Notification::make()
             ->title('Configuración guardada')
             ->body('La configuración de facturas se ha actualizado correctamente.')
@@ -281,6 +323,7 @@ class ManageInvoiceSettings extends Page implements HasForms
             'pdf_template_color' => '#1e40af',
             'tax_rate' => 19,
             'currency' => 'COP',
+            'invoice_template' => 'colombia.layout',
         ];
 
         foreach ($defaults as $key => $value) {
@@ -295,5 +338,42 @@ class ManageInvoiceSettings extends Page implements HasForms
             ->body('Se han restaurado los valores por defecto.')
             ->success()
             ->send();
+    }
+
+    /**
+     * Obtener el logo para la vista previa
+     */
+    protected function getLogoForPreview($get): ?string
+    {
+        $logo = $get('company_logo');
+
+        if (!$logo) {
+            return InvoiceSettings::getCompanyLogo();
+        }
+
+        // Si es un array (archivo recién subido)
+        if (is_array($logo)) {
+            $logoPath = $logo[0] ?? null;
+            if ($logoPath) {
+                return \Storage::url($logoPath);
+            }
+        }
+
+        // Si es una string (ruta existente)
+        if (is_string($logo)) {
+            // Si ya es una URL data:, devolverla tal como está
+            if (str_starts_with($logo, 'data:')) {
+                return $logo;
+            }
+
+            // Si es una ruta de archivo, convertir a URL
+            try {
+                return \Storage::url($logo);
+            } catch (\Exception $e) {
+                return InvoiceSettings::getCompanyLogo();
+            }
+        }
+
+        return InvoiceSettings::getCompanyLogo();
     }
 }

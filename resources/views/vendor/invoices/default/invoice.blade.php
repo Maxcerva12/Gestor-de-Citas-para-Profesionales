@@ -115,26 +115,26 @@
 
     <table class="mb-5 w-full">
         <thead>
-            <tr class="text-gray-500">
-                <th class="whitespace-nowrap border-b py-2 pr-2 text-left text-xs font-normal">
+            <tr class="text-gray-500" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                <th class="whitespace-nowrap border-b py-2 pr-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                     {{ __('invoices::invoice.description') }}
                 </th>
-                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal">
+                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                     {{ __('invoices::invoice.quantity') }}
                 </th>
-                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal">
+                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                     {{ __('invoices::invoice.unit_price') }}
                 </th>
 
                 @if ($hasTaxes)
-                    <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal">
+                    <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                         {{ __('invoices::invoice.tax') }}
                     </th>
                 @else
                     <th class="p-0"></th>
                 @endif
 
-                <th class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs font-normal">
+                <th class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                     {{ __('invoices::invoice.amount') }}
                 </th>
             </tr>
@@ -239,10 +239,10 @@
                 {{-- empty space --}}
                 <td class="py-2 pr-2"></td>
                 <td class="p-2 text-sm" colspan="3">
-                    <strong>{{ __('invoices::invoice.total_amount') }}</strong>
+                    <strong style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">{{ __('invoices::invoice.total_amount') }}</strong>
                 </td>
                 <td class="whitespace-nowrap py-2 pl-2 text-right text-sm">
-                    <strong>
+                    <strong style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                         {{ $invoice->formatMoney($invoice->totalAmount()) }}
                     </strong>
                 </td>
