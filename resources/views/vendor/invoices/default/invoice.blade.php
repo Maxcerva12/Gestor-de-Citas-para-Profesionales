@@ -1,317 +1,323 @@
-<div>
-    <table class="mb-8 w-full">
-        <tbody>
-            <tr>
-                <td class="p-0 align-top">
-                    <h1 class="mb-1 text-2xl">
-                        <strong>{{ $invoice->getTypeLabel() }}</strong>
-                    </h1>
-                    <p class="mb-5 text-sm">
+<div class="bg-white min-h-screen">
+    <!-- Professional Header -->
+    <div class="border-b-2 mb-6" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+        <div class="flex justify-between items-start py-6">
+            <div class="flex-1">
+                <h1 class="text-4xl font-bold mb-2" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                    FACTURA DE VENTA
+                </h1>
+                <div class="text-sm text-gray-600 mb-4">
+                    Estado: <span class="font-semibold px-2 py-1 rounded text-white text-xs" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                         {{ $invoice->getStateLabel() }}
-                    </p>
+                    </span>
+                </div>
+            </div>
+            @if ($invoice->logo)
+                <div class="text-right">
+                    <img src="{{ $invoice->logo }}" alt="Logo Empresa" class="h-24 w-auto">
+                </div>
+            @endif
+        </div>
+    </div>
 
-                    <table class="w-full">
-                        <tbody>
-                            <tr class="text-xs">
-                                <td class="whitespace-nowrap pr-2">
-                                    <strong>{{ __('invoices::invoice.serial_number') }} </strong>
-                                </td>
-                                <td class="whitespace-nowrap" width="100%">
-                                    <strong>{{ $invoice->serial_number }}</strong>
-                                </td>
-                            </tr>
-                            <tr class="text-xs">
-                                <td class="whitespace-nowrap pr-2">
-                                    {{ __('invoices::invoice.created_at') }}
-                                </td>
-                                <td class="" width="100%">
-                                    {{ $invoice->created_at?->format(config('invoices.date_format')) }}
-                                </td>
-                            </tr>
-                            @if ($invoice->due_at)
-                                <tr class="text-xs">
-                                    <td class="whitespace-nowrap pr-2">
-                                        {{ __('invoices::invoice.due_at') }}
-                                    </td>
-                                    <td class="" width="100%">
-                                        {{ $invoice->due_at->format(config('invoices.date_format')) }}
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($invoice->paid_at)
-                                <tr class="text-xs">
-                                    <td class="whitespace-nowrap pr-2">
-                                        {{ __('invoices::invoice.paid_at') }}
-                                    </td>
-                                    <td class="" width="100%">
-                                        {{ $invoice->paid_at->format(config('invoices.date_format')) }}
-                                    </td>
-                                </tr>
-                            @endif
-
-                            @foreach ($invoice->fields as $key => $value)
-                                <tr class="text-xs">
-                                    <td class="whitespace-nowrap pr-2">
-                                        {{ $key }}
-                                    </td>
-                                    <td class="" width="100%">
-                                        {{ $value }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </td>
-                @if ($invoice->logo)
-                    <td class="p-0 align-top" width="20%">
-                        <img src="{{ $invoice->logo }}" alt="logo" height="100">
-                    </td>
+    <!-- Invoice Information Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Invoice Details -->
+        <div class="bg-gray-50 p-6 rounded">
+            <h2 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">INFORMACIÓN DE FACTURA</h2>
+            <div class="space-y-3">
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="font-semibold text-gray-700">No. Factura:</span>
+                    <span class="col-span-2 font-bold" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                        {{ $invoice->serial_number }}
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="font-semibold text-gray-700">Fecha Emisión:</span>
+                    <span class="col-span-2 text-gray-800">
+                        {{ $invoice->created_at?->format(config('invoices.date_format')) }}
+                    </span>
+                </div>
+                @if ($invoice->due_at)
+                    <div class="grid grid-cols-3 gap-2">
+                        <span class="font-semibold text-gray-700">Vencimiento:</span>
+                        <span class="col-span-2 text-gray-800">
+                            {{ $invoice->due_at->format(config('invoices.date_format')) }}
+                        </span>
+                    </div>
                 @endif
-            </tr>
-
-        </tbody>
-    </table>
-
-    <table class="mb-6 w-full">
-        <tbody>
-            <tr>
-                <td class="p-0 align-top" width="33%">
-                    <p class="mb-1 pb-1 text-xs text-gray-500">{{ __('invoices::invoice.from') }}</p>
-
-                    @include('invoices::default.includes.party', [
-                        'party' => $invoice->seller,
-                    ])
-                </td>
-                <td class="p-0 align-top" width="33%">
-                    <p class="mb-1 pb-1 text-xs text-gray-500">{{ __('invoices::invoice.to') }}</p>
-
-                    @include('invoices::default.includes.party', [
-                        'party' => $invoice->buyer,
-                    ])
-                </td>
-
-                @if ($invoice->buyer->shipping_address)
-                    <td class="p-0 align-top" width="33%">
-
-                        <p class="mb-1 whitespace-nowrap pb-1 text-xs text-gray-500">
-                            {{ __('invoices::invoice.shipping_to') }}
-                        </p>
-
-                        @if ($invoice->buyer->shipping_address)
-                            @include('invoices::default.includes.address', [
-                                'address' => $invoice->buyer->shipping_address,
-                            ])
-                        @endif
-                    </td>
+                @if ($invoice->paid_at)
+                    <div class="grid grid-cols-3 gap-2">
+                        <span class="font-semibold text-gray-700">Fecha Pago:</span>
+                        <span class="col-span-2 text-green-600 font-semibold">
+                            {{ $invoice->paid_at->format(config('invoices.date_format')) }}
+                        </span>
+                    </div>
                 @endif
+            </div>
+        </div>
 
-            </tr>
-        </tbody>
-    </table>
+        <!-- Additional Fields -->
+        @if ($invoice->fields && count($invoice->fields) > 0)
+            <div class="bg-gray-50 p-6 rounded">
+                <h2 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">INFORMACIÓN ADICIONAL</h2>
+                <div class="space-y-3">
+                    @foreach ($invoice->fields as $key => $value)
+                        <div class="grid grid-cols-3 gap-2">
+                            <span class="font-semibold text-gray-700">{{ $key }}:</span>
+                            <span class="col-span-2 text-gray-800">{{ $value }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <!-- Business Information -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Seller Information -->
+        <div class="border border-gray-300 rounded p-6">
+            <h3 class="text-lg font-bold mb-4 text-white px-4 py-2 rounded-t" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}; margin: -24px -24px 16px -24px;">
+                📋 DATOS DEL EMISOR
+            </h3>
+            <div class="text-sm text-gray-700 leading-relaxed">
+                @include('invoices::default.includes.party', ['party' => $invoice->seller])
+            </div>
+        </div>
+
+        <!-- Buyer Information -->
+        <div class="border border-gray-300 rounded p-6">
+            <h3 class="text-lg font-bold mb-4 text-white px-4 py-2 rounded-t" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}; margin: -24px -24px 16px -24px;">
+                👤 DATOS DEL CLIENTE
+            </h3>
+            <div class="text-sm text-gray-700 leading-relaxed">
+                @include('invoices::default.includes.party', ['party' => $invoice->buyer])
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping Address (if exists) -->
+    @if ($invoice->buyer->shipping_address)
+        <div class="border border-gray-300 rounded p-6 mb-8">
+            <h3 class="text-lg font-bold mb-4 text-white px-4 py-2 rounded-t" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}; margin: -24px -24px 16px -24px;">
+                🚚 DIRECCIÓN DE ENVÍO
+            </h3>
+            <div class="text-sm text-gray-700 leading-relaxed">
+                @include('invoices::default.includes.address', ['address' => $invoice->buyer->shipping_address])
+            </div>
+        </div>
+    @endif
 
     @php
         $hasTaxes = $invoice->tax_label || $invoice->totalTaxAmount()->isPositive();
     @endphp
 
-    <table class="mb-5 w-full">
-        <thead>
-            <tr class="text-gray-500" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                <th class="whitespace-nowrap border-b py-2 pr-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                    {{ __('invoices::invoice.description') }}
-                </th>
-                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                    {{ __('invoices::invoice.quantity') }}
-                </th>
-                <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                    {{ __('invoices::invoice.unit_price') }}
-                </th>
+    <!-- Professional Items Table -->
+    <div class="mb-8">
+        <div class="border border-gray-300 rounded overflow-hidden">
+            <!-- Table Header -->
+            <div class="text-white px-6 py-4" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                <h2 class="text-xl font-bold">📋 DETALLE DE PRODUCTOS Y SERVICIOS</h2>
+            </div>
+            
+            <!-- Table Content -->
+            <div class="bg-white">
+                <table class="w-full">
+                    <thead class="bg-gray-100 border-b-2 border-gray-300">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                Descripción
+                            </th>
+                            <th class="px-4 py-4 text-center font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                Cant.
+                            </th>
+                            <th class="px-4 py-4 text-right font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                Precio Unit.
+                            </th>
+                            @if ($hasTaxes)
+                                <th class="px-4 py-4 text-right font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                    Impuesto
+                                </th>
+                            @endif
+                            <th class="px-6 py-4 text-right font-bold text-gray-800 text-sm uppercase tracking-wide">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach ($invoice->items as $item)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-gray-900">{{ $item->label }}</div>
+                                    @if ($item->description)
+                                        <div class="text-sm text-gray-600 mt-1">{{ $item->description }}</div>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-4 text-center">
+                                    <span class="bg-gray-100 px-3 py-1 rounded-full text-sm font-semibold text-gray-800">
+                                        {{ $item->quantity }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 text-right font-medium text-gray-800">
+                                    {{ $item->formatMoney($item->unit_price) }}
+                                </td>
+                                @if ($hasTaxes)
+                                    <td class="px-4 py-4 text-right text-gray-700">
+                                        @if ($item->unit_tax !== null && $item->tax_percentage !== null)
+                                            <div class="text-right">
+                                                <div class="font-medium">{{ $item->formatMoney($item->unit_tax) }}</div>
+                                                <div class="text-xs text-gray-500">({{ $item->formatPercentage($item->tax_percentage) }})</div>
+                                            </div>
+                                        @elseif ($item->unit_tax !== null)
+                                            <span class="font-medium">{{ $item->formatMoney($item->unit_tax) }}</span>
+                                        @elseif($item->tax_percentage !== null)
+                                            <span class="font-medium">{{ $item->formatPercentage($item->tax_percentage) }}</span>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                @endif
+                                <td class="px-6 py-4 text-right font-bold text-gray-900">
+                                    {{ $item->formatMoney($item->totalAmount()) }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                @if ($hasTaxes)
-                    <th class="whitespace-nowrap border-b p-2 text-left text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                        {{ __('invoices::invoice.tax') }}
-                    </th>
-                @else
-                    <th class="p-0"></th>
-                @endif
+            <!-- Summary Section -->
+            <div class="bg-gray-50 border-t-2 border-gray-300">
+                <div class="px-6 py-6">
+                    <div class="max-w-md ml-auto space-y-3">
+                        <!-- Subtotal -->
+                        <div class="flex justify-between py-2 border-b border-gray-300">
+                            <span class="font-semibold text-gray-700 text-lg">Subtotal:</span>
+                            <span class="font-bold text-gray-900 text-lg">{{ $invoice->formatMoney($invoice->subTotalAmount()) }}</span>
+                        </div>
 
-                <th class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs font-normal" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                    {{ __('invoices::invoice.amount') }}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($invoice->items as $item)
-                <tr>
-                    <td @class(['align-top py-2 pr-2', 'border-b' => !$loop->last])>
-                        <p class="text-xs"><strong>{{ $item->label }}</strong></p>
-                        @if ($item->description)
-                            <p class="pt-1 text-xs">{{ $item->description }}</p>
+                        <!-- Discounts -->
+                        @if ($invoice->discounts)
+                            @foreach ($invoice->discounts as $discount)
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-700">
+                                        {{ $discount->name ?? 'Descuento' }}
+                                        @if ($discount->percent_off)
+                                            <span class="text-sm">({{ $discount->formatPercentage($discount->percent_off) }})</span>
+                                        @endif
+                                    </span>
+                                    <span class="font-semibold text-red-600">
+                                        -{{ $invoice->formatMoney($discount->computeDiscountAmountOn($invoice->subTotalAmount())) }}
+                                    </span>
+                                </div>
+                            @endforeach
+                            <div class="flex justify-between py-2 border-b border-gray-300">
+                                <span class="font-semibold text-gray-700">Subtotal con Descuento:</span>
+                                <span class="font-bold text-gray-900">{{ $invoice->formatMoney($invoice->subTotalDiscountedAmount()) }}</span>
+                            </div>
                         @endif
-                    </td>
-                    <td class="whitespace-nowrap border-b p-2 align-top text-xs">
-                        <p>{{ $item->quantity }}</p>
-                    </td>
-                    <td class="whitespace-nowrap border-b p-2 align-top text-xs">
-                        <p>{{ $item->formatMoney($item->unit_price) }}</p>
-                    </td>
 
-                    @if ($hasTaxes)
-                        <td class="whitespace-nowrap border-b p-2 align-top text-xs">
-                            @if ($item->unit_tax !== null && $item->tax_percentage !== null)
-                                <p>
-                                    {{ $item->formatMoney($item->unit_tax) }}
-                                    ({{ $item->formatPercentage($item->tax_percentage) }})
-                                </p>
-                            @elseif ($item->unit_tax !== null)
-                                <p>{{ $item->formatMoney($item->unit_tax) }}</p>
-                            @elseif($item->tax_percentage !== null)
-                                <p>{{ $item->formatPercentage($item->tax_percentage) }}</p>
-                            @else
-                                <p>-</p>
-                            @endif
-                        </td>
-                    @else
-                        <td class="p-0"></td>
-                    @endif
+                        <!-- Taxes -->
+                        @if ($hasTaxes)
+                            <div class="flex justify-between py-2 border-b border-gray-300">
+                                <span class="font-semibold text-gray-700">{{ $invoice->tax_label ?? 'IVA Colombia (19%)' }}:</span>
+                                <span class="font-bold text-gray-900">{{ $invoice->formatMoney($invoice->totalTaxAmount()) }}</span>
+                            </div>
+                        @endif
 
-                    <td class="whitespace-nowrap border-b py-2 pl-2 text-right align-top text-xs">
-                        <p>{{ $item->formatMoney($item->totalAmount()) }}</p>
-                    </td>
-                </tr>
-            @endforeach
+                        <!-- Total -->
+                        <div class="flex justify-between py-4 border-2 rounded px-4" style="border-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}; background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}10">
+                            <span class="text-2xl font-bold" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">TOTAL A PAGAR:</span>
+                            <span class="text-2xl font-bold" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                                {{ $invoice->formatMoney($invoice->totalAmount()) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <tr>
-                {{-- empty space --}}
-                <td class="py-2 pr-2"></td>
-                <td class="border-b p-2 text-xs" colspan="3">
-                    {{ __('invoices::invoice.subtotal_amount') }}
-                </td>
-                <td class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs">
-                    {{ $invoice->formatMoney($invoice->subTotalAmount()) }}
-                </td>
-            </tr>
-
-            @if ($invoice->discounts)
-                @foreach ($invoice->discounts as $discount)
-                    <tr>
-                        {{-- empty space --}}
-                        <td class="py-2 pr-2"></td>
-                        <td class="border-b p-2 text-xs" colspan="3">
-                            {{ __($discount->name) ?? __('invoices::invoice.discount_name') }}
-                            @if ($discount->percent_off)
-                                ({{ $discount->formatPercentage($discount->percent_off) }})
-                            @endif
-                        </td>
-                        <td class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs">
-                            {{ $invoice->formatMoney($discount->computeDiscountAmountOn($invoice->subTotalAmount())?->multipliedBy(-1)) }}
-                        </td>
-                    </tr>
-                @endforeach
-
-                <tr>
-                    {{-- empty space --}}
-                    <td class="py-2 pr-2"></td>
-                    <td class="border-b p-2 text-xs" colspan="3">
-                        {{ __('invoices::invoice.subtotal_discounted_amount') }}
-                    </td>
-                    <td class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs">
-                        {{ $invoice->formatMoney($invoice->subTotalDiscountedAmount()) }}
-                    </td>
-                </tr>
-            @endif
-
-
-
-            @if ($hasTaxes)
-                <tr>
-                    {{-- empty space --}}
-                    <td class="py-2 pr-2"></td>
-                    <td class="border-b p-2 text-xs" colspan="3">
-                        {{ $invoice->tax_label ?? __('invoices::invoice.tax_label') }}
-                    </td>
-                    <td class="whitespace-nowrap border-b py-2 pl-2 text-right text-xs">
-                        {{ $invoice->formatMoney($invoice->totalTaxAmount()) }}
-                    </td>
-                </tr>
-            @endif
-
-            <tr>
-                {{-- empty space --}}
-                <td class="py-2 pr-2"></td>
-                <td class="p-2 text-sm" colspan="3">
-                    <strong style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">{{ __('invoices::invoice.total_amount') }}</strong>
-                </td>
-                <td class="whitespace-nowrap py-2 pl-2 text-right text-sm">
-                    <strong style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                        {{ $invoice->formatMoney($invoice->totalAmount()) }}
-                    </strong>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
+    <!-- Additional Description -->
     @if ($invoice->description)
-        <p class="mb-2 text-sm">
-            <strong> {{ __('invoices::invoice.description') }} </strong>
-        </p>
-        <p class="whitespace-pre-line text-xs">{!! $invoice->description !!}</p>
+        <div class="mb-8">
+            <div class="border border-gray-300 rounded overflow-hidden">
+                <div class="text-white px-6 py-4" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                    <h3 class="text-lg font-bold">📄 OBSERVACIONES Y NOTAS ADICIONALES</h3>
+                </div>
+                <div class="p-6 bg-white">
+                    <div class="text-gray-700 leading-relaxed whitespace-pre-line">
+                        {!! $invoice->description !!}
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
 
+    <!-- Payment Instructions -->
     @if ($invoice->paymentInstructions)
-        <div class="mt-12">
-            @foreach ($invoice->paymentInstructions as $paymentInstruction)
-                <div @class([
-                    'border-b' => !$loop->last,
-                    '-ml-12 -mr-12 px-12 bg-zinc-100 py-6',
-                ])>
-
-                    <table class="w-full">
-                        <tbody>
-                            <tr>
-                                <td class="w-full p-0 align-top">
+        <div class="mb-8">
+            <div class="border border-gray-300 rounded overflow-hidden">
+                <div class="text-white px-6 py-4" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
+                    <h3 class="text-lg font-bold">💳 INSTRUCCIONES DE PAGO</h3>
+                </div>
+                <div class="bg-white">
+                    @foreach ($invoice->paymentInstructions as $paymentInstruction)
+                        <div class="p-6 {{ !$loop->last ? 'border-b border-gray-200' : '' }}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
                                     @if ($paymentInstruction->name)
-                                        <p class="mb-1 text-xs">
-                                            <strong>{!! $paymentInstruction->name !!}</strong>
-                                        </p>
+                                        <h4 class="text-xl font-bold text-gray-900 mb-3">
+                                            {!! $paymentInstruction->name !!}
+                                        </h4>
                                     @endif
 
                                     @if ($paymentInstruction->description)
-                                        <p class="mb-3 text-xs">
+                                        <p class="text-gray-700 mb-4 leading-relaxed">
                                             {!! $paymentInstruction->description !!}
                                         </p>
                                     @endif
 
-                                    <table>
-                                        <tbody>
+                                    <div class="bg-gray-50 p-4 rounded border">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             @foreach ($paymentInstruction->fields as $key => $value)
-                                                <tr>
+                                                <div class="flex justify-between py-2 border-b border-gray-200">
                                                     @if (is_string($key))
-                                                        <td class="py-1 pr-5 text-xs">{{ $key }}</td>
-                                                        <td class="py-1 pl-2 text-xs text-gray-500">
-                                                            {!! $value !!}
-                                                        </td>
+                                                        <span class="font-semibold text-gray-800">{{ $key }}:</span>
+                                                        <span class="text-gray-700 text-right ml-4 font-medium">{!! $value !!}</span>
                                                     @else
-                                                        <td class="py-1 pr-5 text-xs" colspan="2">
-                                                            {!! $value !!}
-                                                        </td>
+                                                        <span class="text-gray-700 col-span-2 font-medium">{!! $value !!}</span>
                                                     @endif
-                                                </tr>
+                                                </div>
                                             @endforeach
-                                        </tbody>
-                                    </table>
-                                </td>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 @if ($paymentInstruction->qrcode)
-                                    <td class="min-w-28 p-0 align-top">
-                                        <img src="{{ $paymentInstruction->qrcode }}" class="w-28 bg-white">
-                                    </td>
+                                    <div class="ml-6 flex-shrink-0">
+                                        <div class="bg-white p-4 border-2 border-gray-300 rounded text-center">
+                                            <img src="{{ $paymentInstruction->qrcode }}" class="w-32 h-32 mx-auto" alt="Código QR">
+                                            <p class="text-xs text-gray-600 mt-2 font-semibold">Escanea para pagar</p>
+                                        </div>
+                                    </div>
                                 @endif
-                            </tr>
-                        </tbody>
-                    </table>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+            </div>
         </div>
     @endif
 
+    <!-- Professional Footer -->
+    <div class="text-center py-6 border-t-2 border-gray-300 text-gray-600">
+        <p class="text-sm">
+            Esta factura ha sido generada electrónicamente y es válida sin firma autógrafa.
+        </p>
+        <p class="text-xs mt-2">
+            Para consultas sobre esta factura, contacte con nuestro departamento de facturación.
+        </p>
+    </div>
 
 </div>

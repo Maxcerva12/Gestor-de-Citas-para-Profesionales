@@ -32,7 +32,7 @@
                         {{ $invoice->serial_number }} • {{ $invoice->formatMoney($invoice->totalAmount()) }}
                     </td>
                     <td class="text-right">
-                        <p class="dompdf-page p-2">{{ __('invoices::invoice.page') }} </p>
+                        <p class="p-2">Página <span class="dompdf-page"></span></p>
                     </td>
                 </tr>
             </tbody>
