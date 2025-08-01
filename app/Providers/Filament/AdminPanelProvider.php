@@ -26,6 +26,7 @@ use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use App\Filament\Widgets\TotalAppointmentsChart;
 use App\Filament\Widgets\AppointmentsByStatusChart;
+use App\Filament\Pages\Auth\CustomLogin;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -39,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('Fundacion Odontológica Zoila Padilla')
-            ->login()
+            ->login(CustomLogin::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::Blue,

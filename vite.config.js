@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/css/odontogram-professional.css',
+                'resources/css/custom-login.css',
             ],
             refresh: true,
         }),
