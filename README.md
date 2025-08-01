@@ -81,3 +81,16 @@ composer dump-autoload -o
 3:
 php artisan icons:cache
 php artisan filament:cache-components
+
+
+## este es el orden en el que se debe ejecutar los comandos:
+
+composer dump-autoload -o
+
+php artisan icons:cache
+
+php artisan filament:cache-components
+
+php artisan config:cache
+
+php artisan route:cache
