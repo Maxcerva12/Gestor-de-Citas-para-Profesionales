@@ -105,13 +105,13 @@ class InvoiceController extends Controller
             'serial_number' => 'FAC250001',
             'type' => 'invoice',
             'state' => 'draft',
-            'description' => 'Factura de muestra para preview',
+            'description' => 'Factura de servicios odontológicos - Muestra para preview',
             'due_at' => now()->addDays(30),
             'seller_information' => config('invoices.default_seller'),
             'buyer_information' => [
-                'company' => 'Cliente de Ejemplo S.A.S.',
-                'name' => 'Juan Pérez',
-                'email' => 'juan.perez@ejemplo.com',
+                'company' => null,
+                'name' => 'María Pérez González',
+                'email' => 'maria.perez@ejemplo.com',
                 'phone' => '+57 (1) 234-5678',
                 'address' => [
                     'street' => 'Calle 123 #45-67',
@@ -121,27 +121,37 @@ class InvoiceController extends Controller
                     'country' => 'Colombia',
                 ],
                 'fields' => [
-                    'NIT' => '900.123.456-7',
-                    'Régimen' => 'Común',
+                    'Cédula' => '52.123.456',
+                    'EPS' => 'SURA',
+                    'Tipo de Documento' => 'Cédula de Ciudadanía',
                 ],
             ],
         ]);
 
-        // Simular items
+        // Crear items de muestra para servicios odontológicos
+        $taxRate = \App\Models\InvoiceSettings::get('tax_rate', 19);
+
         $invoice->setRelation('items', collect([
             (object) [
-                'label' => 'Consultoría en Software',
-                'description' => 'Desarrollo de aplicación web personalizada',
-                'unit_price' => \Brick\Money\Money::of(500000, 'COP'),
-                'quantity' => 2,
-                'tax_percentage' => 19,
+                'label' => 'Limpieza Dental Profunda',
+                'description' => 'Profilaxis dental completa con aplicación de flúor',
+                'unit_price' => \Brick\Money\Money::of(120000, 'COP'),
+                'quantity' => 1,
+                'tax_percentage' => $taxRate,
             ],
             (object) [
-                'label' => 'Hosting y Dominio',
-                'description' => 'Servicio anual de hosting y dominio',
-                'unit_price' => \Brick\Money\Money::of(200000, 'COP'),
+                'label' => 'Obturación en Resina',
+                'description' => 'Restauración dental con resina fotopolimerizable',
+                'unit_price' => \Brick\Money\Money::of(180000, 'COP'),
+                'quantity' => 2,
+                'tax_percentage' => $taxRate,
+            ],
+            (object) [
+                'label' => 'Consulta Odontológica',
+                'description' => 'Consulta de control y valoración general',
+                'unit_price' => \Brick\Money\Money::of(80000, 'COP'),
                 'quantity' => 1,
-                'tax_percentage' => 19,
+                'tax_percentage' => $taxRate,
             ],
         ]));
 

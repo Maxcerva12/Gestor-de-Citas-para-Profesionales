@@ -5,7 +5,7 @@
             <tr>
                 <td class="p-0 align-top">
                     <h1 class="mb-1 text-3xl font-bold" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                        FACTURA DE VENTA
+                        FACTURA DE SERVICIOS ODONTOLÓGICOS
                     </h1>
                     <p class="mb-2 text-sm font-semibold text-gray-600">
                         {{ $invoice->getStateLabel() }}

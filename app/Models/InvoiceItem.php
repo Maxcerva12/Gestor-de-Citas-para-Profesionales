@@ -27,6 +27,24 @@ class InvoiceItem extends BaseInvoiceItem
         ];
     }
 
+    /**
+     * Boot method para establecer COP por defecto
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Forzar COP como moneda
+            $model->currency = 'COP';
+        });
+
+        static::updating(function ($model) {
+            // Forzar COP como moneda
+            $model->currency = 'COP';
+        });
+    }
+
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);

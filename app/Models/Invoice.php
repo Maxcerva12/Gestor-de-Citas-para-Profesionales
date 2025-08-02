@@ -18,7 +18,26 @@ class Invoice extends BaseInvoice
     protected $attributes = [
         'type' => 'invoice',
         'state' => 'draft',
+        'currency' => 'COP',
     ];
+
+    /**
+     * Boot method para establecer valores por defecto
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Forzar COP como moneda
+            $model->currency = 'COP';
+        });
+
+        static::updating(function ($model) {
+            // Forzar COP como moneda
+            $model->currency = 'COP';
+        });
+    }
 
     protected function casts(): array
     {

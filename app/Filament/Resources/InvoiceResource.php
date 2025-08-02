@@ -16,6 +16,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\Model;
 
 class InvoiceResource extends Resource
 {
@@ -23,11 +25,11 @@ class InvoiceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationLabel = 'Facturas';
+    protected static ?string $navigationLabel = 'Facturas de Servicios';
 
-    protected static ?string $modelLabel = 'Factura';
+    protected static ?string $modelLabel = 'Factura de Servicio';
 
-    protected static ?string $pluralModelLabel = 'Facturas';
+    protected static ?string $pluralModelLabel = 'Facturas de Servicios';
 
     protected static ?string $navigationGroup = 'Facturación';
 
@@ -38,8 +40,9 @@ class InvoiceResource extends Resource
                 Forms\Components\Section::make('Información General')
                     ->schema([
                         Forms\Components\Select::make('type')
-                            ->label('Tipo de Documento')
+                            ->label('Tipo de Factura')
                             ->options(InvoiceType::class)
+                            ->native(false)
                             ->default('invoice')
                             ->required()
                             ->live(),
@@ -47,6 +50,7 @@ class InvoiceResource extends Resource
                         Forms\Components\Select::make('state')
                             ->label('Estado')
                             ->options(InvoiceState::class)
+                            ->native(false)
                             ->default('draft')
                             ->required(),
 
@@ -56,51 +60,79 @@ class InvoiceResource extends Resource
                             ->dehydrated(),
 
                         Forms\Components\Textarea::make('description')
-                            ->label('Descripción')
+                            ->label('Descripción/Observaciones')
+                            ->placeholder('Describa los servicios prestados o agregue observaciones importantes')
                             ->rows(2)
                             ->columnSpanFull(),
 
                         Forms\Components\DatePicker::make('due_at')
                             ->label('Fecha de Vencimiento')
                             ->default(now()->addDays(30))
+                            ->native(false)
                             ->required(),
 
                         Forms\Components\DateTimePicker::make('paid_at')
                             ->label('Fecha de Pago')
+                            ->native(false)
                             ->visible(fn($record) => $record?->state === InvoiceState::Paid),
+
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Cliente')
+                Forms\Components\Section::make('Paciente')
                     ->schema([
                         Forms\Components\Select::make('buyer_id')
-                            ->label('Cliente')
+                            ->label('Paciente')
                             ->relationship('client', 'name')
-                            ->searchable()
+                            ->getOptionLabelFromRecordUsing(
+                                fn(Client $record): string =>
+                                $record->name . ' ' . ($record->apellido ?? '') . ' - ' . ($record->numero_documento ?? 'Sin documento')
+                            )
+                            ->searchable(['name', 'apellido', 'numero_documento', 'email'])
                             ->preload()
+                            ->live()
+
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nombre')
+                                    ->required(),
+                                Forms\Components\TextInput::make('apellido')
+                                    ->label('Apellido')
                                     ->required(),
                                 Forms\Components\TextInput::make('email')
                                     ->label('Correo Electrónico')
                                     ->email(),
                                 Forms\Components\TextInput::make('phone')
                                     ->label('Teléfono'),
-                                Forms\Components\TextInput::make('document_number')
-                                    ->label('Número de Documento'),
+                                Forms\Components\Select::make('tipo_documento')
+                                    ->label('Tipo de Documento')
+                                    ->options([
+                                        'CC' => 'Cédula de Ciudadanía',
+                                        'CE' => 'Cédula de Extranjería',
+                                        'TI' => 'Tarjeta de Identidad',
+                                        'PP' => 'Pasaporte',
+                                    ])
+                                    ->default('CC')
+                                    ->required(),
+                                Forms\Components\TextInput::make('numero_documento')
+                                    ->label('Número de Documento')
+                                    ->required(),
                                 Forms\Components\Textarea::make('address')
                                     ->label('Dirección'),
                             ])
                             ->required(),
 
                         Forms\Components\KeyValue::make('buyer_information.fields')
-                            ->label('Información Adicional del Cliente')
+                            ->label('Información Adicional del Paciente')
                             ->keyLabel('Campo')
-                            ->valueLabel('Valor'),
+                            ->valueLabel('Valor')
+                            ->default([
+                                'Tipo de Documento' => 'Cédula de Ciudadanía',
+                                'EPS' => '',
+                            ]),
                     ]),
 
-                Forms\Components\Section::make('Información del Vendedor')
+                Forms\Components\Section::make('Información de la Clínica')
                     ->schema([
                         Forms\Components\KeyValue::make('seller_information.fields')
                             ->label('Campos Personalizados')
@@ -108,9 +140,78 @@ class InvoiceResource extends Resource
                             ->valueLabel('Valor')
                             ->default([
                                 'Régimen' => 'Común',
-                                'Actividad Económica' => 'Servicios Profesionales',
+                                'Actividad Económica' => 'Servicios Odontológicos',
+                                'Registro Sanitario' => 'HABILITACIÓN ODONTOLÓGICA',
                             ]),
                     ]),
+
+                Forms\Components\Section::make('Servicios Prestados')
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->relationship('items')
+                            ->label('Items de la Factura')
+                            ->schema([
+                                Forms\Components\TextInput::make('label')
+                                    ->label('Servicio')
+                                    ->placeholder('Ej: Limpieza dental, Ortodoncia, etc.')
+                                    ->required()
+                                    ->columnSpan(2),
+
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Descripción del Servicio')
+                                    ->placeholder('Descripción detallada del servicio prestado')
+                                    ->rows(2)
+                                    ->columnSpanFull(),
+
+                                Forms\Components\TextInput::make('unit_price')
+                                    ->label('Precio Unitario')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $quantity = $get('quantity') ?? 1;
+                                        $taxRate = \App\Models\InvoiceSettings::get('tax_rate', 19);
+                                        $subtotal = $state * $quantity;
+                                        $tax = $subtotal * ($taxRate / 100);
+                                        $total = $subtotal + $tax;
+
+                                        $set('tax_percentage', $taxRate);
+                                    }),
+
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Cantidad')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->minValue(1)
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $unitPrice = $get('unit_price') ?? 0;
+                                        $taxRate = \App\Models\InvoiceSettings::get('tax_rate', 19);
+                                        $subtotal = $unitPrice * $state;
+                                        $tax = $subtotal * ($taxRate / 100);
+                                        $total = $subtotal + $tax;
+
+                                        $set('tax_percentage', $taxRate);
+                                    }),
+
+                                Forms\Components\TextInput::make('tax_percentage')
+                                    ->label('IVA (%)')
+                                    ->numeric()
+                                    ->default(fn() => \App\Models\InvoiceSettings::get('tax_rate', 19))
+                                    ->suffix('%')
+                                    ->disabled()
+                                    ->dehydrated(),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(1)
+                            ->addActionLabel('Agregar Servicio')
+                            ->reorderableWithButtons()
+                            ->collapsible()
+                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? 'Nuevo Servicio'),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -129,9 +230,20 @@ class InvoiceResource extends Resource
                     ->color(fn(InvoiceType $state): string => $state->getColor()),
 
                 Tables\Columns\TextColumn::make('client.name')
-                    ->label('Cliente')
-                    ->searchable()
-                    ->sortable(),
+                    ->label('Paciente')
+                    ->formatStateUsing(
+                        fn($record) =>
+                        $record->client ?
+                        $record->client->name . ' ' . ($record->client->apellido ?? '') :
+                        'Sin paciente'
+                    )
+                    ->searchable(['client.name', 'client.apellido', 'client.numero_documento']),
+
+                Tables\Columns\TextColumn::make('items_count')
+                    ->label('Servicios')
+                    ->counts('items')
+                    ->badge()
+                    ->color('primary'),
 
                 Tables\Columns\TextColumn::make('state')
                     ->label('Estado')
@@ -190,6 +302,9 @@ class InvoiceResource extends Resource
                         ]);
                     })
                     ->requiresConfirmation()
+                    ->modalHeading('¿Confirmar pago de la factura?')
+                    ->modalDescription('Esta acción marcará la factura como pagada y registrará la fecha actual como fecha de pago.')
+                    ->modalSubmitActionLabel('Confirmar Pago')
                     ->visible(fn(Invoice $record): bool => $record->state !== InvoiceState::Paid),
 
                 Tables\Actions\EditAction::make(),
@@ -220,5 +335,53 @@ class InvoiceResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('state', InvoiceState::Draft)->count();
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    // Permission checks
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_invoice');
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('view_invoice', $record);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Gate::allows('create_invoice');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('update_invoice', $record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::check() && Gate::allows('delete_invoice', $record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::check() && Gate::allows('delete_any_invoice');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::check() && Gate::allows('view_any_invoice');
     }
 }

@@ -35,6 +35,55 @@ class InvoiceSettingsResource extends Resource
     protected static ?int $navigationSort = 10;
 
     protected static ?string $slug = 'invoice-settings';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+
+    // Comprobaciones de permisos personalizadas para InvoiceSettings
+    public static function canViewAny(): bool
+    {
+        return \Auth::check() && \Gate::allows('view_any_invoice::settings');
+    }
+
+    public static function canView($record): bool
+    {
+        return \Auth::check() && \Gate::allows('view_invoice::settings', $record);
+    }
+
+    public static function canCreate(): bool
+    {
+        return \Auth::check() && \Gate::allows('create_invoice::settings');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return \Auth::check() && \Gate::allows('update_invoice::settings', $record);
+    }
+
+    public static function canDelete($record): bool
+    {
+        return \Auth::check() && \Gate::allows('delete_invoice::settings', $record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return \Auth::check() && \Gate::allows('delete_any_invoice::settings');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return \Auth::check() && \Gate::allows('view_any_invoice::settings');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -324,8 +373,4 @@ class InvoiceSettingsResource extends Resource
         ];
     }
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
 }

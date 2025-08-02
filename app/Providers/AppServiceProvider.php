@@ -11,6 +11,8 @@ use App\Models\Price; // Añadir esta importación
 use App\Observers\PriceObserver; // Añadir esta importación
 use App\Models\Client; // Añadir esta importación
 use App\Observers\ClientOdontogramObserver; // Añadir esta importación
+use App\Models\InvoiceItem; // Añadir esta importación
+use App\Observers\InvoiceItemObserver; // Añadir esta importación
 // use App\Models\Cashier\User;
 use Laravel\Cashier\Cashier;
 use App\Models\User;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Appointment::observe(AppointmentObserver::class);
         Price::observe(PriceObserver::class);
         Client::observe(ClientOdontogramObserver::class);
+        InvoiceItem::observe(InvoiceItemObserver::class);
 
         // Configura el modelo de usuario para Laravel Cashier
         Cashier::useCustomerModel(User::class);

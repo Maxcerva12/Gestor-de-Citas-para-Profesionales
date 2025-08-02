@@ -91,7 +91,7 @@ class ClientResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'email', 'phone', 'city'];
+        return ['name', 'apellido', 'email', 'phone', 'numero_documento', 'city', 'aseguradora'];
     }
 
     public static function form(Form $form): Form
@@ -104,16 +104,19 @@ class ClientResource extends Resource
                             ->icon('heroicon-o-user')
                             ->schema([
                                 Forms\Components\Section::make('Datos Básicos')
-                                    ->description('Información principal del cliente')
+                                    ->description('Información principal del paciente')
                                     ->collapsible()
                                     ->schema([
                                         Forms\Components\Grid::make(3)
                                             ->schema([
                                                 Forms\Components\TextInput::make('name')
-                                                    ->label('Nombre Completo')
+                                                    ->label('Nombre')
                                                     ->required()
-                                                    ->maxLength(255)
-                                                    ->columnSpan(2),
+                                                    ->maxLength(255),
+                                                Forms\Components\TextInput::make('apellido')
+                                                    ->label('Apellido')
+                                                    ->required()
+                                                    ->maxLength(255),
                                                 Forms\Components\FileUpload::make('avatar_url')
                                                     ->label('Foto de perfil')
                                                     ->image()
@@ -139,8 +142,124 @@ class ClientResource extends Resource
                                                     ->helperText('Formato: 3XX XXX XXXX'),
                                             ]),
                                     ]),
+
+                                Forms\Components\Section::make('Documentación')
+                                    ->description('Información de identificación del paciente')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\Select::make('tipo_documento')
+                                                    ->label('Tipo de Documento')
+                                                    ->native(false)
+                                                    ->required()
+                                                    ->options([
+                                                        'CC' => 'Cédula de Ciudadanía',
+                                                        'CE' => 'Cédula de Extranjería',
+                                                        'TI' => 'Tarjeta de Identidad',
+                                                        'PP' => 'Pasaporte',
+                                                    ])
+                                                    ->default('CC'),
+                                                Forms\Components\TextInput::make('numero_documento')
+                                                    ->label('Número de Documento')
+                                                    ->required()
+                                                    ->numeric()
+                                                    ->maxLength(50)
+                                                    ->unique(ignoreRecord: true),
+                                                Forms\Components\Select::make('genero')
+                                                    ->label('Género')
+                                                    ->native(false)
+                                                    ->options([
+                                                        'Masculino' => 'Masculino',
+                                                        'Femenino' => 'Femenino',
+                                                        'Otro' => 'Otro',
+                                                    ])
+                                                    ->required(),
+                                            ]),
+                                    ]),
+
+                                Forms\Components\Section::make('Información Médica Básica')
+                                    ->description('Datos médicos importantes del paciente')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\DatePicker::make('fecha_nacimiento')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->native(false)
+                                                    ->displayFormat('d/m/Y')
+                                                    ->required(),
+                                                Forms\Components\Select::make('tipo_sangre')
+                                                    ->label('Tipo de Sangre')
+                                                    ->native(false)
+                                                    ->options([
+                                                        'A+' => 'A+',
+                                                        'A-' => 'A-',
+                                                        'B+' => 'B+',
+                                                        'B-' => 'B-',
+                                                        'AB+' => 'AB+',
+                                                        'AB-' => 'AB-',
+                                                        'O+' => 'O+',
+                                                        'O-' => 'O-',
+                                                    ]),
+                                                Forms\Components\Select::make('aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->options([
+                                                        'SaludCoop' => 'SaludCoop',
+                                                        'Sanitas' => 'Sanitas',
+                                                        'Sura' => 'Sura',
+                                                        'Compensar' => 'Compensar',
+                                                        'Famisanar' => 'Famisanar',
+                                                        'Nueva EPS' => 'Nueva EPS',
+                                                        'Medimás' => 'Medimás',
+                                                        'Coomeva EPS' => 'Coomeva EPS',
+                                                        'Comfamiliar' => 'Comfamiliar',
+                                                        'Cruz Blanca' => 'Cruz Blanca',
+                                                        'Particular' => 'Particular',
+                                                    ])
+                                                    ->searchable()
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre de la EPS/Aseguradora')
+                                                            ->required(),
+                                                    ])
+                                                    ->createOptionUsing(function ($data) {
+                                                        return $data['name'];
+                                                    })
+                                                    ->placeholder('Selecciona o ingresa una EPS'),
+                                            ]),
+
+                                        Forms\Components\Textarea::make('historial_medico')
+                                            ->label('Historial Médico Relevante')
+                                            ->placeholder('Enfermedades previas, cirugías, medicamentos actuales...')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
+
+                                        Forms\Components\Textarea::make('alergias')
+                                            ->label('Alergias Conocidas')
+                                            ->placeholder('Alergias a medicamentos, alimentos, materiales dentales...')
+                                            ->rows(2)
+                                            ->columnSpanFull(),
+                                    ]),
+
+                                Forms\Components\Section::make('Contacto de Emergencia')
+                                    ->description('Persona a contactar en caso de emergencia')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('nombre_contacto_emergencia')
+                                                    ->label('Nombre de Contacto de Emergencia')
+                                                    ->maxLength(255),
+                                                Forms\Components\TextInput::make('telefono_contacto_emergencia')
+                                                    ->label('Teléfono de Contacto de Emergencia')
+                                                    ->tel()
+                                                    ->maxLength(20),
+                                            ]),
+                                    ]),
+
                                 Forms\Components\Section::make('Ubicación')
-                                    ->description('Datos de dirección del cliente')
+                                    ->description('Datos de dirección del paciente')
                                     ->collapsible()
                                     ->schema([
                                         Forms\Components\Textarea::make('address')
@@ -270,7 +389,18 @@ class ClientResource extends Resource
                     ->label('Nombre')
                     ->searchable()
                     ->sortable()
-                    ->weight(FontWeight::Bold),
+                    ->weight(FontWeight::Bold)
+                    ->formatStateUsing(fn($record) => $record->name . ' ' . ($record->apellido ?? '')),
+
+                Tables\Columns\TextColumn::make('numero_documento')
+                    ->label('Documento')
+                    ->searchable()
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn($record) =>
+                        ($record->tipo_documento ?? 'CC') . ': ' . ($record->numero_documento ?? 'Sin registro')
+                    )
+                    ->icon('heroicon-m-identification'),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Correo Electrónico')
                     ->searchable()
@@ -283,6 +413,26 @@ class ClientResource extends Resource
                     ->sortable()
                     ->copyable()
                     ->icon('heroicon-m-phone')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('aseguradora')
+                    ->label('EPS')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('fecha_nacimiento')
+                    ->label('Edad')
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn($record) =>
+                        $record->fecha_nacimiento ?
+                        \Carbon\Carbon::parse($record->fecha_nacimiento)->age . ' años' :
+                        'Sin registro'
+                    )
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('city')
                     ->label('Ciudad')
@@ -320,8 +470,34 @@ class ClientResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // Tables\Filters\TrashedFilter::make()
-                //     ->visible(fn() => Auth::user()->can('restore_client')),
+                Tables\Filters\SelectFilter::make('aseguradora')
+                    ->label('EPS/Aseguradora')
+                    ->native(false)
+                    ->options(function () {
+                        return Client::distinct()
+                            ->whereNotNull('aseguradora')
+                            ->pluck('aseguradora', 'aseguradora')
+                            ->toArray();
+                    }),
+
+                Tables\Filters\SelectFilter::make('tipo_documento')
+                    ->label('Tipo de Documento')
+                    ->native(false)
+                    ->options([
+                        'CC' => 'Cédula de Ciudadanía',
+                        'CE' => 'Cédula de Extranjería',
+                        'TI' => 'Tarjeta de Identidad',
+                        'PP' => 'Pasaporte',
+                    ]),
+
+                Tables\Filters\SelectFilter::make('genero')
+                    ->label('Género')
+                    ->native(false)
+                    ->options([
+                        'Masculino' => 'Masculino',
+                        'Femenino' => 'Femenino',
+                        'Otro' => 'Otro',
+                    ]),
 
                 Tables\Filters\SelectFilter::make('country')
                     ->label('País')
@@ -336,9 +512,11 @@ class ClientResource extends Resource
 
                         return $countries;
                     }),
+
                 Tables\Filters\Filter::make('active')
                     ->label('Estado')
                     ->toggle(),
+
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
@@ -359,6 +537,14 @@ class ClientResource extends Resource
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
+
+                Tables\Filters\Filter::make('with_allergies')
+                    ->label('Con Alergias Registradas')
+                    ->query(fn(Builder $query): Builder => $query->whereNotNull('alergias')->where('alergias', '!=', '')),
+
+                Tables\Filters\Filter::make('with_medical_history')
+                    ->label('Con Historial Médico')
+                    ->query(fn(Builder $query): Builder => $query->whereNotNull('historial_medico')->where('historial_medico', '!=', '')),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

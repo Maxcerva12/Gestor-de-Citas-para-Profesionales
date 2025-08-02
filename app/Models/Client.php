@@ -22,6 +22,7 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
 
     protected $fillable = [
         'name',
+        'apellido',
         'email',
         'password',
         'phone',
@@ -35,6 +36,17 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         'odontogram',
         'dental_notes',
         'last_dental_visit',
+        // Nuevos campos médicos
+        'tipo_documento',
+        'numero_documento',
+        'genero',
+        'fecha_nacimiento',
+        'tipo_sangre',
+        'historial_medico',
+        'alergias',
+        'aseguradora',
+        'nombre_contacto_emergencia',
+        'telefono_contacto_emergencia',
     ];
 
     protected $hidden = [
@@ -43,11 +55,13 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
     ];
 
     protected $casts = [
-        'password' => 'hashed', // Cifra la contraseña automáticamente
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
         'active' => 'boolean',
         'custom_fields' => 'array',
         'odontogram' => 'array',
-        'last_dental_visit' => 'date',
+        'last_dental_visit' => 'datetime',
+        'fecha_nacimiento' => 'datetime',
     ];
 
     public function canAccessPanel(Panel $panel): bool

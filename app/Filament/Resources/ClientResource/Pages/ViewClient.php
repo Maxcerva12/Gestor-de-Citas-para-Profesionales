@@ -16,7 +16,15 @@ class ViewClient extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            Actions\EditAction::make()
+                ->label('Editar Paciente'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            // Podríamos agregar widgets aquí en el futuro
         ];
     }
 
@@ -30,7 +38,7 @@ class ViewClient extends ViewRecord
                             ->icon('heroicon-o-user')
                             ->schema([
                                 Components\Section::make('Datos Básicos')
-                                    ->description('Información principal del cliente')
+                                    ->description('Información principal del paciente')
                                     ->schema([
                                         Components\Grid::make(3)
                                             ->schema([
@@ -38,7 +46,8 @@ class ViewClient extends ViewRecord
                                                     Components\TextEntry::make('name')
                                                         ->label('Nombre')
                                                         ->weight('bold')
-                                                        ->size('lg'),
+                                                        ->size('lg')
+                                                        ->formatStateUsing(fn($record) => $record->name . ' ' . ($record->apellido ?? '')),
                                                     Components\TextEntry::make('email')
                                                         ->label('Correo Electrónico')
                                                         ->icon('heroicon-m-envelope')
@@ -52,13 +61,111 @@ class ViewClient extends ViewRecord
                                                 Components\ImageEntry::make('avatar_url')
                                                     ->label('Avatar')
                                                     ->circular()
-                                                    ->defaultImageUrl(fn($record): string => "https://ui-avatars.com/api/?name=" . urlencode($record->name) . "&color=FFFFFF&background=3B82F6")
-                                                    ->size(100)
+                                                    ->defaultImageUrl(fn($record): string => "https://ui-avatars.com/api/?name=" . urlencode($record->name . ' ' . ($record->apellido ?? '')) . "&color=FFFFFF&background=3B82F6")
+                                                    ->size(120)
                                                     ->columnSpan(1),
                                             ]),
                                     ]),
+
+                                Components\Section::make('Documentación')
+                                    ->description('Información de identificación del paciente')
+                                    ->schema([
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\TextEntry::make('tipo_documento')
+                                                    ->label('Tipo de Documento')
+                                                    ->formatStateUsing(fn($state) => match ($state) {
+                                                        'CC' => 'Cédula de Ciudadanía',
+                                                        'CE' => 'Cédula de Extranjería',
+                                                        'TI' => 'Tarjeta de Identidad',
+                                                        'PP' => 'Pasaporte',
+                                                        default => $state ?? 'No especificado'
+                                                    })
+                                                    ->badge()
+                                                    ->color('primary'),
+                                                Components\TextEntry::make('numero_documento')
+                                                    ->label('Número de Documento')
+                                                    ->copyable()
+                                                    ->icon('heroicon-m-identification')
+                                                    ->placeholder('No especificado'),
+                                                Components\TextEntry::make('genero')
+                                                    ->label('Género')
+                                                    ->badge()
+                                                    ->color(fn($state) => match ($state) {
+                                                        'Masculino' => 'blue',
+                                                        'Femenino' => 'pink',
+                                                        'Otro' => 'gray',
+                                                        default => 'gray'
+                                                    })
+                                                    ->placeholder('No especificado'),
+                                            ]),
+                                    ]),
+
+                                Components\Section::make('Información Médica Básica')
+                                    ->description('Datos médicos importantes del paciente')
+                                    ->schema([
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\TextEntry::make('fecha_nacimiento')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->date('d/m/Y')
+                                                    ->placeholder('No especificada')
+                                                    ->helperText(
+                                                        fn($record) =>
+                                                        $record->fecha_nacimiento ?
+                                                        'Edad: ' . $record->fecha_nacimiento->diffInYears(now()) . ' años' :
+                                                        ''
+                                                    ),
+                                                Components\TextEntry::make('tipo_sangre')
+                                                    ->label('Tipo de Sangre')
+                                                    ->badge()
+                                                    ->color('danger')
+                                                    ->icon('heroicon-m-heart')
+                                                    ->placeholder('No especificado'),
+                                                Components\TextEntry::make('aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->badge()
+                                                    ->color('success')
+                                                    ->icon('heroicon-m-shield-check')
+                                                    ->placeholder('No especificada'),
+                                            ]),
+                                    ]),
+
+                                Components\Section::make('Historial Médico')
+                                    ->description('Información médica relevante del paciente')
+                                    ->schema([
+                                        Components\TextEntry::make('historial_medico')
+                                            ->label('Historial Médico Relevante')
+                                            ->placeholder('Sin historial médico registrado')
+                                            ->columnSpanFull()
+                                            ->prose(),
+                                        Components\TextEntry::make('alergias')
+                                            ->label('Alergias Conocidas')
+                                            ->placeholder('Sin alergias registradas')
+                                            ->columnSpanFull()
+                                            ->prose()
+                                            ->color('warning'),
+                                    ]),
+
+                                Components\Section::make('Contacto de Emergencia')
+                                    ->description('Persona a contactar en caso de emergencia')
+                                    ->schema([
+                                        Components\Grid::make(2)
+                                            ->schema([
+                                                Components\TextEntry::make('nombre_contacto_emergencia')
+                                                    ->label('Nombre de Contacto de Emergencia')
+                                                    ->icon('heroicon-m-user')
+                                                    ->placeholder('No especificado'),
+                                                Components\TextEntry::make('telefono_contacto_emergencia')
+                                                    ->label('Teléfono de Contacto de Emergencia')
+                                                    ->icon('heroicon-m-phone')
+                                                    ->copyable()
+                                                    ->placeholder('No especificado'),
+                                            ]),
+                                    ]),
+
                                 Components\Section::make('Ubicación')
-                                    ->description('Datos de dirección del cliente')
+                                    ->description('Datos de dirección del paciente')
                                     ->schema([
                                         Components\TextEntry::make('address')
                                             ->label('Dirección')
@@ -78,39 +185,46 @@ class ViewClient extends ViewRecord
                             ->icon('heroicon-o-lock-closed')
                             ->schema([
                                 Components\Section::make('Estado de la Cuenta')
-                                    ->description('Información del estado del cliente')
+                                    ->description('Información del estado del paciente en el sistema')
                                     ->schema([
-                                        Components\IconEntry::make('active')
-                                            ->label('Estado')
-                                            ->boolean()
-                                            ->trueIcon('heroicon-o-check-circle')
-                                            ->falseIcon('heroicon-o-x-circle')
-                                            ->trueColor('success')
-                                            ->falseColor('danger'),
-                                        Components\TextEntry::make('created_at')
-                                            ->label('Fecha de Registro')
-                                            ->dateTime('d/m/Y H:i'),
-                                        Components\TextEntry::make('updated_at')
-                                            ->label('Última Actualización')
-                                            ->dateTime('d/m/Y H:i'),
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\IconEntry::make('active')
+                                                    ->label('Estado de la Cuenta')
+                                                    ->boolean()
+                                                    ->trueIcon('heroicon-o-check-circle')
+                                                    ->falseIcon('heroicon-o-x-circle')
+                                                    ->trueColor('success')
+                                                    ->falseColor('danger'),
+                                                Components\TextEntry::make('created_at')
+                                                    ->label('Fecha de Registro')
+                                                    ->dateTime('d/m/Y H:i')
+                                                    ->icon('heroicon-m-calendar'),
+                                                Components\TextEntry::make('updated_at')
+                                                    ->label('Última Actualización')
+                                                    ->dateTime('d/m/Y H:i')
+                                                    ->icon('heroicon-m-clock'),
+                                            ]),
                                     ]),
                                 Components\Section::make('Información Adicional')
-                                    ->description('Datos adicionales del cliente')
+                                    ->description('Datos adicionales del paciente')
                                     ->schema([
                                         Components\KeyValueEntry::make('custom_fields')
                                             ->label('Campos Personalizados')
-                                            ->placeholder('No hay campos personalizados'),
+                                            ->placeholder('No hay campos personalizados registrados'),
                                     ]),
                             ]),
-                        Components\Tabs\Tab::make('Notas')
+                        Components\Tabs\Tab::make('Notas Médicas')
                             ->icon('heroicon-o-document-text')
                             ->schema([
-                                Components\Section::make()
+                                Components\Section::make('Notas Internas')
+                                    ->description('Observaciones del personal médico (solo visible para administradores)')
                                     ->schema([
                                         Components\ViewEntry::make('notes')
                                             ->label('Notas Internas')
                                             ->view('infolists.components.rich-text-display')
-                                            ->state(fn($record) => $record->notes),
+                                            ->state(fn($record) => $record->notes)
+                                            ->placeholder('Sin notas registradas'),
                                     ]),
                             ]),
                         Components\Tabs\Tab::make('Odontograma')
