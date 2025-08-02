@@ -1,0 +1,437 @@
+/* Enhanced Custom Login Styles with Theme Support */
+
+/* Variables globales para consistencia */
+:root {
+    --login-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --login-transition-fast: all 0.2s ease-out;
+    --login-shadow-color: rgba(0, 0, 0, 0.1);
+    --login-border-radius: 1rem;
+    --login-border-radius-lg: 2rem;
+}
+
+/* Variables específicas para modo claro */
+[data-theme="light"], .light, :root {
+    --login-bg-primary: #ffffff;
+    --login-bg-secondary: #f8fafc;
+    --login-bg-accent: #f1f5f9;
+    --login-text-primary: #0f172a;
+    --login-text-secondary: #475569;
+    --login-text-muted: #64748b;
+    --login-border: #e2e8f0;
+    --login-border-focus: #3b82f6;
+    --login-shadow: rgba(0, 0, 0, 0.1);
+    --login-shadow-lg: rgba(0, 0, 0, 0.15);
+}
+
+/* Variables específicas para modo oscuro */
+[data-theme="dark"], .dark {
+    --login-bg-primary: #0f172a;
+    --login-bg-secondary: #1e293b;
+    --login-bg-accent: #334155;
+    --login-text-primary: #f8fafc;
+    --login-text-secondary: #cbd5e1;
+    --login-text-muted: #94a3b8;
+    --login-border: #475569;
+    --login-border-focus: #60a5fa;
+    --login-shadow: rgba(0, 0, 0, 0.3);
+    --login-shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+/* Detección automática del tema del sistema */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --login-bg-primary: #0f172a;
+        --login-bg-secondary: #1e293b;
+        --login-bg-accent: #334155;
+        --login-text-primary: #f8fafc;
+        --login-text-secondary: #cbd5e1;
+        --login-text-muted: #94a3b8;
+        --login-border: #475569;
+        --login-border-focus: #60a5fa;
+        --login-shadow: rgba(0, 0, 0, 0.3);
+        --login-shadow-lg: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* Transiciones suaves para cambio de tema */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Mejoras en los campos de entrada */
+.fi-fo-field-wrp {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.fi-input {
+    background: var(--login-bg-primary) !important;
+    border: 2px solid var(--login-border) !important;
+    border-radius: var(--login-border-radius) !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 1rem !important;
+    color: var(--login-text-primary) !important;
+    transition: var(--login-transition) !important;
+    width: 100% !important;
+    font-weight: 500 !important;
+}
+
+.fi-input::placeholder {
+    color: var(--login-text-muted) !important;
+    opacity: 0.7 !important;
+}
+
+.fi-input:focus {
+    border-color: var(--login-border-focus) !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 10px 25px var(--login-shadow) !important;
+    outline: none !important;
+    transform: translateY(-2px) !important;
+}
+
+.fi-input:hover:not(:focus) {
+    border-color: var(--login-border-focus) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Botón principal mejorado */
+.fi-btn {
+    font-weight: 600 !important;
+    border-radius: var(--login-border-radius) !important;
+    transition: var(--login-transition) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.fi-btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    border: none !important;
+    font-size: 1.1rem !important;
+    padding: 1rem 2rem !important;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3) !important;
+    color: white !important;
+}
+
+.fi-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+    z-index: 1;
+}
+
+.fi-btn-primary:hover::before {
+    left: 100%;
+}
+
+.fi-btn-primary:hover {
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4) !important;
+}
+
+.fi-btn-primary:active {
+    transform: translateY(-1px) scale(1.01) !important;
+}
+
+/* Labels mejorados */
+.fi-fo-field-wrp-label {
+    margin-bottom: 0.75rem !important;
+}
+
+.fi-fo-field-wrp-label label {
+    font-weight: 600 !important;
+    color: var(--login-text-primary) !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.025em !important;
+    display: block !important;
+}
+
+/* Mensajes de error */
+.fi-fo-field-wrp-error-message {
+    color: #ef4444 !important;
+    font-size: 0.875rem !important;
+    margin-top: 0.5rem !important;
+    font-weight: 500 !important;
+    animation: slideInError 0.3s ease-out;
+}
+
+@keyframes slideInError {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estados de carga */
+.fi-btn[disabled] {
+    opacity: 0.8 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Checkbox personalizado */
+.fi-checkbox-input {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    border: 2px solid var(--login-border) !important;
+    border-radius: 0.5rem !important;
+    background: var(--login-bg-primary) !important;
+    transition: var(--login-transition) !important;
+}
+
+.fi-checkbox-input:checked {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    transform: scale(1.1) !important;
+}
+
+.fi-checkbox-input:focus {
+    outline: 2px solid var(--login-border-focus) !important;
+    outline-offset: 2px !important;
+}
+
+/* Texto del checkbox */
+.fi-fo-checkbox .fi-fo-field-wrp-label {
+    margin-bottom: 0 !important;
+}
+
+.fi-fo-checkbox .fi-fo-field-wrp-label label {
+    font-size: 0.875rem !important;
+    color: var(--login-text-secondary) !important;
+    font-weight: 500 !important;
+}
+
+/* Enlaces personalizados */
+.custom-link {
+    color: #3b82f6 !important;
+    font-weight: 500 !important;
+    transition: var(--login-transition) !important;
+    position: relative !important;
+    text-decoration: none !important;
+}
+
+.custom-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+.custom-link:hover {
+    color: #1d4ed8 !important;
+    transform: translateY(-1px) !important;
+}
+
+.custom-link:hover::after {
+    width: 100%;
+}
+
+/* Animaciones de entrada */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.login-form-animate {
+    animation: slideInUp 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efectos de partículas */
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        opacity: 0.7; 
+    }
+    50% { 
+        transform: translateY(-30px) rotate(180deg); 
+        opacity: 1; 
+    }
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Contenedor del formulario con glassmorphism */
+.form-container {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: var(--login-border-radius-lg) !important;
+    box-shadow: 0 25px 50px var(--login-shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    transition: var(--login-transition) !important;
+}
+
+[data-theme="dark"] .form-container,
+.dark .form-container {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.form-container:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 35px 70px var(--login-shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Características del panel izquierdo */
+.feature-item {
+    background: rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--login-border-radius);
+    transition: var(--login-transition);
+    padding: 1.5rem;
+}
+
+.feature-item:hover {
+    transform: translateX(10px) scale(1.02);
+    background: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Estados de carga avanzados */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Animación de shake para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 1024px) {
+    .login-particles { 
+        display: none; 
+    }
+    
+    .particle {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .fi-simple-main {
+        padding: 1rem !important;
+    }
+    
+    .form-container {
+        margin: 0.5rem !important;
+        padding: 2rem 1.5rem !important;
+        border-radius: 1.5rem !important;
+    }
+
+    .fi-input {
+        padding: 0.875rem 1rem !important;
+        font-size: 0.95rem !important;
+    }
+
+    .fi-btn-primary {
+        padding: 0.875rem 1.5rem !important;
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .form-container {
+        margin: 0.25rem !important;
+        padding: 1.5rem 1rem !important;
+        border-radius: 1.25rem !important;
+    }
+    
+    .fi-input {
+        padding: 0.75rem !important;
+    }
+}
+
+/* Mejoras de accesibilidad */
+.fi-input:focus-visible {
+    outline: 2px solid var(--login-border-focus) !important;
+    outline-offset: 2px !important;
+}
+
+.fi-btn:focus-visible {
+    outline: 2px solid var(--login-border-focus) !important;
+    outline-offset: 2px !important;
+}
+
+/* Soporte para reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .particle {
+        display: none;
+    }
+}
+
+/* Mejoras de contraste para accesibilidad */
+@media (prefers-contrast: high) {
+    .fi-input {
+        border-width: 3px !important;
+    }
+    
+    .fi-btn-primary {
+        box-shadow: none !important;
+        border: 2px solid #1e40af !important;
+    }
+    
+    .custom-link {
+        text-decoration: underline !important;
+    }
+}
+
+/* Estados adicionales */
+.fi-input:invalid:not(:focus) {
+    border-color: #ef4444 !important;
+}
+
+.fi-input:valid:not(:focus):not(:placeholder-shown) {
+    border-color: #10b981 !important;
+}
+
+/* Efectos de glow para elementos interactivos */
+.fi-btn-primary:hover {
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2) !important;
+}
+
+.fi-input:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 10px 25px var(--login-shadow), 0 0 15px rgba(59, 130, 246, 0.15) !important;
+}

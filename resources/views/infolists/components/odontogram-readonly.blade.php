@@ -624,25 +624,47 @@
                 },
 
                 getFaceClass(toothNumber, face) {
-                    const status = this.getFaceStatus(toothNumber, face);
-                    return status ? `selected status-${status}` : '';
+                    try {
+                        const status = this.getFaceStatus(toothNumber, face);
+                        return status ? `selected status-${status}` : '';
+                    } catch (error) {
+                        console.warn('Error en getFaceClass:', error);
+                        return '';
+                    }
                 },
 
                 getFaceStyle(toothNumber, face) {
-                    const status = this.getFaceStatus(toothNumber, face);
-                    if (!status) return '';
+                    try {
+                        const status = this.getFaceStatus(toothNumber, face);
+                        if (!status) return '';
 
-                    const config = this.getStatusConfig(status);
-                    return `background-color: ${config.color}; border-color: ${config.color};`;
+                        const config = this.getStatusConfig(status);
+                        if (!config || !config.color) return '';
+                        
+                        return `background-color: ${config.color}; border-color: ${config.color};`;
+                    } catch (error) {
+                        console.warn('Error en getFaceStyle:', error);
+                        return '';
+                    }
                 },
 
                 getFaceStatus(toothNumber, face) {
-                    return this.odontogramData[this.selectedType]?.[toothNumber]?.faces?.[face];
+                    try {
+                        return this.odontogramData[this.selectedType]?.[toothNumber]?.faces?.[face] || null;
+                    } catch (error) {
+                        console.warn('Error en getFaceStatus:', error);
+                        return null;
+                    }
                 },
 
                 hasAffectedFaces(toothNumber) {
-                    const tooth = this.odontogramData[this.selectedType]?.[toothNumber];
-                    return tooth && Object.keys(tooth.faces || {}).length > 0;
+                    try {
+                        const tooth = this.odontogramData[this.selectedType]?.[toothNumber];
+                        return tooth && tooth.faces && typeof tooth.faces === 'object' && Object.keys(tooth.faces).length > 0;
+                    } catch (error) {
+                        console.warn('Error en hasAffectedFaces:', error);
+                        return false;
+                    }
                 },
 
                 getStatusConfig(status) {
@@ -681,12 +703,16 @@
 
                 getAffectedFacesCount() {
                     let count = 0;
-                    const typeData = this.odontogramData[this.selectedType] || {};
-                    Object.values(typeData).forEach(tooth => {
-                        if (tooth.faces) {
-                            count += Object.keys(tooth.faces).length;
-                        }
-                    });
+                    try {
+                        const typeData = this.odontogramData[this.selectedType] || {};
+                        Object.values(typeData).forEach(tooth => {
+                            if (tooth && tooth.faces && typeof tooth.faces === 'object') {
+                                count += Object.keys(tooth.faces).length;
+                            }
+                        });
+                    } catch (error) {
+                        console.warn('Error en getAffectedFacesCount:', error);
+                    }
                     return count;
                 },
 
@@ -722,14 +748,20 @@
 
                 getStatusCount(status) {
                     let count = 0;
-                    Object.values(this.odontogramData).forEach(typeData => {
-                        Object.values(typeData).forEach(tooth => {
-                            if (tooth.faces) {
-                                const hasStatus = Object.values(tooth.faces).some(faceStatus => faceStatus === status);
-                                if (hasStatus) count++;
+                    try {
+                        Object.values(this.odontogramData).forEach(typeData => {
+                            if (typeData && typeof typeData === 'object') {
+                                Object.values(typeData).forEach(tooth => {
+                                    if (tooth && tooth.faces && typeof tooth.faces === 'object') {
+                                        const hasStatus = Object.values(tooth.faces).some(faceStatus => faceStatus === status);
+                                        if (hasStatus) count++;
+                                    }
+                                });
                             }
                         });
-                    });
+                    } catch (error) {
+                        console.warn('Error en getStatusCount:', error);
+                    }
                     return count;
                 }
             }

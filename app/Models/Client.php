@@ -80,6 +80,40 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
 
     public function getHasOdontogramAttribute(): bool
     {
-        return $this->odontogram && !empty($this->odontogram);
+        if (!$this->odontogram || empty($this->odontogram)) {
+            return false;
+        }
+
+        // Verificar si hay datos reales en permanent, temporary o mixed
+        $permanent = $this->odontogram['permanent'] ?? [];
+        $temporary = $this->odontogram['temporary'] ?? [];
+        $mixed = $this->odontogram['mixed'] ?? [];
+
+        // Para permanent: verificar que no sea un array vacío
+        $hasPermanentData = is_array($permanent) && !empty($permanent);
+
+        // Para temporary: verificar que no sea un array vacío
+        $hasTemporaryData = is_array($temporary) && !empty($temporary);
+
+        // Para mixed: verificar que no sea un array vacío
+        $hasMixedData = is_array($mixed) && !empty($mixed);
+
+        // Si permanent es un array indexado (como [null, null, {...}, null])
+        // verificar que al menos un elemento no sea null
+        if ($hasPermanentData && array_is_list($permanent)) {
+            $hasPermanentData = !empty(array_filter($permanent, fn($item) => $item !== null));
+        }
+
+        // Si temporary es un array indexado, hacer la misma verificación
+        if ($hasTemporaryData && array_is_list($temporary)) {
+            $hasTemporaryData = !empty(array_filter($temporary, fn($item) => $item !== null));
+        }
+
+        // Si mixed es un array indexado, hacer la misma verificación
+        if ($hasMixedData && array_is_list($mixed)) {
+            $hasMixedData = !empty(array_filter($mixed, fn($item) => $item !== null));
+        }
+
+        return $hasPermanentData || $hasTemporaryData || $hasMixedData;
     }
 }

@@ -786,6 +786,22 @@
     z-index: 15;
 }
 
+/* Prevenir problemas de selección y clics múltiples */
+.tooth-face {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Deshabilitar temporalmente el elemento durante toggle */
+.tooth-face.toggling {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
 .tooth-face.oclusal-face:hover {
     transform: translate(-50%, -50%) scale(1.1);
 }

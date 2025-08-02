@@ -186,6 +186,7 @@
                                 <template x-for="tooth in getTeethForQuadrant(1)" :key="tooth.number">
                                     <div class="tooth-professional" 
                                          :class="{ 'has-selections': hasSelectedFaces(tooth.number) }"
+                                         :data-tooth="tooth.number"
                                          x-on:click="handleToothClick(tooth.number)">
                                         
                                         <!-- Número del diente -->
@@ -264,6 +265,7 @@
                                 <template x-for="tooth in getTeethForQuadrant(2)" :key="tooth.number">
                                     <div class="tooth-professional" 
                                          :class="{ 'has-selections': hasSelectedFaces(tooth.number) }"
+                                         :data-tooth="tooth.number"
                                          x-on:click="handleToothClick(tooth.number)">
                                         
                                         <!-- Número del diente -->
@@ -360,6 +362,7 @@
                                 <template x-for="tooth in getTeethForQuadrant(4)" :key="tooth.number">
                                     <div class="tooth-professional" 
                                          :class="{ 'has-selections': hasSelectedFaces(tooth.number) }"
+                                         :data-tooth="tooth.number"
                                          x-on:click="handleToothClick(tooth.number)">
                                         
                                         <!-- Número del diente -->
@@ -438,6 +441,7 @@
                                 <template x-for="tooth in getTeethForQuadrant(3)" :key="tooth.number">
                                     <div class="tooth-professional" 
                                          :class="{ 'has-selections': hasSelectedFaces(tooth.number) }"
+                                         :data-tooth="tooth.number"
                                          x-on:click="handleToothClick(tooth.number)">
                                         
                                         <!-- Número del diente -->
@@ -513,7 +517,7 @@
         <!-- Professional Face Tooltip -->
         <div class="face-tooltip-professional" 
              x-show="showTooltip" 
-             x-transition
+             x-transition.opacity.duration.200ms
              :style="tooltipStyle">
             <div class="tooltip-content">
                 <h5 class="tooltip-title" x-text="tooltipTitle"></h5>
@@ -522,7 +526,7 @@
         </div>
 
         <!-- Professional Summary Panel -->
-        <div class="summary-panel-professional" x-show="showSummary" x-transition>
+        <div class="summary-panel-professional" x-show="showSummary" x-transition.opacity.duration.300ms>
             <div class="summary-header">
                 <h3 class="summary-title">Resumen del Odontograma</h3>
                 <button type="button" class="close-summary-btn" x-on:click="showSummary = false">
@@ -560,25 +564,76 @@
                 tooltipDescription: '',
                 tooltipStyle: '',
                 showSummary: false,
+                isToggling: false, // Prevenir múltiples clics rápidos
+                lastClick: null, // Rastrear último clic para evitar duplicados
 
                 init() {
-                    this.odontogramState = this.$wire.get(state) || {};
-                    // Selección automática del tipo según los datos
-                    if (this.odontogramState.mixed && Object.keys(this.odontogramState.mixed).length > 0) {
-                        this.selectedType = 'mixed';
-                    } else if (this.odontogramState.permanent && Object.keys(this.odontogramState.permanent).length > 0) {
+                    try {
+                        const wireState = this.$wire.get(state);
+                        this.odontogramState = wireState && typeof wireState === 'object' ? wireState : {};
+                        
+                        // Selección automática del tipo según los datos
+                        if (this.odontogramState.mixed && Object.keys(this.odontogramState.mixed).length > 0) {
+                            this.selectedType = 'mixed';
+                        } else if (this.odontogramState.permanent && Object.keys(this.odontogramState.permanent).length > 0) {
+                            this.selectedType = 'permanent';
+                        } else if (this.odontogramState.temporal && Object.keys(this.odontogramState.temporal).length > 0) {
+                            this.selectedType = 'temporal';
+                        } else {
+                            this.selectedType = 'permanent';
+                        }
+                        
+                        this.watchStateChanges(state);
+                        this.initClickPrevention();
+                    } catch (error) {
+                        console.error('Error en init:', error);
+                        this.odontogramState = {};
                         this.selectedType = 'permanent';
-                    } else if (this.odontogramState.temporal && Object.keys(this.odontogramState.temporal).length > 0) {
-                        this.selectedType = 'temporal';
-                    } else {
-                        this.selectedType = 'permanent';
+                        this.watchStateChanges(state);
                     }
-                    this.watchStateChanges(state);
+                },
+
+                initClickPrevention() {
+                    // Prevenir clics dobles a nivel global en el odontograma
+                    this.$nextTick(() => {
+                        const odontograma = this.$el;
+                        if (odontograma) {
+                            odontograma.addEventListener('click', (e) => {
+                                if (this.isToggling) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return false;
+                                }
+                            }, true); // Usar capture phase para interceptar antes
+                        }
+                    });
                 },
 
                 watchStateChanges(state) {
-                    this.$watch(() => this.$wire.get(state), (newValue) => {
-                        this.odontogramState = newValue || {};
+                    // Usar un enfoque más estable para el watch, sin intervenir con transiciones
+                    this.$watch(() => {
+                        try {
+                            return this.$wire.get(state);
+                        } catch (error) {
+                            return {};
+                        }
+                    }, (newValue) => {
+                        try {
+                            // Solo actualizar si no estamos en medio de un toggle y el valor es diferente
+                            if (!this.isToggling && newValue && typeof newValue === 'object') {
+                                // Comparar si realmente cambió para evitar actualizaciones innecesarias
+                                const currentJson = JSON.stringify(this.odontogramState);
+                                const newJson = JSON.stringify(newValue);
+                                
+                                if (currentJson !== newJson) {
+                                    this.odontogramState = newValue;
+                                }
+                            } else if (!newValue) {
+                                this.odontogramState = {};
+                            }
+                        } catch (error) {
+                            console.warn('Error en watchStateChanges:', error);
+                        }
                     });
                 },
 
@@ -645,21 +700,54 @@
                 },
 
                 toggleFace(toothNumber, face) {
-                    if (!this.odontogramState[this.selectedType]) {
-                        this.odontogramState[this.selectedType] = {};
+                    // Prevenir múltiples clics rápidos con un enfoque más agresivo
+                    const clickKey = `${toothNumber}-${face}`;
+                    if (this.isToggling || this.lastClick === clickKey) {
+                        return;
                     }
-                    if (!this.odontogramState[this.selectedType][toothNumber]) {
-                        this.odontogramState[this.selectedType][toothNumber] = { faces: {} };
-                    }
+                    
+                    this.isToggling = true;
+                    this.lastClick = clickKey;
+                    
+                    try {
+                        // Inicializar estructura si no existe
+                        if (!this.odontogramState[this.selectedType]) {
+                            this.odontogramState[this.selectedType] = {};
+                        }
+                        if (!this.odontogramState[this.selectedType][toothNumber]) {
+                            this.odontogramState[this.selectedType][toothNumber] = { faces: {} };
+                        }
+                        if (!this.odontogramState[this.selectedType][toothNumber].faces) {
+                            this.odontogramState[this.selectedType][toothNumber].faces = {};
+                        }
 
-                    const currentStatus = this.odontogramState[this.selectedType][toothNumber].faces[face];
-                    if (currentStatus === this.selectedStatus) {
-                        delete this.odontogramState[this.selectedType][toothNumber].faces[face];
-                    } else {
-                        this.odontogramState[this.selectedType][toothNumber].faces[face] = this.selectedStatus;
-                    }
+                        const currentStatus = this.odontogramState[this.selectedType][toothNumber].faces[face];
+                        
+                        if (currentStatus === this.selectedStatus) {
+                            // Deseleccionar
+                            delete this.odontogramState[this.selectedType][toothNumber].faces[face];
+                            
+                            // Si no quedan caras seleccionadas, eliminar el diente
+                            if (Object.keys(this.odontogramState[this.selectedType][toothNumber].faces).length === 0) {
+                                delete this.odontogramState[this.selectedType][toothNumber];
+                            }
+                        } else {
+                            // Seleccionar
+                            this.odontogramState[this.selectedType][toothNumber].faces[face] = this.selectedStatus;
+                        }
 
-                    this.updateWireState(state);
+                        // Actualizar el estado inmediatamente sin delay
+                        this.updateWireState(state);
+                        
+                    } catch (error) {
+                        console.error('Error en toggleFace:', error);
+                    } finally {
+                        // Limpiar flags después de un delay más corto
+                        setTimeout(() => {
+                            this.isToggling = false;
+                            this.lastClick = null;
+                        }, 150);
+                    }
                 },
 
                 getFaceClass(toothNumber, face) {
@@ -676,12 +764,23 @@
                 },
 
                 getFaceStatus(toothNumber, face) {
-                    return this.odontogramState[this.selectedType]?.[toothNumber]?.faces?.[face];
+                    try {
+                        const tooth = this.odontogramState[this.selectedType]?.[toothNumber];
+                        return tooth && tooth.faces && typeof tooth.faces === 'object' ? tooth.faces[face] : null;
+                    } catch (error) {
+                        console.warn('Error en getFaceStatus:', error);
+                        return null;
+                    }
                 },
 
                 hasSelectedFaces(toothNumber) {
-                    const tooth = this.odontogramState[this.selectedType]?.[toothNumber];
-                    return tooth && Object.keys(tooth.faces || {}).length > 0;
+                    try {
+                        const tooth = this.odontogramState[this.selectedType]?.[toothNumber];
+                        return tooth && tooth.faces && typeof tooth.faces === 'object' && Object.keys(tooth.faces).length > 0;
+                    } catch (error) {
+                        console.warn('Error en hasSelectedFaces:', error);
+                        return false;
+                    }
                 },
 
                 getStatusConfig(status) {
@@ -717,12 +816,16 @@
 
                 getSelectedFacesCount() {
                     let count = 0;
-                    const typeData = this.odontogramState[this.selectedType] || {};
-                    Object.values(typeData).forEach(tooth => {
-                        if (tooth.faces) {
-                            count += Object.keys(tooth.faces).length;
-                        }
-                    });
+                    try {
+                        const typeData = this.odontogramState[this.selectedType] || {};
+                        Object.values(typeData).forEach(tooth => {
+                            if (tooth && tooth.faces && typeof tooth.faces === 'object') {
+                                count += Object.keys(tooth.faces).length;
+                            }
+                        });
+                    } catch (error) {
+                        console.warn('Error en getSelectedFacesCount:', error);
+                    }
                     return count;
                 },
 
@@ -757,7 +860,19 @@
                 },
 
                 updateWireState(state) {
-                    this.$wire.set(state, this.odontogramState);
+                    try {
+                        // Clonar el estado para evitar referencias mutables
+                        const stateClone = JSON.parse(JSON.stringify(this.odontogramState));
+                        this.$wire.set(state, stateClone);
+                    } catch (error) {
+                        console.error('Error en updateWireState:', error);
+                        // Fallback: intentar actualización simple
+                        try {
+                            this.$wire.set(state, this.odontogramState);
+                        } catch (fallbackError) {
+                            console.error('Error en fallback updateWireState:', fallbackError);
+                        }
+                    }
                 },
 
                 confirmReset() {
@@ -839,22 +954,61 @@
                 },
 
                 selectAllJaw(jaw) {
-                    const teeth = this.getTeethForView(jaw);
-                    teeth.forEach(tooth => {
-                        ['oclusal', 'vestibular', 'central', 'lingual', 'mesial'].forEach(face => {
-                            this.toggleFace(tooth.number, face);
+                    try {
+                        if (this.isToggling) return;
+                        this.isToggling = true;
+                        
+                        const teeth = this.getTeethForView(jaw);
+                        teeth.forEach(tooth => {
+                            // Inicializar estructura si no existe
+                            if (!this.odontogramState[this.selectedType]) {
+                                this.odontogramState[this.selectedType] = {};
+                            }
+                            if (!this.odontogramState[this.selectedType][tooth.number]) {
+                                this.odontogramState[this.selectedType][tooth.number] = { faces: {} };
+                            }
+                            if (!this.odontogramState[this.selectedType][tooth.number].faces) {
+                                this.odontogramState[this.selectedType][tooth.number].faces = {};
+                            }
+                            
+                            ['oclusal', 'vestibular', 'central', 'lingual', 'mesial'].forEach(face => {
+                                // Seleccionar la cara con el estado actual
+                                this.odontogramState[this.selectedType][tooth.number].faces[face] = this.selectedStatus;
+                            });
                         });
-                    });
+                        
+                        this.updateWireState(state);
+                        
+                        setTimeout(() => {
+                            this.isToggling = false;
+                        }, 200);
+                    } catch (error) {
+                        console.error('Error en selectAllJaw:', error);
+                        this.isToggling = false;
+                    }
                 },
 
                 clearAllJaw(jaw) {
-                    const teeth = this.getTeethForView(jaw);
-                    teeth.forEach(tooth => {
-                        if (this.odontogramState[this.selectedType]?.[tooth.number]) {
-                            delete this.odontogramState[this.selectedType][tooth.number];
-                        }
-                    });
-                    this.updateWireState(state);
+                    try {
+                        if (this.isToggling) return;
+                        this.isToggling = true;
+                        
+                        const teeth = this.getTeethForView(jaw);
+                        teeth.forEach(tooth => {
+                            if (this.odontogramState[this.selectedType] && this.odontogramState[this.selectedType][tooth.number]) {
+                                delete this.odontogramState[this.selectedType][tooth.number];
+                            }
+                        });
+                        
+                        this.updateWireState(state);
+                        
+                        setTimeout(() => {
+                            this.isToggling = false;
+                        }, 200);
+                    } catch (error) {
+                        console.error('Error en clearAllJaw:', error);
+                        this.isToggling = false;
+                    }
                 },
 
                 handleToothClick(toothNumber) {
@@ -863,20 +1017,57 @@
 
                 getStatusCount(status) {
                     let count = 0;
-                    Object.values(this.odontogramState).forEach(typeData => {
-                        Object.values(typeData).forEach(tooth => {
-                            // Comprobar si alguna cara del diente tiene el estado específico
-                            // y contar el diente una sola vez, no cada cara individual
-                            if (tooth.faces) {
-                                const hasStatus = Object.values(tooth.faces).some(faceStatus => faceStatus === status);
-                                if (hasStatus) count++;
+                    try {
+                        if (!this.odontogramState || typeof this.odontogramState !== 'object') {
+                            return 0;
+                        }
+                        
+                        Object.values(this.odontogramState).forEach(typeData => {
+                            if (typeData && typeof typeData === 'object') {
+                                Object.values(typeData).forEach(tooth => {
+                                    // Comprobar si alguna cara del diente tiene el estado específico
+                                    // y contar el diente una sola vez, no cada cara individual
+                                    if (tooth && tooth.faces && typeof tooth.faces === 'object') {
+                                        const hasStatus = Object.values(tooth.faces).some(faceStatus => faceStatus === status);
+                                        if (hasStatus) count++;
+                                    }
+                                });
                             }
                         });
-                    });
+                    } catch (error) {
+                        console.warn('Error en getStatusCount:', error);
+                    }
                     return count;
                 }
             }
         }
     </script>
+    
+    <!-- Script adicional para manejar transiciones canceladas -->
+    <script>
+        // Suprimir errores de transiciones canceladas de Alpine.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Capturar y silenciar errores de transiciones canceladas
+            const originalConsoleError = console.error;
+            console.error = function(...args) {
+                // Filtrar errores de transiciones canceladas
+                if (args.length > 0 && 
+                    typeof args[0] === 'object' && 
+                    args[0].isFromCancelledTransition === true) {
+                    return; // Silenciar este tipo de error
+                }
+                originalConsoleError.apply(console, args);
+            };
+            
+            // Manejar promesas rechazadas de transiciones
+            window.addEventListener('unhandledrejection', function(event) {
+                if (event.reason && 
+                    event.reason.isFromCancelledTransition === true) {
+                    event.preventDefault(); // Prevenir que aparezca en la consola
+                }
+            });
+        });
+    </script>
+    
     </div>
 </x-dynamic-component>
