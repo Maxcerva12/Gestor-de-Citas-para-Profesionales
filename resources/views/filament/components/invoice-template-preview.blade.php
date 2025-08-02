@@ -42,13 +42,9 @@
     
     $logoUrl = $getLogoUrl();
     
-    // Debug temporal para ver qué está pasando con el logo
-    // dd(['original_logo' => $logo, 'processed_logo_url' => $logoUrl]);
-    
     // Si aún no tenemos logo, intentar obtenerlo directamente de InvoiceSettings
     if (!$logoUrl) {
         $logoUrl = \App\Models\InvoiceSettings::getCompanyLogo();
-        // Si seguimos sin logo pero hay una configuración guardada, usar Storage::url directamente
         if (!$logoUrl) {
             $savedLogo = \App\Models\InvoiceSettings::get('company_logo');
             if ($savedLogo) {
@@ -57,347 +53,424 @@
         }
     }
     
-    // Crear un mock invoice object para la vista previa
-    $mockInvoice = (object) [
-        'serial_number' => 'FACT-001',
-        'templateData' => [
-            'color' => $color,
-            'font' => $font,
-        ],
-        'logo' => $logoUrl,
-        'created_at' => now(),
-        'due_at' => now()->addDays(30),
-        'paid_at' => null,
-        'fields' => [],
-        'seller' => (object) [
-            'name' => $companyName ?: 'Mi Empresa',
-            'email' => $companyEmail ?: 'email@empresa.com',
-            'phone' => $companyPhone ?: '+57 123 456 7890',
-            'address' => (object) [
-                'street' => 'Calle Ejemplo 123',
-                'city' => 'Bogotá',
-                'state' => 'Cundinamarca',
-                'postal_code' => '110111',
-                'country' => 'Colombia',
-            ]
-        ],
-        'buyer' => (object) [
-            'name' => 'Cliente de Ejemplo',
-            'email' => 'cliente@ejemplo.com',
-            'phone' => '+57 987 654 3210',
-            'address' => (object) [
-                'street' => 'Carrera Ejemplo 456',
-                'city' => 'Medellín',
-                'state' => 'Antioquia',
-                'postal_code' => '050001',
-                'country' => 'Colombia',
-            ],
-            'shipping_address' => null,
-        ],
-        'items' => collect([
-            (object) [
-                'title' => 'Servicio de Consultoría',
-                'description' => 'Consultoría profesional especializada',
-                'quantity' => 2,
-                'price_per_unit' => 150000,
-                'sub_total_price' => 300000,
-            ],
-            (object) [
-                'title' => 'Desarrollo de Software',
-                'description' => 'Desarrollo de aplicación personalizada',
-                'quantity' => 1,
-                'price_per_unit' => 500000,
-                'sub_total_price' => 500000,
-            ],
-        ]),
-    ];
+    // Obtener valores de configuración desde la base de datos
+    $color = \App\Models\InvoiceSettings::get('pdf_template_color') ?: '#1e40af';
+    $font = \App\Models\InvoiceSettings::get('pdf_font') ?: 'Helvetica';
+    $companyName = \App\Models\InvoiceSettings::get('company_name');
+    $companyEmail = \App\Models\InvoiceSettings::get('company_email');
+    $companyPhone = \App\Models\InvoiceSettings::get('company_phone');
     
-    $mockInvoice->getTypeLabel = function() { return 'FACTURA DE VENTA'; };
-    $mockInvoice->getStateLabel = function() { return 'Pendiente de Pago'; };
-    $mockInvoice->totalAmount = function() { return 952000; };
-    $mockInvoice->formatMoney = function($amount) { return '$' . number_format($amount, 0, ',', '.'); };
+    // Si no tenemos logo de los parámetros, obtenerlo de la configuración
+    if (!$logoUrl) {
+        $savedLogo = \App\Models\InvoiceSettings::get('company_logo');
+        if ($savedLogo) {
+            $logoUrl = \Storage::url($savedLogo);
+        }
+    }
+    
+    // Crear un mock invoice object para la vista previa
+    $mockInvoice = new class {
+        public $serial_number = 'AC250001';
+        public $templateData;
+        public $logo;
+        public $created_at;
+        public $due_at;
+        public $paid_at = null;
+        public $fields;
+        public $seller;
+        public $buyer;
+        public $items;
+        public $description = 'Servicios de consultoría y desarrollo web para el mes de julio 2025';
+        public $paymentInstructions;
+        public $tax_label = 'IVA';
+        public $discounts;
+        
+        public function __construct() {
+            global $color, $font, $logoUrl, $companyName, $companyEmail, $companyPhone;
+            
+            // Asegurar que templateData sea compatible con data_get()
+            $this->templateData = collect([
+                'color' => $color,
+                'font' => $font,
+            ]);
+            
+            // FORZAR el logo - siempre asignar un logo para preview
+            $this->logo = $logoUrl ?: 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="120" viewBox="0 0 150 120"><rect width="150" height="120" fill="#cccccc"/><text x="75" y="65" text-anchor="middle" fill="#666666" font-family="Arial" font-size="14">LOGO</text></svg>');
+            
+            $this->created_at = now();
+            $this->due_at = now()->addDays(30);
+            $this->fields = [
+                'Régimen Fiscal' => 'Común',
+                'Medio de Pago' => 'Contado',
+            ];
+            
+            $this->seller = (object) [
+                'name' => $companyName ?: 'Fundación Odontológica Zoila Padilla',
+                'company' => $companyName ?: 'Fundación Odontológica Zoila Padilla',
+                'email' => $companyEmail ?: 'OdontologicaZoilaPadilla@gmail.com',
+                'phone' => $companyPhone ?: '3254789054',
+                'tax_number' => '900123456-1',
+                'fields' => [
+                    'Régimen' => 'Común',
+                    'NIT' => '900123456-1'
+                ],
+                'address' => (object) [
+                    'name' => $companyName ?: 'Fundación Odontológica Zoila Padilla',
+                    'company' => $companyName ?: 'Fundación Odontológica Zoila Padilla',
+                    'street' => 'Cra 32# 22-08',
+                    'city' => 'Bogotá',
+                    'state' => 'Cundinamarca',
+                    'postal_code' => '110111',
+                    'country' => 'Colombia',
+                    'fields' => [
+                        'Régimen' => 'Común',
+                        'NIT' => '900123456-1'
+                    ],
+                ]
+            ];
+            
+            $this->buyer = (object) [
+                'name' => 'Nahia Véliz',
+                'company' => null,
+                'email' => 'raul.olmos@example.com',
+                'phone' => '+57 987 654 3210',
+                'tax_number' => '12345678',
+                'fields' => [
+                    'Documento' => '12345678',
+                    'Tipo de Cliente' => 'Jurídica',
+                    'Régimen Fiscal' => 'Común'
+                ],
+                'address' => (object) [
+                    'name' => 'Nahia Véliz',
+                    'company' => null,
+                    'street' => 'Avinguda Marcos, 3, 9º C',
+                    'city' => 'Segovia del Pozo',
+                    'state' => 'Antioquia',
+                    'postal_code' => '050001',
+                    'country' => 'Colombia',
+                    'fields' => [
+                        'Documento' => '12345678',
+                        'Tipo de Cliente' => 'Jurídica',
+                        'Régimen Fiscal' => 'Común'
+                    ],
+                ],
+                'shipping_address' => null,
+            ];
+            
+            // Inicializar discounts como colección vacía
+            $this->discounts = collect();
+            
+            $this->items = collect([
+                new class {
+                    public $label = 'Servicio Profesional';
+                    public $description = 'Servicios de consultoría y desarrollo web para el mes de julio 2025';
+                    public $quantity = 1;
+                    public $tax_percentage = 19;
+                    public $price_per_unit = 100000;
+                    public $sub_total_price = 100000;
+                    public $unit_price;
+                    public $unit_tax = null;
+                    
+                    public function __construct() {
+                        // Crear un mock de unit_price que simule Brick\Money
+                        $this->unit_price = new class {
+                            private $amount = 100000;
+                            
+                            public function multipliedBy($qty) {
+                                return new class($this->amount * $qty) {
+                                    private $amount;
+                                    public function __construct($amount) { $this->amount = $amount; }
+                                    
+                                    public function multipliedBy($factor) {
+                                        return new class($this->amount * $factor) {
+                                            private $amount;
+                                            public function __construct($amount) { $this->amount = $amount; }
+                                            
+                                            public function dividedBy($divisor, $mode = null) {
+                                                return new class($this->amount / $divisor) {
+                                                    private $amount;
+                                                    public function __construct($amount) { $this->amount = $amount; }
+                                                    public function getAmount() { return $this->amount; }
+                                                    public function plus($other) {
+                                                        $otherAmount = is_object($other) && method_exists($other, 'getAmount') ? $other->getAmount() : $other;
+                                                        return new class($this->amount + $otherAmount) {
+                                                            private $amount;
+                                                            public function __construct($amount) { $this->amount = $amount; }
+                                                            public function getAmount() { return $this->amount; }
+                                                        };
+                                                    }
+                                                };
+                                            }
+                                            
+                                            public function getAmount() { return $this->amount; }
+                                            
+                                            public function plus($other) {
+                                                $otherAmount = is_object($other) && method_exists($other, 'getAmount') ? $other->getAmount() : $other;
+                                                return new class($this->amount + $otherAmount) {
+                                                    private $amount;
+                                                    public function __construct($amount) { $this->amount = $amount; }
+                                                    public function getAmount() { return $this->amount; }
+                                                };
+                                            }
+                                        };
+                                    }
+                                    
+                                    public function dividedBy($divisor, $mode = null) {
+                                        return new class($this->amount / $divisor) {
+                                            private $amount;
+                                            public function __construct($amount) { $this->amount = $amount; }
+                                            public function getAmount() { return $this->amount; }
+                                        };
+                                    }
+                                    
+                                    public function plus($other) {
+                                        $otherAmount = is_object($other) && method_exists($other, 'getAmount') ? $other->getAmount() : $other;
+                                        return new class($this->amount + $otherAmount) {
+                                            private $amount;
+                                            public function __construct($amount) { $this->amount = $amount; }
+                                            public function getAmount() { return $this->amount; }
+                                        };
+                                    }
+                                    
+                                    public function getAmount() { return $this->amount; }
+                                };
+                            }
+                            
+                            public function getAmount() { return $this->amount; }
+                        };
+                    }
+                    
+                    public function formatMoney($amount) { 
+                        if (is_object($amount) && method_exists($amount, 'getAmount')) {
+                            return number_format($amount->getAmount(), 2, ',', '.') . ' COP';
+                        }
+                        if (is_object($amount) && method_exists($amount, 'toFloat')) {
+                            return number_format($amount->toFloat(), 2, ',', '.') . ' COP';
+                        }
+                        return number_format($amount, 2, ',', '.') . ' COP'; 
+                    }
+                    
+                    public function formatPercentage($percentage) {
+                        return $percentage . '%';
+                    }
+                    
+                    public function totalAmount() {
+                        // Calcular el total del item (precio unitario * cantidad + impuestos)
+                        $subtotal = $this->unit_price->getAmount() * $this->quantity;
+                        $tax = $subtotal * ($this->tax_percentage / 100);
+                        return new class($subtotal + $tax) {
+                            private $amount;
+                            public function __construct($amount) { $this->amount = $amount; }
+                            public function getAmount() { return $this->amount; }
+                        };
+                    }
+                },
+            ]);
+            
+            $this->paymentInstructions = [
+                (object) [
+                    'name' => 'Transferencia Bancaria',
+                    'description' => 'Realice su pago mediante transferencia bancaria',
+                    'fields' => [
+                        'Banco' => 'Banco de Ejemplo',
+                        'Cuenta' => '123-456-789',
+                        'Titular' => $companyName ?: 'Fundación Odontológica Zoila Padilla'
+                    ],
+                    'qrcode' => null
+                ]
+            ];
+        }
+        
+        public function getTypeLabel() { 
+            return 'FACTURA DE VENTA'; 
+        }
+        
+        public function getStateLabel() { 
+            return 'draft'; 
+        }
+        
+        public function totalAmount() { 
+            return 119000; 
+        }
+        
+        public function totalTaxAmount() {
+            // Retornar un mock de Brick\Money que simule un amount positivo
+            return new class {
+                private $amount = 19000;
+                public function getAmount() { return $this->amount; }
+                public function isPositive() { return $this->amount > 0; }
+            };
+        }
+        
+        public function subTotalAmount() {
+            // Retornar el subtotal sin impuestos
+            return new class {
+                private $amount = 100000;
+                public function getAmount() { return $this->amount; }
+                public function isPositive() { return $this->amount > 0; }
+            };
+        }
+        
+        public function subTotalDiscountedAmount() {
+            // Retornar el subtotal con descuentos aplicados (mismo que subtotal si no hay descuentos)
+            return new class {
+                private $amount = 100000;
+                public function getAmount() { return $this->amount; }
+                public function isPositive() { return $this->amount > 0; }
+            };
+        }
+        
+        public function formatMoney($amount) { 
+            if (is_object($amount) && method_exists($amount, 'getAmount')) {
+                return number_format($amount->getAmount(), 2, ',', '.') . ' COP';
+            }
+            if (is_object($amount) && method_exists($amount, 'toFloat')) {
+                return number_format($amount->toFloat(), 2, ',', '.') . ' COP';
+            }
+            return number_format($amount, 2, ',', '.') . ' COP'; 
+        }
+    };
 @endphp
 
-<div class="bg-white rounded-lg shadow-lg border overflow-hidden" style="font-family: {{ $font }};">
-    @if($templateName === 'default')
-        {{-- Vista previa del template default --}}
-        <div class="h-2 w-full" style="background-color: {{ $color }}"></div>
-        
-        <div class="p-6">
-            <div class="mb-8 flex justify-between items-start">
-                <div>
-                    <h1 class="mb-1 text-2xl font-bold">
-                        FACTURA DE VENTA
-                    </h1>
-                    <p class="mb-5 text-sm text-gray-600">
-                        Pendiente de Pago
-                    </p>
-
-                    <div class="space-y-1 text-xs">
-                        <div class="flex">
-                            <span class="font-semibold w-24">Número:</span>
-                            <span class="font-bold">FACT-001</span>
-                        </div>
-                        <div class="flex">
-                            <span class="font-semibold w-24">Fecha:</span>
-                            <span>{{ now()->format('d/m/Y') }}</span>
-                        </div>
-                        <div class="flex">
-                            <span class="font-semibold w-24">Vencimiento:</span>
-                            <span>{{ now()->addDays(30)->format('d/m/Y') }}</span>
-                        </div>
-                    </div>
-                </div>
-                @if($logoUrl)
-                <div class="w-20 h-20">
-                    <img src="{{ $logoUrl }}" alt="Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'text-xs text-red-500\'>Error cargando logo<br>{{ $logoUrl }}</div>';">
-                </div>
-                @else
-                <div class="w-20 h-20 bg-gray-100 flex items-center justify-center text-xs text-gray-500">
-                    Sin Logo
-                </div>
-                @endif
-            </div>
-
-            <div class="mb-6 grid grid-cols-2 gap-6">
-                <div>
-                    <p class="mb-1 pb-1 text-xs text-gray-500 font-semibold">DE:</p>
-                    <div>
-                        <p class="font-semibold">{{ $companyName ?: 'Mi Empresa' }}</p>
-                        <p class="text-sm">{{ $companyEmail ?: 'email@empresa.com' }}</p>
-                        <p class="text-sm">{{ $companyPhone ?: '+57 123 456 7890' }}</p>
-                        <p class="text-sm">Calle Ejemplo 123</p>
-                        <p class="text-sm">Bogotá, Colombia</p>
-                    </div>
-                </div>
-                <div>
-                    <p class="mb-1 pb-1 text-xs text-gray-500 font-semibold">PARA:</p>
-                    <div>
-                        <p class="font-semibold">Cliente de Ejemplo</p>
-                        <p class="text-sm">cliente@ejemplo.com</p>
-                        <p class="text-sm">+57 987 654 3210</p>
-                        <p class="text-sm">Carrera Ejemplo 456</p>
-                        <p class="text-sm">Medellín, Colombia</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Tabla de servicios --}}
-            <div class="mb-6">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr class="text-white" style="background-color: {{ $color }};">
-                            <th class="border border-gray-300 p-2 text-left">Descripción</th>
-                            <th class="border border-gray-300 p-2 text-center">Cant.</th>
-                            <th class="border border-gray-300 p-2 text-right">Precio Unit.</th>
-                            <th class="border border-gray-300 p-2 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-gray-300 p-2">
-                                <div class="font-medium">Servicio de Consultoría</div>
-                                <div class="text-sm text-gray-600">Consultoría profesional</div>
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center">2</td>
-                            <td class="border border-gray-300 p-2 text-right">$150.000</td>
-                            <td class="border border-gray-300 p-2 text-right font-medium">$300.000</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 p-2">
-                                <div class="font-medium">Desarrollo de Software</div>
-                                <div class="text-sm text-gray-600">Aplicación personalizada</div>
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center">1</td>
-                            <td class="border border-gray-300 p-2 text-right">$500.000</td>
-                            <td class="border border-gray-300 p-2 text-right font-medium">$500.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Totales --}}
-            <div class="flex justify-end">
-                <div class="w-1/3">
-                    <div class="bg-gray-50 p-4 rounded border">
-                        <div class="flex justify-between py-1">
-                            <span>Subtotal:</span>
-                            <span>$800.000</span>
-                        </div>
-                        <div class="flex justify-between py-1">
-                            <span>IVA (19%):</span>
-                            <span>$152.000</span>
-                        </div>
-                        <hr class="my-2">
-                        <div class="flex justify-between py-1 font-bold text-lg" style="color: {{ $color }};">
-                            <span>Total:</span>
-                            <span>$952.000</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gray-50 p-3 text-xs text-gray-500 text-center border-t">
-            FACT-001 • $952.000 | Página 1
-        </div>
-
+<div class="bg-white rounded-lg shadow-lg border overflow-hidden">
+    {{-- Incluir los estilos del template seleccionado --}}
+    @if($templateName === 'colombia')
+        @include('invoices::colombia.style', ['invoice' => $mockInvoice])
     @else
-        {{-- Vista previa del template colombia --}}
-        <div class="flex">
-            <div class="h-2 flex-1 bg-yellow-400"></div>
-            <div class="h-2 flex-1 bg-blue-600"></div>
-            <div class="h-2 flex-1 bg-red-600"></div>
-        </div>
-        
-        <div class="p-6">
-            <div class="mb-8 flex justify-between items-start">
-                <div>
-                    <h1 class="mb-1 text-3xl font-bold" style="color: {{ $color }}">
-                        FACTURA DE VENTA
-                    </h1>
-                    <p class="mb-2 text-sm font-semibold text-gray-600">
-                        Pendiente de Pago
-                    </p>
-
-                    <div class="border border-gray-300 bg-gray-50">
-                        <div class="text-xs border-b border-gray-300 flex">
-                            <div class="py-1 px-2 font-semibold w-1/3">Número de Factura:</div>
-                            <div class="py-1 px-2 font-bold flex-1">FACT-001</div>
-                        </div>
-                        <div class="text-xs border-b border-gray-300 flex">
-                            <div class="py-1 px-2 font-semibold w-1/3">Fecha de Emisión:</div>
-                            <div class="py-1 px-2 flex-1">{{ now()->format('d/m/Y') }}</div>
-                        </div>
-                        <div class="text-xs border-b border-gray-300 flex">
-                            <div class="py-1 px-2 font-semibold w-1/3">Fecha de Vencimiento:</div>
-                            <div class="py-1 px-2 flex-1">{{ now()->addDays(30)->format('d/m/Y') }}</div>
-                        </div>
-                        <div class="text-xs flex">
-                            <div class="py-1 px-2 font-semibold w-1/3">Moneda:</div>
-                            <div class="py-1 px-2 flex-1">Peso Colombiano (COP)</div>
-                        </div>
-                    </div>
-                </div>
-                @if($logoUrl)
-                <div class="w-24 text-center">
-                    <img src="{{ $logoUrl }}" alt="Logo de la empresa" class="mx-auto mb-2 max-h-20" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'text-xs text-red-500\'>Error cargando logo<br>{{ $logoUrl }}</div>';">
-                    <p class="text-xs font-semibold" style="color: {{ $color }}">
-                        República de Colombia
-                    </p>
-                </div>
-                @else
-                <div class="w-24 text-center">
-                    <div class="mx-auto mb-2 max-h-20 bg-gray-100 flex items-center justify-center text-xs text-gray-500 h-20">
-                        Sin Logo
-                    </div>
-                    <p class="text-xs font-semibold" style="color: {{ $color }}">
-                        República de Colombia
-                    </p>
-                </div>
-                @endif
-            </div>
-
-            <div class="mb-6 grid grid-cols-2 gap-4">
-                <div class="border border-gray-300 p-3">
-                    <p class="mb-2 text-sm font-bold text-white px-2 py-1" style="background-color: {{ $color }}">
-                        DATOS DEL EMISOR
-                    </p>
-                    <div>
-                        <p class="font-semibold text-sm">{{ $companyName ?: 'Mi Empresa' }}</p>
-                        <p class="text-xs">{{ $companyEmail ?: 'email@empresa.com' }}</p>
-                        <p class="text-xs">{{ $companyPhone ?: '+57 123 456 7890' }}</p>
-                        <p class="text-xs">Calle Ejemplo 123</p>
-                        <p class="text-xs">Bogotá, Cundinamarca</p>
-                        <p class="text-xs">Colombia - 110111</p>
-                    </div>
-                </div>
-                <div class="border border-gray-300 p-3">
-                    <p class="mb-2 text-sm font-bold text-white px-2 py-1" style="background-color: {{ $color }}">
-                        DATOS DEL RECEPTOR
-                    </p>
-                    <div>
-                        <p class="font-semibold text-sm">Cliente de Ejemplo</p>
-                        <p class="text-xs">cliente@ejemplo.com</p>
-                        <p class="text-xs">+57 987 654 3210</p>
-                        <p class="text-xs">Carrera Ejemplo 456</p>
-                        <p class="text-xs">Medellín, Antioquia</p>
-                        <p class="text-xs">Colombia - 050001</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Tabla de servicios estilo Colombia --}}
-            <div class="mb-6">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr class="text-white" style="background-color: {{ $color }};">
-                            <th class="border border-gray-300 p-2 text-left">Descripción del Servicio</th>
-                            <th class="border border-gray-300 p-2 text-center">Cantidad</th>
-                            <th class="border border-gray-300 p-2 text-right">Valor Unitario</th>
-                            <th class="border border-gray-300 p-2 text-right">Valor Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-300">
-                            <td class="border border-gray-300 p-2">
-                                <div class="font-medium">Servicio de Consultoría Profesional</div>
-                                <div class="text-xs text-gray-600">Consultoría especializada en el sector</div>
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center">2</td>
-                            <td class="border border-gray-300 p-2 text-right">$150.000</td>
-                            <td class="border border-gray-300 p-2 text-right font-medium">$300.000</td>
-                        </tr>
-                        <tr class="border-b border-gray-300">
-                            <td class="border border-gray-300 p-2">
-                                <div class="font-medium">Desarrollo de Software Personalizado</div>
-                                <div class="text-xs text-gray-600">Aplicación web a medida</div>
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center">1</td>
-                            <td class="border border-gray-300 p-2 text-right">$500.000</td>
-                            <td class="border border-gray-300 p-2 text-right font-medium">$500.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Totales estilo Colombia --}}
-            <div class="flex justify-end">
-                <div class="w-1/3 border border-gray-300">
-                    <div class="text-white px-2 py-1 text-sm font-bold" style="background-color: {{ $color }};">
-                        RESUMEN DE FACTURACIÓN
-                    </div>
-                    <div class="p-3 space-y-1">
-                        <div class="flex justify-between text-sm">
-                            <span>Subtotal:</span>
-                            <span>$800.000</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span>IVA (19%):</span>
-                            <span>$152.000</span>
-                        </div>
-                        <hr class="my-2">
-                        <div class="flex justify-between font-bold text-lg" style="color: {{ $color }};">
-                            <span>TOTAL A PAGAR:</span>
-                            <span>$952.000</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Footer legal estilo Colombia --}}
-            <div class="mt-6 p-3 bg-gray-100 border border-gray-300 text-xs text-gray-600 text-center">
-                <p class="font-semibold">Esta factura es válida según la normativa colombiana - DIAN</p>
-                <p>Régimen Común - Responsable del IVA - Autorretenedor</p>
-            </div>
-        </div>
-
-        <div class="bg-gray-50 p-3 text-xs text-gray-500 text-center border-t flex justify-between">
-            <span>FACT-001 • $952.000</span>
-            <span>Esta factura es válida según la normativa colombiana - DIAN</span>
-            <span>Página 1</span>
-        </div>
+        @include('invoices::default.style', ['invoice' => $mockInvoice])
     @endif
+
+    {{-- Incluir el template original seleccionado con estilos inline forzados --}}
+    <div class="p-4" style="font-family: {{ $font }}; transform: scale(0.75); transform-origin: top left; width: 133.33%; height: auto; --template-color: {{ $color }};">
+        <style>
+            /* Forzar colores en el preview - Solución específica */
+            
+            /* Título principal H1 */
+            .invoice-preview h1 { color: {{ $color }} !important; }
+            
+            /* Clases específicas de template */
+            .invoice-preview .bg-template-color { background-color: {{ $color }} !important; }
+            .invoice-preview .text-template-color { color: {{ $color }} !important; }
+            .invoice-preview .border-template-color { border-color: {{ $color }} !important; }
+            
+            /* Template Colombia - Elementos con background-color sólido */
+            .invoice-preview tr[style*="background-color"] { 
+                background-color: {{ $color }} !important; 
+                color: white !important;
+            }
+            .invoice-preview p[style*="background-color"]:not([style*="background-color:"][style*="10"]) { 
+                background-color: {{ $color }} !important; 
+                color: white !important;
+            }
+            
+            /* Template Default - Títulos de secciones (background sólido) */
+            .invoice-preview h3[style*="background-color"]:not([style*="10"]) {
+                background-color: {{ $color }} !important;
+                color: white !important;
+            }
+            
+            /* Template Default - Backgrounds con transparencia (como el total) */
+            .invoice-preview [style*="background-color:"][style*="10"] {
+                background-color: {{ $color }}10 !important; /* Mantener transparencia */
+            }
+            
+            /* Template Default - Textos con color específico */
+            .invoice-preview span[style*="color:"],
+            .invoice-preview p[style*="color:"]:not([style*="background-color"]) {
+                color: {{ $color }} !important;
+            }
+            
+            /* Template Default - Bordes */
+            .invoice-preview [style*="border-color:"] {
+                border-color: {{ $color }} !important;
+            }
+            
+            /* República de Colombia en template Colombia */
+            .invoice-preview p[style*="color:"][class*="text-xs"] {
+                color: {{ $color }} !important;
+            }
+            
+            /* Forzar logo si existe */
+            @if($logoUrl)
+            .invoice-preview img[alt*="Logo"],
+            .invoice-preview img[src*="logo"],
+            .invoice-preview img[height="120"],
+            .invoice-preview td[width="25%"] img {
+                content: url('{{ $logoUrl }}') !important;
+                max-width: 150px !important;
+                height: 120px !important;
+                display: block !important;
+                visibility: visible !important;
+                margin: 0 auto 8px !important;
+            }
+            
+            /* Asegurar que el contenedor del logo sea visible */
+            .invoice-preview td[width="25%"] {
+                display: table-cell !important;
+            }
+            @endif
+        </style>
+        
+        <script>
+            // Función para forzar el logo - mejorada para evitar que se quite
+            function forceLogoDisplay() {
+                @if($logoUrl)
+                // Buscar todas las posibles imágenes del logo
+                const logoImages = document.querySelectorAll('.invoice-preview img[alt*="Logo"], .invoice-preview img[height="120"], .invoice-preview td[width="25%"] img');
+                
+                if (logoImages.length > 0) {
+                    logoImages.forEach((img) => {
+                        // Solo cambiar si no tiene ya el logo correcto
+                        if (img.src !== `{{ $logoUrl }}`) {
+                            img.src = `{{ $logoUrl }}`;
+                            img.style.maxWidth = '150px';
+                            img.style.height = '120px';
+                            img.style.display = 'block';
+                            img.style.visibility = 'visible';
+                            img.style.margin = '0 auto 8px';
+                        }
+                    });
+                }
+                @endif
+            }
+            
+            // Ejecutar inmediatamente
+            forceLogoDisplay();
+            
+            // Ejecutar cuando el DOM esté listo
+            document.addEventListener('DOMContentLoaded', forceLogoDisplay);
+            
+            // Ejecutar después de cualquier cambio en el DOM (para Filament)
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                        setTimeout(forceLogoDisplay, 50);
+                    }
+                });
+            });
+            
+            // Observar cambios en el contenedor de la vista previa
+            setTimeout(() => {
+                const previewContainer = document.querySelector('.invoice-preview');
+                if (previewContainer) {
+                    observer.observe(previewContainer, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['src']
+                    });
+                }
+            }, 100);
+        </script>
+        
+        <div class="invoice-preview">
+            @if($templateName === 'colombia')
+                @include('invoices::colombia.invoice', ['invoice' => $mockInvoice])
+            @else
+                @include('invoices::default.invoice', ['invoice' => $mockInvoice])
+            @endif
+        </div>
+    </div>
 
     {{-- Nota informativa --}}
     <div class="m-4 p-3 bg-blue-50 rounded border-l-4" style="border-color: {{ $color }};">
@@ -406,5 +479,8 @@
             Esta es una vista previa del template <strong>{{ $templateName === 'default' ? 'por Defecto' : 'Colombia' }}</strong>. 
             Los cambios de color y tipografía se aplicarán automáticamente cuando guarde la configuración.
         </p>
+        <div class="text-xs mt-2 text-gray-500">
+            ✅ Color: {{ $color }} | ✅ Fuente: {{ $font }} | {{ $logoUrl ? '✅ Logo configurado' : '❌ Sin logo' }}
+        </div>
     </div>
 </div>
