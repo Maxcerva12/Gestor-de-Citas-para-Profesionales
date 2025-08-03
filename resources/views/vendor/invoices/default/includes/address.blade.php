@@ -1,4 +1,4 @@
- @if ($address->company && $address->name)
+@if ($address->company && $address->name)
     <p class="pb-1 text-xs"><strong>{{ $address->company }}</strong></p>
     <p class="pb-1 text-xs">{{ $address->name }}</p>
 @elseif($address->company)
@@ -17,7 +17,13 @@
 
 @if ($address->city)
     <p class="pb-1 text-xs">
-        <strong>Ciudad:</strong> {{ $address->city }}@if($address->state), {{ $address->state }}@endif@if($address->postal_code) {{ $address->postal_code }}@endif
+        <strong>Ciudad:</strong> {{ $address->city }}
+        @if($address->state)
+            , {{ $address->state }}
+        @endif
+        @if($address->postal_code)
+            {{ $address->postal_code }}
+        @endif
     </p>
 @endif
 

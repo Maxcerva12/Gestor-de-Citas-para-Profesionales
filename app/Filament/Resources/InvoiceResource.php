@@ -9,6 +9,7 @@ use App\Filament\Resources\InvoiceResource\RelationManagers;
 use App\Models\Client;
 use App\Models\Invoice;
 use Brick\Money\Money;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -93,6 +94,44 @@ class InvoiceResource extends Resource
                             ->searchable(['name', 'apellido', 'numero_documento', 'email'])
                             ->preload()
                             ->live()
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                if ($state) {
+                                    // Obtener el cliente seleccionado
+                                    $client = Client::find($state);
+                                    if ($client) {
+                                        // Obtener campos existentes para no sobrescribir campos personalizados
+                                        $existingFields = $get('buyer_information.fields') ?? [];
+
+                                        // Preparar campos del cliente (solo los que tienen valor)
+                                        $clientFields = array_filter([
+                                            'Tipo de Documento' => $client->tipo_documento ?? 'Cédula de Ciudadanía',
+                                            'Número de Documento' => $client->numero_documento,
+                                            'Género' => $client->genero,
+                                            'Fecha de Nacimiento' => $client->fecha_nacimiento ? \Carbon\Carbon::parse($client->fecha_nacimiento)->format('d/m/Y') : null,
+                                            'Tipo de Sangre' => $client->tipo_sangre,
+                                            'Aseguradora' => $client->aseguradora,
+                                        ], function ($value) {
+                                            return $value !== null && $value !== '';
+                                        });
+
+                                        // Combinar campos: mantener los personalizados y agregar/actualizar los del cliente
+                                        $combinedFields = array_merge($clientFields, $existingFields);
+
+                                        // Actualizar el campo buyer_information.fields
+                                        $set('buyer_information.fields', $combinedFields);
+                                    }
+                                } else {
+                                    // Si no hay cliente seleccionado, limpiar solo los campos automáticos
+                                    $existingFields = $get('buyer_information.fields') ?? [];
+                                    $automaticFields = ['Tipo de Documento', 'Número de Documento', 'Género', 'Fecha de Nacimiento', 'Tipo de Sangre', 'Aseguradora'];
+
+                                    $customFields = array_filter($existingFields, function ($key) use ($automaticFields) {
+                                        return !in_array($key, $automaticFields);
+                                    }, ARRAY_FILTER_USE_KEY);
+
+                                    $set('buyer_information.fields', $customFields);
+                                }
+                            })
 
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
@@ -126,12 +165,30 @@ class InvoiceResource extends Resource
 
                         Forms\Components\KeyValue::make('buyer_information.fields')
                             ->label('Información Adicional del Paciente')
+                            ->helperText('Los campos del paciente se llenan automáticamente. Puedes agregar información adicional usando el botón "Agregar elemento".')
                             ->keyLabel('Campo')
                             ->valueLabel('Valor')
-                            ->default([
-                                'Tipo de Documento' => 'Cédula de Ciudadanía',
-                                'EPS' => '',
-                            ]),
+                            ->addable(true)
+                            ->deletable(true)
+                            ->reorderable(false)
+                            ->default([])
+                            ->afterStateHydrated(function ($component, $state) {
+                                // Solo limpiar valores problemáticos específicos, mantener el resto
+                                if (is_array($state)) {
+                                    $cleanedState = array_filter($state, function ($value, $key) {
+                                        // Eliminar solo campos con valores problemáticos específicos
+                                        if ($key === 'Documento' && ($value === null || $value === '')) {
+                                            return false;
+                                        }
+                                        if ($key === 'Tipo de Cliente' && $value === 'Natural') {
+                                            return false;
+                                        }
+                                        return true;
+                                    }, ARRAY_FILTER_USE_BOTH);
+
+                                    $component->state($cleanedState);
+                                }
+                            }),
                     ]),
 
                 Forms\Components\Section::make('Información de la Clínica')
@@ -424,6 +481,21 @@ class InvoiceResource extends Resource
     public static function mutateFormDataBeforeCreate(array $data): array
     {
         $data['currency'] = 'COP';
+
+        // Solo limpiar campos problemáticos específicos, mantener la información válida del cliente
+        if (isset($data['buyer_information']['fields']) && is_array($data['buyer_information']['fields'])) {
+            $fields = $data['buyer_information']['fields'];
+
+            // Eliminar solo campos problemáticos específicos
+            if (isset($fields['Documento']) && ($fields['Documento'] === null || $fields['Documento'] === '')) {
+                unset($data['buyer_information']['fields']['Documento']);
+            }
+
+            if (isset($fields['Tipo de Cliente']) && $fields['Tipo de Cliente'] === 'Natural') {
+                unset($data['buyer_information']['fields']['Tipo de Cliente']);
+            }
+        }
+
         return $data;
     }
 
@@ -433,6 +505,20 @@ class InvoiceResource extends Resource
     public static function mutateFormDataBeforeSave(array $data): array
     {
         $data['currency'] = 'COP';
+
+        // Solo limpiar campos problemáticos específicos, mantener la información válida del cliente
+        if (isset($data['buyer_information']['fields']) && is_array($data['buyer_information']['fields'])) {
+            $fields = $data['buyer_information']['fields'];
+
+            // Eliminar solo campos problemáticos específicos
+            if (isset($fields['Documento']) && ($fields['Documento'] === null || $fields['Documento'] === '')) {
+                unset($data['buyer_information']['fields']['Documento']);
+            }
+
+            if (isset($fields['Tipo de Cliente']) && $fields['Tipo de Cliente'] === 'Natural') {
+                unset($data['buyer_information']['fields']['Tipo de Cliente']);
+            }
+        }
 
         // Asegurarse de que los items tengan la información correcta
         if (isset($data['items'])) {

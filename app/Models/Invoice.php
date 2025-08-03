@@ -113,29 +113,41 @@ class Invoice extends BaseInvoice
         $client = $this->client;
         $buyerInfo = $this->buyer_information ?? [];
 
-        // Si hay un cliente asociado, usar su información
+        // Si hay un cliente asociado, combinar su información con los campos personalizados
         if ($client) {
             $fullName = trim($client->name . ' ' . ($client->apellido ?? ''));
+
+            // Obtener campos personalizados existentes que el usuario guardó
+            $customFields = $buyerInfo['fields'] ?? [];
+
+            // Preparar campos automáticos del cliente (solo los que tienen valor)
+            $clientFields = array_filter([
+                'Tipo de Documento' => $client->tipo_documento ?? 'Cédula de Ciudadanía',
+                'Número de Documento' => $client->numero_documento,
+                'Género' => $client->genero,
+                'Fecha de Nacimiento' => $client->fecha_nacimiento ? \Carbon\Carbon::parse($client->fecha_nacimiento)->format('d/m/Y') : null,
+                'Tipo de Sangre' => $client->tipo_sangre,
+                'Aseguradora' => $client->aseguradora,
+            ], function ($value) {
+                return $value !== null && $value !== '';
+            });
+
+            // Combinar campos: los personalizados tienen prioridad sobre los automáticos
+            $allFields = array_merge($clientFields, $customFields);
+
             $buyerInfo = [
-                'company' => null,
-                'name' => $fullName,
-                'email' => $client->email,
-                'phone' => $client->phone,
-                'address' => [
+                'company' => $buyerInfo['company'] ?? null,
+                'name' => $buyerInfo['name'] ?? $fullName,
+                'email' => $buyerInfo['email'] ?? $client->email,
+                'phone' => $buyerInfo['phone'] ?? $client->phone,
+                'address' => array_merge([
                     'street' => $client->address,
                     'city' => $client->city,
                     'postal_code' => null,
                     'state' => null,
                     'country' => $client->country,
-                ],
-                'fields' => [
-                    'Tipo de Documento' => $client->tipo_documento ?? 'Cédula de Ciudadanía',
-                    'Número de Documento' => $client->numero_documento,
-                    'Género' => $client->genero,
-                    'Fecha de Nacimiento' => $client->fecha_nacimiento ? \Carbon\Carbon::parse($client->fecha_nacimiento)->format('d/m/Y') : null,
-                    'Tipo de Sangre' => $client->tipo_sangre,
-                    'Aseguradora' => $client->aseguradora,
-                ],
+                ], $buyerInfo['address'] ?? []),
+                'fields' => $allFields,
             ];
         }
 
