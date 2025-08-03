@@ -8,7 +8,7 @@
     @endif
 
     @if ($party->name)
-        <p class="font-semibold">{{ $party->name }}</p>
+        <p class="font-semibold text-sm mb-1">{{ $party->name }}</p>
     @endif
 
     @if ($party->address)
@@ -16,15 +16,15 @@
             @if ($party->address->street)
                 @if (is_array($party->address->street))
                     @foreach ($party->address->street as $line)
-                        <p>{{ $line }}</p>
+                        <p><strong>Dirección:</strong> {{ $line }}</p>
                     @endforeach
                 @else
-                    <p>{{ $party->address->street }}</p>
+                    <p><strong>Dirección:</strong> {{ $party->address->street }}</p>
                 @endif
             @endif
 
             @if ($party->address->city || $party->address->state)
-                <p>
+                <p><strong>Ciudad:</strong> 
                     {{ $party->address->city }}
                     @if ($party->address->state), {{ $party->address->state }}@endif
                 </p>
@@ -55,7 +55,9 @@
     @if ($party->fields && count($party->fields) > 0)
         <div class="mt-2">
             @foreach ($party->fields as $key => $value)
-                <p><strong>{{ $key }}:</strong> {{ $value }}</p>
+                @if (!empty($value))
+                    <p><strong>{{ $key }}:</strong> {{ $value }}</p>
+                @endif
             @endforeach
         </div>
     @endif

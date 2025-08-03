@@ -220,7 +220,17 @@
                         <!-- Taxes -->
                         @if ($hasTaxes)
                             <div class="flex justify-between py-2 border-b border-gray-300">
-                                <span class="font-semibold text-gray-700">{{ $invoice->tax_label ?? 'IVA Colombia (19%)' }}:</span>
+                                <span class="font-semibold text-gray-700">
+                                    IVA Colombia ({{ 
+                                        number_format(
+                                            collect($invoice->items)
+                                                ->pluck('tax_percentage')
+                                                ->filter()
+                                                ->unique()
+                                                ->implode(', ') ?: 19, 1
+                                        ) 
+                                    }}%):
+                                </span>
                                 <span class="font-bold text-gray-900">{{ $invoice->formatMoney($invoice->totalTaxAmount()) }}</span>
                             </div>
                         @endif

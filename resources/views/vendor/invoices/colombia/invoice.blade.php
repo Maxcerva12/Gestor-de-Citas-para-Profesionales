@@ -196,7 +196,16 @@
                 @endif --}}
                 
                 <tr class="text-sm border-b">
-                    <td class="py-1 pr-4 text-right font-semibold">IVA (19%):</td>
+                    <td class="py-1 pr-4 text-right font-semibold">
+                        IVA ({{ number_format(
+                            collect($invoice->items)
+                                ->pluck('tax_percentage')
+                                ->filter()
+                                ->unique()
+                                ->implode(', ')
+                            ?: 19, 1
+                        ) }}%):
+                    </td>
                     <td class="py-1 text-right">{{ $invoice->formatMoney($totalTax) }}</td>
                 </tr>
                 

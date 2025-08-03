@@ -63,6 +63,9 @@ class EditInvoice extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        // Forzar moneda COP
+        $data['currency'] = 'COP';
+
         // Actualizar información del comprador desde el cliente seleccionado si cambió
         if (!empty($data['buyer_id']) && $data['buyer_id'] !== $this->record->buyer_id) {
             $client = \App\Models\Client::find($data['buyer_id']);
@@ -88,5 +91,22 @@ class EditInvoice extends EditRecord
         }
 
         return $data;
+    }
+
+    /**
+     * After save, ensure data consistency
+     */
+    protected function afterSave(): void
+    {
+        $defaultTaxRate = (float) \App\Models\InvoiceSettings::get('tax_rate', 19);
+
+        // Asegurar que todos los items tengan datos consistentes
+        $this->record->items()->whereNull('currency')->update(['currency' => 'COP']);
+        $this->record->items()->whereNull('tax_percentage')->update([
+            'tax_percentage' => $defaultTaxRate
+        ]);
+
+        // Refrescar el record para evitar problemas de estado
+        $this->record->refresh();
     }
 }

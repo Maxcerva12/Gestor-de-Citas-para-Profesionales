@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 
 class InvoiceResource extends Resource
 {
@@ -168,14 +170,14 @@ class InvoiceResource extends Resource
                                     ->numeric()
                                     ->prefix('$')
                                     ->required()
-                                    ->live()
-                                    ->afterStateUpdated(function ($state, $set, $get) {
-                                        $quantity = $get('quantity') ?? 1;
-                                        $taxRate = \App\Models\InvoiceSettings::get('tax_rate', 19);
-                                        $subtotal = $state * $quantity;
-                                        $tax = $subtotal * ($taxRate / 100);
-                                        $total = $subtotal + $tax;
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        if (!$state)
+                                            return;
 
+                                        // Obtener valor actual sin caché
+                                        $taxRateSetting = \App\Models\InvoiceSettings::where('key', 'tax_rate')->first();
+                                        $taxRate = $taxRateSetting ? (float) $taxRateSetting->value : 19;
                                         $set('tax_percentage', $taxRate);
                                     }),
 
@@ -185,21 +187,25 @@ class InvoiceResource extends Resource
                                     ->default(1)
                                     ->minValue(1)
                                     ->required()
-                                    ->live()
-                                    ->afterStateUpdated(function ($state, $set, $get) {
-                                        $unitPrice = $get('unit_price') ?? 0;
-                                        $taxRate = \App\Models\InvoiceSettings::get('tax_rate', 19);
-                                        $subtotal = $unitPrice * $state;
-                                        $tax = $subtotal * ($taxRate / 100);
-                                        $total = $subtotal + $tax;
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        if (!$state)
+                                            return;
 
+                                        // Obtener valor actual sin caché
+                                        $taxRateSetting = \App\Models\InvoiceSettings::where('key', 'tax_rate')->first();
+                                        $taxRate = $taxRateSetting ? (float) $taxRateSetting->value : 19;
                                         $set('tax_percentage', $taxRate);
                                     }),
 
                                 Forms\Components\TextInput::make('tax_percentage')
                                     ->label('IVA (%)')
                                     ->numeric()
-                                    ->default(fn() => \App\Models\InvoiceSettings::get('tax_rate', 19))
+                                    ->default(function () {
+                                        // Obtener valor actual sin caché
+                                        $taxRateSetting = \App\Models\InvoiceSettings::where('key', 'tax_rate')->first();
+                                        return $taxRateSetting ? (float) $taxRateSetting->value : 19;
+                                    })
                                     ->suffix('%')
                                     ->disabled()
                                     ->dehydrated(),
@@ -207,9 +213,36 @@ class InvoiceResource extends Resource
                             ->columns(3)
                             ->defaultItems(1)
                             ->addActionLabel('Agregar Servicio')
-                            ->reorderableWithButtons()
                             ->collapsible()
-                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? 'Nuevo Servicio'),
+                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? 'Nuevo Servicio')
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                                $data['currency'] = 'COP';
+                                // Asegurar que tax_percentage sea un valor entero (19 no 0.19)
+                                if (isset($data['tax_percentage'])) {
+                                    $taxRate = (float) $data['tax_percentage'];
+                                    if ($taxRate < 1) {
+                                        // Si es decimal (0.19), convertir a porcentaje (19)
+                                        $data['tax_percentage'] = $taxRate * 100;
+                                    }
+                                } else {
+                                    $data['tax_percentage'] = (float) \App\Models\InvoiceSettings::get('tax_rate', 19);
+                                }
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
+                                $data['currency'] = 'COP';
+                                // Asegurar que tax_percentage sea un valor entero (19 no 0.19)
+                                if (isset($data['tax_percentage'])) {
+                                    $taxRate = (float) $data['tax_percentage'];
+                                    if ($taxRate < 1) {
+                                        // Si es decimal (0.19), convertir a porcentaje (19)
+                                        $data['tax_percentage'] = $taxRate * 100;
+                                    }
+                                } else {
+                                    $data['tax_percentage'] = (float) \App\Models\InvoiceSettings::get('tax_rate', 19);
+                                }
+                                return $data;
+                            }),
                     ])
                     ->collapsible(),
             ]);
@@ -383,5 +416,38 @@ class InvoiceResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::check() && Gate::allows('view_any_invoice');
+    }
+
+    /**
+     * Mutate form data before creating the record
+     */
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['currency'] = 'COP';
+        return $data;
+    }
+
+    /**
+     * Mutate form data before saving the record
+     */
+    public static function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['currency'] = 'COP';
+
+        // Asegurarse de que los items tengan la información correcta
+        if (isset($data['items'])) {
+            $defaultTaxRate = (float) \App\Models\InvoiceSettings::get('tax_rate', 19);
+            foreach ($data['items'] as $index => &$item) {
+                $item['currency'] = 'COP';
+                $item['order'] = $index + 1;
+
+                // Asegurar que tax_percentage tenga un valor válido
+                if (!isset($item['tax_percentage']) || $item['tax_percentage'] === null) {
+                    $item['tax_percentage'] = $defaultTaxRate;
+                }
+            }
+        }
+
+        return $data;
     }
 }

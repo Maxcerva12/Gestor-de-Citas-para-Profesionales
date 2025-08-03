@@ -39,6 +39,36 @@ class Invoice extends BaseInvoice
         });
     }
 
+    /**
+     * Override para manejar mejor los items y evitar errores de índice
+     */
+    public function denormalize(): static
+    {
+        try {
+            // Asegurar que todos los items tengan datos válidos antes de denormalizar
+            $this->items()->whereNull('currency')->update(['currency' => 'COP']);
+
+            // Obtener el valor actual del tax_rate sin caché
+            $taxRateSetting = \App\Models\InvoiceSettings::where('key', 'tax_rate')->first();
+            $defaultTaxRate = $taxRateSetting ? (float) $taxRateSetting->value : 19;
+
+            $this->items()->whereNull('tax_percentage')->update([
+                'tax_percentage' => $defaultTaxRate
+            ]);
+
+            // Simplemente retornar this sin llamar al método padre problemático
+            return $this;
+        } catch (\Exception $e) {
+            // Log el error pero no interrumpir la operación
+            \Log::warning('Invoice denormalize failed: ' . $e->getMessage(), [
+                'invoice_id' => $this->id,
+                'items_count' => $this->items()->count()
+            ]);
+
+            return $this;
+        }
+    }
+
     protected function casts(): array
     {
         return [
@@ -69,19 +99,45 @@ class Invoice extends BaseInvoice
         // Limpiar caché para obtener la configuración más reciente
         InvoiceSettings::clearCache();
 
-        // Obtener configuraciones específicamente
+        // Obtener configuraciones específicamente - SIEMPRE obtener valor fresh
+        $taxRate = InvoiceSettings::where('key', 'tax_rate')->first();
+        $currentTaxRate = $taxRate ? (float) $taxRate->value : 19;
+
         $template = InvoiceSettings::get('invoice_template', 'colombia.layout');
         $color = InvoiceSettings::get('pdf_template_color', '#1e40af');
         $font = InvoiceSettings::get('pdf_font', 'Helvetica');
 
         $sellerInfo = InvoiceSettings::getCompanyInfo();
+
+        // Obtener información completa del cliente
+        $client = $this->client;
         $buyerInfo = $this->buyer_information ?? [];
 
-        $templateData = [
-            'color' => $color,
-            'font' => $font,
-            'watermark' => null, // Para facturas reales no mostrar watermark
-        ];
+        // Si hay un cliente asociado, usar su información
+        if ($client) {
+            $fullName = trim($client->name . ' ' . ($client->apellido ?? ''));
+            $buyerInfo = [
+                'company' => null,
+                'name' => $fullName,
+                'email' => $client->email,
+                'phone' => $client->phone,
+                'address' => [
+                    'street' => $client->address,
+                    'city' => $client->city,
+                    'postal_code' => null,
+                    'state' => null,
+                    'country' => $client->country,
+                ],
+                'fields' => [
+                    'Tipo de Documento' => $client->tipo_documento ?? 'Cédula de Ciudadanía',
+                    'Número de Documento' => $client->numero_documento,
+                    'Género' => $client->genero,
+                    'Fecha de Nacimiento' => $client->fecha_nacimiento ? \Carbon\Carbon::parse($client->fecha_nacimiento)->format('d/m/Y') : null,
+                    'Tipo de Sangre' => $client->tipo_sangre,
+                    'Aseguradora' => $client->aseguradora,
+                ],
+            ];
+        }
 
         $templateData = [
             'color' => $color,
@@ -95,6 +151,7 @@ class Invoice extends BaseInvoice
             seller: new Seller(
                 company: $sellerInfo['company'] ?? null,
                 name: $sellerInfo['name'] ?? null,
+
                 address: new Address(
                     street: $sellerInfo['address']['street'] ?? null,
                     city: $sellerInfo['address']['city'] ?? null,
@@ -125,23 +182,24 @@ class Invoice extends BaseInvoice
                     country: $buyerInfo['shipping_address']['country'] ?? null,
                 ) : null,
                 email: $buyerInfo['email'] ?? null,
-                fields: $buyerInfo['fields'] ?? [],
+                phone: $buyerInfo['phone'] ?? null,
+                fields: array_filter($buyerInfo['fields'] ?? []),
             ),
             description: $this->description,
             created_at: $this->created_at,
             due_at: $this->due_at,
             paid_at: $this->paid_at ? \Carbon\Carbon::parse($this->paid_at) : null,
-            tax_label: "IVA Colombia (" . InvoiceSettings::get('tax_rate', 19) . "%)",
+            tax_label: "IVA Colombia (" . $currentTaxRate . "%)",
             fields: [
                 'Régimen Fiscal' => 'Común',
                 'Medio de Pago' => 'Contado',
             ],
-            items: $this->items->map(function ($item) {
+            items: $this->items->map(function ($item) use ($currentTaxRate) {
                 return new PdfInvoiceItem(
                     label: $item->label,
                     description: $item->description,
                     unit_price: $item->unit_price,
-                    tax_percentage: $item->tax_percentage ?? InvoiceSettings::get('tax_rate', 19),
+                    tax_percentage: $item->tax_percentage ?? $currentTaxRate,
                     quantity: $item->quantity,
                 );
             })->toArray(),
@@ -163,9 +221,16 @@ class Invoice extends BaseInvoice
 
     public function getTotalTaxAttribute()
     {
-        return $this->items->sum(function ($item) {
+        // Obtener el valor actual del tax_rate sin caché
+        $taxRateSetting = \App\Models\InvoiceSettings::where('key', 'tax_rate')->first();
+        $currentTaxRate = $taxRateSetting ? (float) $taxRateSetting->value : 19;
+
+        return $this->items->sum(function ($item) use ($currentTaxRate) {
             $subtotal = $item->unit_price->getAmount() * $item->quantity;
-            return $subtotal * ($item->tax_percentage ?? 19) / 100;
+            $taxPercentage = $item->tax_percentage ?? $currentTaxRate;
+
+            // Asegurar que se use como porcentaje (dividir por 100)
+            return $subtotal * ($taxPercentage / 100);
         });
     }
 
