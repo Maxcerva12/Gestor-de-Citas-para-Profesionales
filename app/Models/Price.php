@@ -13,7 +13,6 @@ class Price extends Model
 
     protected $fillable = [
         'user_id',    // <-- NUEVO
-        'stripe_price_id',
         'name',
         'amount',
         'currency',

@@ -11,11 +11,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             ClientSeeder::class,
-            ScheduleSeeder::class,
-            AppointmentSeeder::class,
+            // ScheduleSeeder::class,
+            // AppointmentSeeder::class,
             TestUserSeeder::class,
-            PriceSeeder::class,
-            SchedulePermissionsSeeder::class,
+            // PriceSeeder::class,
+            // SchedulePermissionsSeeder::class,
         ]);
     }
 }

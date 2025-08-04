@@ -20,9 +20,7 @@ class Appointment extends Model
         'end_time',
         'status',
         'notes',
-        'payment_status',
-        'stripe_payment_intent',
-        'stripe_checkout_session'
+        'payment_status'
     ];
 
     protected $casts = [

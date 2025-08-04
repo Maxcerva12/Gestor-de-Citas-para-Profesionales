@@ -3,7 +3,13 @@
 return [
 
     /*
-    |--------------------------------------------------------------------------
+    |--------    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+];--------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
     |
@@ -38,11 +44,5 @@ return [
     'google' => [
         'credentials_path' => base_path(env('GOOGLE_CREDENTIALS_PATH', 'credentials.json')),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/google-calendar/callback'),
-    ],
-
-    'stripe' => [
-        'model' => App\Models\User::class,
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
     ],
 ];

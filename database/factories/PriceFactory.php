@@ -17,7 +17,6 @@ class PriceFactory extends Factory
     public function definition(): array
     {
         return [
-            'stripe_price_id' => 'price_' . fake()->unique()->regexify('[A-Za-z0-9]{24}'),
             'name' => fake()->randomElement(['Consulta Estándar', 'Consulta Urgente', 'Seguimiento', 'Primera Visita']),
             'amount' => fake()->randomFloat(2, 30, 200),
             'description' => fake()->sentence(),

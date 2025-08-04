@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleCalendarController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoicePreviewController;
 
@@ -15,13 +14,6 @@ Route::get('/google-calendar/callback', [GoogleCalendarController::class, 'handl
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/payment/{appointment}/checkout', [PaymentController::class, 'checkout'])
-        ->name('payment.checkout');
-    Route::get('/payment/success/{appointment}', [PaymentController::class, 'success'])
-        ->name('payment.success');
-    Route::get('/payment/cancel/{appointment}', [PaymentController::class, 'cancel'])
-        ->name('payment.cancel');
-
     // Ruta para vista previa de configuración de facturas
     Route::get('/invoice-preview', [InvoicePreviewController::class, 'generatePreview'])
         ->name('invoice.preview');

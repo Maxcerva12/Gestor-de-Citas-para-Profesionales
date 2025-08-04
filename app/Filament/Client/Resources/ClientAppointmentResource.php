@@ -312,11 +312,6 @@ class ClientAppointmentResource extends Resource
                                             ->weight(FontWeight::Bold)
                                             ->icon('heroicon-o-currency-euro'),
                                     ]),
-
-                                TextEntry::make('stripe_payment_intent')
-                                    ->label('Referencia de Pago')
-                                    ->copyable()
-                                    ->visible(fn($record) => (bool) $record->stripe_payment_intent),
                             ]),
 
                         Tabs\Tab::make('Ubicación')

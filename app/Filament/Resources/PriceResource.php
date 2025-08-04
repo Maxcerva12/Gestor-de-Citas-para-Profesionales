@@ -30,9 +30,6 @@ class PriceResource extends Resource
                     ->numeric()
                     ->prefix('€')
                     ->label('Precio'),
-                Forms\Components\TextInput::make('stripe_price_id')
-                    ->required()
-                    ->label('ID de Precio en Stripe'),
                 Forms\Components\Textarea::make('description')
                     ->label('Descripción'),
                 Forms\Components\Toggle::make('is_active')
@@ -51,15 +48,15 @@ class PriceResource extends Resource
                     ->money('EUR')
                     ->label('Precio')
                     ->sortable(),
-                    Tables\Columns\IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),
-                
+
             ])
             ->filters([
                 Tables\Filters\Filter::make('is_active')
                     ->label('Activos')
-                    ->query(fn ($query) => $query->where('is_active', true)),
+                    ->query(fn($query) => $query->where('is_active', true)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

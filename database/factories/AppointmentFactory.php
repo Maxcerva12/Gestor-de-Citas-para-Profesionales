@@ -34,8 +34,6 @@ class AppointmentFactory extends Factory
             'schedule_id' => \App\Models\Schedule::factory(),
             'price_id' => $price->id,
             'amount' => $price->amount,
-            'stripe_payment_intent' => fake()->optional(0.7)->regexify('pi_[A-Za-z0-9]{24}'),
-            'stripe_checkout_session' => fake()->optional(0.7)->regexify('cs_test_[A-Za-z0-9]{40}'),
         ];
     }
 }

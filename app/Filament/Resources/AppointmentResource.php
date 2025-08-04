@@ -293,7 +293,7 @@ class AppointmentResource extends Resource
                                             ->numeric()
                                             ->prefix('€')
                                             ->disabled()
-                                            ->dehydrated(true), 
+                                            ->dehydrated(true),
                                     ]),
                             ]),
 
@@ -730,17 +730,7 @@ class AppointmentResource extends Resource
 
                                 Infolists\Components\Grid::make(1)
                                     ->schema([
-                                        Infolists\Components\TextEntry::make('stripe_payment_intent')
-                                            ->label('ID de Pago (Stripe)')
-                                            ->copyable()
-                                            ->icon('heroicon-m-credit-card')
-                                            ->visible(fn(Appointment $record) => (bool) $record->stripe_payment_intent),
-
-                                        Infolists\Components\TextEntry::make('stripe_checkout_session')
-                                            ->label('Sesión de Pago (Stripe)')
-                                            ->copyable()
-                                            ->icon('heroicon-m-credit-card')
-                                            ->visible(fn(Appointment $record) => (bool) $record->stripe_checkout_session),
+                                        // Referencias de Stripe eliminadas
                                     ]),
                             ]),
 
