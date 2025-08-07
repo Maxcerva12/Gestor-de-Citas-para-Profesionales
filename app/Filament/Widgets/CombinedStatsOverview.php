@@ -4,7 +4,6 @@ namespace App\Filament\Widgets;
 
 use App\Models\User;
 use App\Models\Client;
-use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -31,7 +30,7 @@ class CombinedStatsOverview extends BaseWidget
             ->orderBy('date')
             ->get()
             ->pluck('total')
-            ->map(fn($value) => (int) $value) // Castear a entero
+            ->map(fn($value) => (int) $value)
             ->toArray();
 
         // Total de Clientes
@@ -44,31 +43,7 @@ class CombinedStatsOverview extends BaseWidget
             ->orderBy('date')
             ->get()
             ->pluck('total')
-            ->map(fn($value) => (int) $value) // Castear a entero
-            ->toArray();
-
-        // Ingresos por Citas (todas las citas con estado 'paid')
-        $paidAppointments = Appointment::where('payment_status', 'paid')->get();
-
-        $totalRevenue = 0;
-        foreach ($paidAppointments as $appointment) {
-            $totalRevenue += $appointment->amount ?? 0;
-        }
-
-        // Ingresos diarios (para el gráfico) - agrupados por fecha
-        $revenues = Appointment::select(
-                DB::raw('DATE(start_time) as date'),
-                DB::raw('COUNT(id) as appointment_count'),
-                DB::raw('SUM(amount) as total')
-            )
-            ->where('payment_status', 'paid')
-            ->whereBetween('start_time', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        $totals = $revenues->pluck('total')
-            ->map(fn($value) => (float) $value) // Castear a float para ingresos
+            ->map(fn($value) => (int) $value)
             ->toArray();
 
         return [
@@ -76,22 +51,15 @@ class CombinedStatsOverview extends BaseWidget
             Stat::make('Total de Profesionales', number_format($totalProfessionals))
                 ->description('Profesionales registrados')
                 ->descriptionIcon('heroicon-m-user-group')
-                ->chart($professionalsData ?: [0]) // Fallback a [0] si está vacío
+                ->chart($professionalsData ?: [0])
                 ->color('success'),
 
             // Bloque 2: Total de Clientes
             Stat::make('Total de Clientes', number_format($totalClients))
                 ->description('Clientes registrados')
                 ->descriptionIcon('heroicon-m-user')
-                ->chart($clientsData ?: [0]) // Fallback a [0] si está vacío
+                ->chart($clientsData ?: [0])
                 ->color('info'),
-
-            // Bloque 3: Ingresos por Citas
-            Stat::make('Ingresos por Citas', '€' . number_format($totalRevenue, 2))
-                ->description('Total de citas pagadas')
-                ->descriptionIcon('heroicon-m-currency-euro')
-                ->chart($totals ?: [0]) // Fallback a [0] si está vacío
-                ->color('primary'),
         ];
     }
 }

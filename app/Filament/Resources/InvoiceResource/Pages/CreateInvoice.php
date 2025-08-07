@@ -65,6 +65,9 @@ class CreateInvoice extends CreateRecord
         );
 
         $invoice->save();
+
+        // Denormalizar los totales después de crear la factura con sus items
+        $invoice->denormalize();
     }
 
     protected function getRedirectUrl(): string

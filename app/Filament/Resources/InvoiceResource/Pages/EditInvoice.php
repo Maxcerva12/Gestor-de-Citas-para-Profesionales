@@ -28,35 +28,6 @@ class EditInvoice extends EditRecord
                 ->url(fn() => route('invoices.download', $this->record))
                 ->openUrlInNewTab(),
 
-            Actions\Action::make('mark_paid')
-                ->label('Marcar como Pagada')
-                ->icon('heroicon-o-check-circle')
-                ->color('success')
-                ->action(function () {
-                    $this->record->update([
-                        'state' => InvoiceState::Paid,
-                        'paid_at' => now(),
-                    ]);
-
-                    $this->redirect($this->getResource()::getUrl('edit', ['record' => $this->record]));
-                })
-                ->requiresConfirmation()
-                ->visible(fn() => $this->record->state !== InvoiceState::Paid),
-
-            Actions\Action::make('mark_sent')
-                ->label('Marcar como Enviada')
-                ->icon('heroicon-o-paper-airplane')
-                ->color('warning')
-                ->action(function () {
-                    $this->record->update([
-                        'state' => InvoiceState::Sent,
-                    ]);
-
-                    $this->redirect($this->getResource()::getUrl('edit', ['record' => $this->record]));
-                })
-                ->requiresConfirmation()
-                ->visible(fn() => $this->record->state === InvoiceState::Draft),
-
             Actions\DeleteAction::make(),
         ];
     }
@@ -108,5 +79,8 @@ class EditInvoice extends EditRecord
 
         // Refrescar el record para evitar problemas de estado
         $this->record->refresh();
+
+        // Denormalizar los totales después de guardar
+        $this->record->denormalize();
     }
 }

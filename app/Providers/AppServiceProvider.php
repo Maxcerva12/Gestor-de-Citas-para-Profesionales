@@ -7,8 +7,6 @@ use Livewire\Livewire;
 use App\Filament\Widgets\ScheduleCalendarWidget;
 use App\Models\Appointment; // Añadir esta importación
 use App\Observers\AppointmentObserver; // Añadir esta importación
-use App\Models\Price; // Añadir esta importación
-use App\Observers\PriceObserver; // Añadir esta importación
 use App\Models\Client; // Añadir esta importación
 use App\Observers\ClientOdontogramObserver; // Añadir esta importación
 use App\Models\InvoiceItem; // Añadir esta importación
@@ -35,7 +33,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Registra los observadores
         Appointment::observe(AppointmentObserver::class);
-        Price::observe(PriceObserver::class);
         Client::observe(ClientOdontogramObserver::class);
         InvoiceItem::observe(InvoiceItemObserver::class);
     }
@@ -45,7 +42,6 @@ class AppServiceProvider extends ServiceProvider
      */
     protected $observers = [
         Appointment::class => [AppointmentObserver::class],
-        Price::class => [PriceObserver::class],
         Client::class => [ClientOdontogramObserver::class],
     ];
 }

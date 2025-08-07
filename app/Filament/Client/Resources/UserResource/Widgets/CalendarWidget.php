@@ -5,7 +5,6 @@ namespace App\Filament\Client\Resources\UserResource\Widgets;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use App\Models\Schedule;
 use App\Models\Appointment;
-use App\Models\Price;
 use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +25,6 @@ class CalendarWidget extends FullCalendarWidget
     public $selectedStartTimeFormatted = null;
     public $selectedEndTimeFormatted = null;
     public $appointmentNotes = null;
-    public $selectedPriceId = null;
 
     // Configuración del calendario
     public function config(): array
@@ -269,38 +267,6 @@ class CalendarWidget extends FullCalendarWidget
 
                     Forms\Components\Grid::make(2)
                         ->schema([
-                            Forms\Components\Select::make('price_id')
-                                ->label('Servicio')
-                                ->options(function () {
-                                    // Solo muestra los servicios del profesional actual y activos
-                                    if ($this->record) {
-                                        return Price::where('user_id', $this->record->id)
-                                            ->where('is_active', true)
-                                            ->pluck('name', 'id');
-                                    }
-                                    return [];
-                                })
-                                ->searchable()
-                                ->required()
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                    if ($state) {
-                                        $price = Price::find($state);
-                                        if ($price) {
-                                            $set('amount', $price->amount);
-                                        }
-                                    } else {
-                                        $set('amount', null);
-                                    }
-                                })
-                                ->placeholder('Selecciona un servicio'),
-
-                            Forms\Components\TextInput::make('amount')
-                                ->label('Precio')
-                                ->numeric()
-                                ->prefix('€')
-                                ->disabled()
-                                ->dehydrated(true),
                         ]),
                 ]),
 
@@ -373,24 +339,15 @@ class CalendarWidget extends FullCalendarWidget
             if (!$client || !$client instanceof \App\Models\Client) {
                 throw new \Exception('No hay un cliente autenticado para reservar la cita.');
             }
-            if (empty($data['price_id'])) {
-                throw new \Exception('Debes seleccionar un servicio.');
-            }
-
-            // Obtener el precio para guardar también el amount
-            $price = Price::find($data['price_id']);
 
             $appointment = Appointment::create([
                 'user_id' => $schedule->user_id,
                 'client_id' => $client->id,
                 'schedule_id' => $schedule->id,
-                'price_id' => $data['price_id'],
-                'amount' => $price ? $price->amount : null,
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
                 'notes' => $data['notes'] ?? null,
                 'status' => 'pending',
-                'payment_status' => 'pending',
             ]);
             $schedule->update(['is_available' => false]);
             $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');

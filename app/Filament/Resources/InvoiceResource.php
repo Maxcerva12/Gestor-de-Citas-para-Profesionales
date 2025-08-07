@@ -74,11 +74,6 @@ class InvoiceResource extends Resource
                             ->native(false)
                             ->required(),
 
-                        Forms\Components\DateTimePicker::make('paid_at')
-                            ->label('Fecha de Pago')
-                            ->native(false)
-                            ->visible(fn($record) => $record?->state === InvoiceState::Paid),
-
                     ])
                     ->columns(2),
 
@@ -380,22 +375,6 @@ class InvoiceResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn(Invoice $record): string => route('invoices.download', $record))
                     ->openUrlInNewTab(),
-
-                Tables\Actions\Action::make('mark_paid')
-                    ->label('Marcar como Pagada')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->action(function (Invoice $record) {
-                        $record->update([
-                            'state' => InvoiceState::Paid,
-                            'paid_at' => now(),
-                        ]);
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('¿Confirmar pago de la factura?')
-                    ->modalDescription('Esta acción marcará la factura como pagada y registrará la fecha actual como fecha de pago.')
-                    ->modalSubmitActionLabel('Confirmar Pago')
-                    ->visible(fn(Invoice $record): bool => $record->state !== InvoiceState::Paid),
 
                 Tables\Actions\EditAction::make(),
             ])

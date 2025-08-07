@@ -21,7 +21,6 @@ use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Filament\Support\Enums\MaxWidth;
-use App\Models\Price;
 
 
 class AppointmentResource extends Resource
@@ -266,37 +265,6 @@ class AppointmentResource extends Resource
                                     ->columnSpanFull(),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Facturación')
-                            ->icon('heroicon-o-currency-euro')
-                            ->schema([
-                                Forms\Components\Grid::make(2)
-                                    ->schema([
-                                        Forms\Components\Select::make('price_id')
-                                            ->label('Tarifa')
-                                            ->relationship('price', 'name')
-                                            ->preload()
-                                            ->searchable()
-                                            ->reactive()
-                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                                if ($state) {
-                                                    $price = Price::find($state);
-                                                    if ($price) {
-                                                        $set('amount', $price->amount);
-                                                    }
-                                                } else {
-                                                    $set('amount', null);
-                                                }
-                                            }),
-
-                                        Forms\Components\TextInput::make('amount')
-                                            ->label('Precio Fijo')
-                                            ->numeric()
-                                            ->prefix('€')
-                                            ->disabled()
-                                            ->dehydrated(true),
-                                    ]),
-                            ]),
-
                         Forms\Components\Tabs\Tab::make('Integración Google')
                             ->icon('heroicon-o-calendar-days')
                             ->schema([
@@ -389,14 +357,6 @@ class AppointmentResource extends Resource
                         'cancelled' => 'gray',
                         default => 'gray',
                     }),
-
-                Tables\Columns\TextColumn::make('amount')
-                    ->label('Precio')
-                    ->money('EUR')
-                    ->sortable()
-                    ->toggleable()
-                    ->description(fn(Appointment $record): string =>
-                        $record->price ? 'Tarifa: ' . $record->price->name : ''),
 
                 Tables\Columns\IconColumn::make('google_event_id')
                     ->label('Google')
@@ -547,8 +507,6 @@ class AppointmentResource extends Resource
                                 'Hora Inicio',
                                 'Hora Fin',
                                 'Estado',
-                                'Estado de Pago',
-                                'Precio',
                                 'Notas'
                             ]);
 
@@ -569,14 +527,6 @@ class AppointmentResource extends Resource
                                         'completed' => 'Completada',
                                         default => 'Desconocido',
                                     },
-                                    match ($record->payment_status) {
-                                        'pending' => 'Pendiente',
-                                        'paid' => 'Pagado',
-                                        'failed' => 'Fallido',
-                                        'cancelled' => 'Cancelado',
-                                        default => 'Desconocido',
-                                    },
-                                    $record->price ? $record->price->amount . ' €' : 'N/A',
                                     strip_tags($record->notes ?? '')
                                 ]);
                             }
@@ -713,25 +663,6 @@ class AppointmentResource extends Resource
                                     ->label('Notas')
                                     ->markdown()
                                     ->columnSpanFull(),
-                            ]),
-
-                        Infolists\Components\Tabs\Tab::make('Facturación')
-                            ->schema([
-                                Infolists\Components\Grid::make(2)
-                                    ->schema([
-                                        Infolists\Components\TextEntry::make('price.name')
-                                            ->label('Tarifa'),
-
-                                        Infolists\Components\TextEntry::make('amount')
-                                            ->label('Precio')
-                                            ->money('EUR')
-                                            ->weight(FontWeight::Bold),
-                                    ]),
-
-                                Infolists\Components\Grid::make(1)
-                                    ->schema([
-                                        // Referencias de Stripe eliminadas
-                                    ]),
                             ]),
 
                         Infolists\Components\Tabs\Tab::make('Google Calendar')

@@ -14,30 +14,17 @@ class Appointment extends Model
         'user_id',
         'client_id',
         'schedule_id',
-        'amount',
-        'price_id',
         'start_time',
         'end_time',
         'status',
-        'notes',
-        'payment_status'
+        'notes'
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
-        'status' => 'string',
-        'payment_status' => 'string'
+        'status' => 'string'
     ];
-
-    protected $attributes = [
-        'payment_status' => 'pending'
-    ];
-
-    public function price(): BelongsTo
-    {
-        return $this->belongsTo(Price::class);
-    }
 
     public function user(): BelongsTo
     {

@@ -40,7 +40,7 @@ class Invoice extends BaseInvoice
     }
 
     /**
-     * Override para manejar mejor los items y evitar errores de índice
+     * Override para manejar mejor los items y calcular totales denormalizados
      */
     public function denormalize(): static
     {
@@ -56,7 +56,38 @@ class Invoice extends BaseInvoice
                 'tax_percentage' => $defaultTaxRate
             ]);
 
-            // Simplemente retornar this sin llamar al método padre problemático
+            // Calcular totales denormalizados
+            $subtotalAmount = 0;
+            $taxAmount = 0;
+
+            foreach ($this->items as $item) {
+                // Manejar unit_price como objeto Money
+                if (is_object($item->unit_price) && method_exists($item->unit_price, 'multipliedBy')) {
+                    // Usar los métodos del objeto Money para hacer los cálculos
+                    $itemSubtotal = $item->unit_price->multipliedBy($item->quantity);
+                    $subtotalAmount += $itemSubtotal->getAmount()->toFloat();
+                    
+                    $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
+                    $taxAmount += $itemSubtotal->getAmount()->toFloat() * ($taxPercentage / 100);
+                } else {
+                    // Fallback para valores numéricos simples
+                    $unitAmount = (float) $item->unit_price;
+                    $itemSubtotal = $unitAmount * $item->quantity;
+                    $subtotalAmount += $itemSubtotal;
+                    
+                    $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
+                    $taxAmount += $itemSubtotal * ($taxPercentage / 100);
+                }
+            }
+
+            // Actualizar campos denormalizados sin disparar eventos
+            $this->updateQuietly([
+                'subtotal_amount' => (int) round($subtotalAmount),
+                'tax_amount' => (int) round($taxAmount),
+                'total_amount' => (int) round($subtotalAmount + $taxAmount),
+                'currency' => 'COP'
+            ]);
+
             return $this;
         } catch (\Exception $e) {
             // Log el error pero no interrumpir la operación
@@ -200,7 +231,7 @@ class Invoice extends BaseInvoice
             description: $this->description,
             created_at: $this->created_at,
             due_at: $this->due_at,
-            paid_at: $this->paid_at ? \Carbon\Carbon::parse($this->paid_at) : null,
+            paid_at: null, // No manejamos pagos en este sistema
             tax_label: "IVA Colombia (" . $currentTaxRate . "%)",
             fields: [
                 'Régimen Fiscal' => 'Común',
