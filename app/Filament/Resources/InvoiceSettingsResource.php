@@ -48,6 +48,16 @@ class InvoiceSettingsResource extends Resource
         ];
     }
 
+
+    public static function layout(): array
+    {
+        return [
+            'sidebar' => [
+                'is_collapsed_on_start' => true,
+            ],
+        ];
+    }
+
     // Comprobaciones de permisos personalizadas para InvoiceSettings
     public static function canViewAny(): bool
     {

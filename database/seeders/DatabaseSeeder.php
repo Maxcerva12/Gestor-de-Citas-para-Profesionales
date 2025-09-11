@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             // AppointmentSeeder::class,
             TestUserSeeder::class,
             // PriceSeeder::class,
-            // SchedulePermissionsSeeder::class,
+            SchedulePermissionsSeeder::class,
         ]);
     }
 }

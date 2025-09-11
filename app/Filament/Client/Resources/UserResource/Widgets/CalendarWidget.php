@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Client\Resources\UserResource\Widgets; 
+namespace App\Filament\Client\Resources\UserResource\Widgets;
 
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use App\Models\Schedule;
@@ -88,22 +88,17 @@ class CalendarWidget extends FullCalendarWidget
 
         Log::info('Generando eventos para profesional ID: ' . $this->record->id);
 
+        // Obtener los horarios disponibles y filtrar por fecha/hora actual usando PHP
         $availableSlots = Schedule::where('user_id', $this->record->id)
             ->where('is_available', true)
             ->whereBetween('date', [$fetchInfo['start'], $fetchInfo['end']])
-            ->whereRaw("STRFTIME('%Y-%m-%d', date) || ' ' || CASE 
-            WHEN start_time LIKE '%PM' THEN 
-                CASE 
-                    WHEN CAST(SUBSTR(start_time, 1, 2) AS INTEGER) = 12 THEN '12'
-                    ELSE CAST(CAST(SUBSTR(start_time, 1, 2) AS INTEGER) + 12 AS TEXT)
-                END
-            WHEN start_time LIKE '%AM' THEN 
-                CASE 
-                    WHEN CAST(SUBSTR(start_time, 1, 2) AS INTEGER) = 12 THEN '00'
-                    ELSE SUBSTR(start_time, 1, 2)
-                END
-        END || SUBSTR(start_time, 3, 3) >= ?", [now()->format('Y-m-d H:i:s')])
-            ->get();
+            ->get()
+            ->filter(function ($slot) {
+                // Combinar fecha y hora del slot
+                $slotDateTime = Carbon::parse($slot->date->format('Y-m-d') . ' ' . $slot->start_time);
+                // Solo mostrar slots que sean en el futuro
+                return $slotDateTime->isFuture();
+            });
 
         Log::info('Horarios encontrados: ' . $availableSlots->count());
 

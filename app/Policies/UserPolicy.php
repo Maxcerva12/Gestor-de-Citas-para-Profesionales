@@ -3,8 +3,9 @@
 namespace App\Policies;
 
 use App\Models\User;
-
+use App\Models\Client;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class UserPolicy
 {
@@ -12,133 +13,170 @@ class UserPolicy
 
     /**
      * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function viewAny(User $user): bool
+    public function viewAny(Authenticatable $user): bool
     {
-        return $user->can('view_any_user');
+        // Si es un User (admin/professional)
+        if ($user instanceof User) {
+            return $user->can('view_any_user');
+        }
+
+        // Si es un Client, puede ver la lista de profesionales
+        if ($user instanceof Client) {
+            return true; // Los clientes pueden ver profesionales para agendar citas
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function view(User $user): bool
+    public function view(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('view_user');
+        // Si es un User (admin/professional)
+        if ($user instanceof User) {
+            return $user->can('view_user');
+        }
+
+        // Si es un Client, puede ver detalles de profesionales
+        if ($user instanceof Client) {
+            return true; // Los clientes pueden ver detalles de profesionales
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function create(User $user): bool
+    public function create(Authenticatable $user): bool
     {
-        return $user->can('create_user');
+        // Solo los Users (admin/professional) pueden crear usuarios
+        if ($user instanceof User) {
+            return $user->can('create_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function update(User $user): bool
+    public function update(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('update_user');
+        // Solo los Users (admin/professional) pueden actualizar usuarios
+        if ($user instanceof User) {
+            return $user->can('update_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function delete(User $user): bool
+    public function delete(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('delete_user');
+        // Solo los Users (admin/professional) pueden eliminar usuarios
+        if ($user instanceof User) {
+            return $user->can('delete_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can bulk delete.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function deleteAny(User $user): bool
+    public function deleteAny(Authenticatable $user): bool
     {
-        return $user->can('delete_any_user');
+        // Solo los Users (admin/professional) pueden bulk delete
+        if ($user instanceof User) {
+            return $user->can('delete_any_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can permanently delete.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function forceDelete(User $user): bool
+    public function forceDelete(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        // Solo los Users (admin/professional) pueden force delete
+        if ($user instanceof User) {
+            return $user->can('force_delete_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can permanently bulk delete.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(Authenticatable $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        // Solo los Users (admin/professional) pueden force delete any
+        if ($user instanceof User) {
+            return $user->can('force_delete_any_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can restore.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function restore(User $user): bool
+    public function restore(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('{{ Restore }}');
+        // Solo los Users (admin/professional) pueden restaurar
+        if ($user instanceof User) {
+            return $user->can('restore_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can bulk restore.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function restoreAny(User $user): bool
+    public function restoreAny(Authenticatable $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        // Solo los Users (admin/professional) pueden bulk restore
+        if ($user instanceof User) {
+            return $user->can('restore_any_user');
+        }
+
+        return false;
     }
 
     /**
-     * Determine whether the user can bulk restore.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
+     * Determine whether the user can replicate.
      */
-    public function replicate(User $user): bool
+    public function replicate(Authenticatable $user, User $targetUser = null): bool
     {
-        return $user->can('{{ Replicate }}');
+        // Solo los Users (admin/professional) pueden replicar
+        if ($user instanceof User) {
+            return $user->can('replicate_user');
+        }
+
+        return false;
     }
 
     /**
      * Determine whether the user can reorder.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function reorder(User $user): bool
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(Authenticatable $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        // Solo los Users (admin/professional) pueden reordenar
+        if ($user instanceof User) {
+            return $user->can('reorder_user');
+        }
+
+        return false;
     }
 }
