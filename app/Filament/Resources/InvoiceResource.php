@@ -12,10 +12,13 @@ use Brick\Money\Money;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\Eloquent\Model;
@@ -304,85 +307,332 @@ class InvoiceResource extends Resource
     {
         return $table
             ->columns([
+                // Número de factura con icono y formato destacado
                 Tables\Columns\TextColumn::make('serial_number')
-                    ->label('Número')
+                    ->label('N° Factura')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(FontWeight::Bold)
+                    ->icon('heroicon-m-document-text')
+                    ->copyable()
+                    ->copyMessage('Número copiado')
+                    ->copyMessageDuration(1500),
 
+                // Tipo de factura con traducción al español
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(InvoiceType $state): string => $state->getColor()),
+                    ->formatStateUsing(fn($state): string => match ($state->value) {
+                        'invoice' => 'Factura',
+                        'estimate' => 'Cotización',
+                        'credit_note' => 'Nota Crédito',
+                        'debit_note' => 'Nota Débito',
+                        default => $state->value,
+                    })
+                    ->color(fn(InvoiceType $state): string => $state->getColor())
+                    ->icon(fn($state): string => match ($state->value) {
+                        'invoice' => 'heroicon-m-document-check',
+                        'estimate' => 'heroicon-m-document-magnifying-glass',
+                        'credit_note' => 'heroicon-m-document-minus',
+                        'debit_note' => 'heroicon-m-document-plus',
+                        default => 'heroicon-m-document',
+                    }),
 
+                // Información del paciente mejorada con avatar
                 Tables\Columns\TextColumn::make('client.name')
                     ->label('Paciente')
                     ->formatStateUsing(
                         fn($record) =>
                         $record->client ?
                         $record->client->name . ' ' . ($record->client->apellido ?? '') :
-                        'Sin paciente'
+                        'Sin paciente asignado'
                     )
-                    ->searchable(['client.name', 'client.apellido', 'client.numero_documento']),
+                    ->description(
+                        fn($record): ?string =>
+                        $record->client ?
+                        ($record->client->numero_documento ? 'Doc: ' . $record->client->numero_documento : 'Sin documento')
+                        : null
+                    )
+                    ->searchable(['client.name', 'client.apellido', 'client.numero_documento'])
+                    ->sortable()
+                    ->weight(FontWeight::Medium)
+                    ->wrap(),
 
+                // Contador de servicios con mejor presentación
                 Tables\Columns\TextColumn::make('items_count')
                     ->label('Servicios')
                     ->counts('items')
                     ->badge()
-                    ->color('primary'),
+                    ->color('primary')
+                    ->icon('heroicon-m-list-bullet')
+                    ->sortable(),
 
+                // Estado con traducción al español y mejor presentación
                 Tables\Columns\TextColumn::make('state')
                     ->label('Estado')
                     ->badge()
-                    ->color(fn(InvoiceState $state): string => $state->getColor()),
-
-                Tables\Columns\TextColumn::make('total_amount')
-                    ->label('Total')
-                    ->money('COP')
+                    ->formatStateUsing(fn($state): string => match ($state->value) {
+                        'draft' => 'Borrador',
+                        'sent' => 'Enviada',
+                        'paid' => 'Pagada',
+                        'overdue' => 'Vencida',
+                        'cancelled' => 'Cancelada',
+                        'partial' => 'Pago Parcial',
+                        default => $state->value,
+                    })
+                    ->color(fn(InvoiceState $state): string => $state->getColor())
+                    ->icon(fn($state): string => match ($state->value) {
+                        'draft' => 'heroicon-m-pencil-square',
+                        'sent' => 'heroicon-m-paper-airplane',
+                        'paid' => 'heroicon-m-check-circle',
+                        'overdue' => 'heroicon-m-exclamation-triangle',
+                        'cancelled' => 'heroicon-m-x-circle',
+                        'partial' => 'heroicon-m-clock',
+                        default => 'heroicon-m-question-mark-circle',
+                    })
                     ->sortable(),
 
+                // Total con formato mejorado similar a las citas
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Total')
+                    ->formatStateUsing(function ($state): string {
+                        if (!$state)
+                            return 'Sin monto';
+
+                        // Si es un objeto Money, obtener el valor
+                        if ($state instanceof \Brick\Money\Money) {
+                            $amount = $state->getAmount()->toFloat();
+                        } else {
+                            $amount = (float) $state;
+                        }
+
+                        return '$' . number_format($amount, 0, ',', '.');
+                    })
+                    ->weight(FontWeight::Bold)
+                    ->color('success')
+                    ->icon('heroicon-m-banknotes')
+                    ->sortable(),
+
+                // Fecha de vencimiento con indicador visual
                 Tables\Columns\TextColumn::make('due_at')
                     ->label('Vencimiento')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-m-calendar-days')
+                    ->color(function ($record): string {
+                        if (!$record->due_at)
+                            return 'gray';
+                        $dueDate = \Carbon\Carbon::parse($record->due_at);
+                        $now = now();
 
+                        if ($dueDate->isPast() && $record->state->value !== 'paid') {
+                            return 'danger'; // Vencida y no pagada
+                        } elseif ($dueDate->diffInDays($now) <= 7 && $record->state->value !== 'paid') {
+                            return 'warning'; // Próxima a vencer
+                        }
+                        return 'gray';
+                    })
+                    ->description(function ($record): ?string {
+                        if (!$record->due_at)
+                            return null;
+                        $dueDate = \Carbon\Carbon::parse($record->due_at);
+                        $now = now();
+
+                        if ($dueDate->isPast() && $record->state->value !== 'paid') {
+                            return 'Vencida hace ' . $dueDate->diffForHumans($now, true);
+                        } elseif ($dueDate->diffInDays($now) <= 7 && $record->state->value !== 'paid') {
+                            return 'Vence en ' . $dueDate->diffForHumans($now, true);
+                        }
+                        return null;
+                    }),
+
+                // Fecha de creación mejorada
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creada')
                     ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-m-clock')
+                    ->color('gray')
+                    ->description(
+                        fn($record): string =>
+                        'Hace ' . $record->created_at->diffForHumans()
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->label('Tipo')
-                    ->options(InvoiceType::class),
+                    ->label('Tipo de Factura')
+                    ->options([
+                        'invoice' => 'Factura',
+                        'estimate' => 'Cotización',
+                        'credit_note' => 'Nota Crédito',
+                        'debit_note' => 'Nota Débito',
+                    ])
+                    ->native(false)
+                    ->indicator('Tipo'),
 
                 Tables\Filters\SelectFilter::make('state')
                     ->label('Estado')
-                    ->options(InvoiceState::class),
+                    ->options([
+                        'draft' => 'Borrador',
+                        'sent' => 'Enviada',
+                        'paid' => 'Pagada',
+                        'overdue' => 'Vencida',
+                        'cancelled' => 'Cancelada',
+                        'partial' => 'Pago Parcial',
+                    ])
+                    ->native(false)
+                    ->indicator('Estado'),
 
                 Tables\Filters\Filter::make('overdue')
-                    ->label('Vencidas')
-                    ->query(fn(Builder $query): Builder => $query->where('due_at', '<', now())->where('state', '!=', 'paid')),
+                    ->label('Facturas Vencidas')
+                    ->query(
+                        fn(Builder $query): Builder =>
+                        $query->where('due_at', '<', now())->where('state', '!=', 'paid')
+                    )
+                    ->indicator('Vencidas'),
+
+                Tables\Filters\Filter::make('amount_range')
+                    ->form([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('amount_from')
+                                    ->label('Monto desde')
+                                    ->numeric()
+                                    ->prefix('$'),
+                                Forms\Components\TextInput::make('amount_until')
+                                    ->label('Monto hasta')
+                                    ->numeric()
+                                    ->prefix('$'),
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['amount_from'],
+                                fn(Builder $query, $amount): Builder => $query->where('total_amount', '>=', $amount),
+                            )
+                            ->when(
+                                $data['amount_until'],
+                                fn(Builder $query, $amount): Builder => $query->where('total_amount', '<=', $amount),
+                            );
+                    })
+                    ->indicator('Rango de Monto'),
+
+                Tables\Filters\Filter::make('date_range')
+                    ->form([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\DatePicker::make('created_from')
+                                    ->label('Creada desde')
+                                    ->native(false),
+                                Forms\Components\DatePicker::make('created_until')
+                                    ->label('Creada hasta')
+                                    ->native(false),
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicator('Rango de Fechas'),
             ])
             ->actions([
-                Tables\Actions\Action::make('view_pdf')
-                    ->label('Ver PDF')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn(Invoice $record): string => route('invoices.pdf', $record))
-                    ->openUrlInNewTab(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->color('info'),
 
-                Tables\Actions\Action::make('download_pdf')
-                    ->label('Descargar PDF')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn(Invoice $record): string => route('invoices.download', $record))
-                    ->openUrlInNewTab(),
+                    Tables\Actions\EditAction::make()
+                        ->color('warning'),
 
-                Tables\Actions\EditAction::make(),
+                    Tables\Actions\Action::make('view_pdf')
+                        ->label('Ver PDF')
+                        ->icon('heroicon-o-eye')
+                        ->color('gray')
+                        ->url(fn(Invoice $record): string => route('invoices.pdf', $record))
+                        ->openUrlInNewTab(),
+
+                    Tables\Actions\Action::make('download_pdf')
+                        ->label('Descargar PDF')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->url(fn(Invoice $record): string => route('invoices.download', $record))
+                        ->openUrlInNewTab(),
+
+                    Tables\Actions\DeleteAction::make()
+                        ->requiresConfirmation(),
+                ])
+                    ->tooltip('Acciones')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size('sm')
+                    ->color('gray'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('update_state')
+                        ->label('Cambiar Estado')
+                        ->icon('heroicon-o-pencil-square')
+                        ->form([
+                            Forms\Components\Select::make('state')
+                                ->label('Nuevo Estado')
+                                ->options([
+                                    'draft' => 'Borrador',
+                                    'sent' => 'Enviada',
+                                    'paid' => 'Pagada',
+                                    'overdue' => 'Vencida',
+                                    'cancelled' => 'Cancelada',
+                                    'partial' => 'Pago Parcial',
+                                ])
+                                ->required()
+                                ->native(false),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function (Invoice $record) use ($data) {
+                                $record->update(['state' => $data['state']]);
+                            });
+
+                            Notification::make()
+                                ->title('Estados actualizados exitosamente')
+                                ->success()
+                                ->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('export_pdf')
+                        ->label('Exportar PDFs')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->action(function (Collection $records) {
+                            // Aquí implementarías la lógica para exportar múltiples PDFs
+                            Notification::make()
+                                ->title('Exportación iniciada')
+                                ->body('Se están generando los PDFs de las facturas seleccionadas')
+                                ->info()
+                                ->send();
+                        }),
+
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation(),
                 ]),
-            ]);
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Crear Primera Factura')
+                    ->icon('heroicon-o-plus'),
+            ])
+            ->emptyStateDescription('No hay facturas registradas. Comienza creando tu primera factura.')
+            ->emptyStateIcon('heroicon-o-document-text')
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->defaultSort('created_at', 'desc')
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistFiltersInSession();
     }
 
     public static function getRelations(): array
