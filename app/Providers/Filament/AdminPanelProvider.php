@@ -88,7 +88,8 @@ class AdminPanelProvider extends PanelProvider
                     ->selectable(true)
                     ->editable(true)
                     ->timezone(config('app.timezone'))
-                    ->locale(config('app.locale')),
+                    ->locale(config('app.locale'))
+                    ->schedulerLicenseKey('GPL-My-Project-Is-Open-Source'),
                 FilamentEditProfilePlugin::make()
                     ->shouldShowAvatarForm(
                         value: true,

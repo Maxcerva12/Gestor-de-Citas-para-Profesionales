@@ -114,17 +114,36 @@ class ClientAppointmentResource extends Resource
                         default => 'gray',
                     }),
 
-                TextColumn::make('amount')
+                TextColumn::make('service_price')
                     ->label('Precio')
-                    ->money('EUR')
+                    ->money('COP')
                     ->sortable()
-                    ->icon('heroicon-o-currency-euro')
-                    ->iconPosition(IconPosition::Before),
+                    ->icon('heroicon-o-currency-dollar')
+                    ->iconPosition(IconPosition::Before)
+                    ->placeholder('Sin precio'),
 
-                TextColumn::make('price.name')
+                TextColumn::make('service.name')
                     ->label('Servicio')
                     ->searchable()
                     ->wrap()
+                    ->toggleable()
+                    ->placeholder('Sin servicio'),
+
+                TextColumn::make('payment_method')
+                    ->label('Método de Pago')
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                        'efectivo' => 'Efectivo',
+                        'transferencia' => 'Transferencia',
+                        'tarjeta_debito' => 'Tarjeta de Débito',
+                        default => 'No especificado',
+                    })
+                    ->badge()
+                    ->color(fn(?string $state): string => match ($state) {
+                        'efectivo' => 'success',
+                        'transferencia' => 'info',
+                        'tarjeta_debito' => 'warning',
+                        default => 'gray',
+                    })
                     ->toggleable(),
             ])
             ->filters([

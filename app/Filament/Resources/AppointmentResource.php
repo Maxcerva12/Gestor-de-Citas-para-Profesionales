@@ -220,6 +220,80 @@ class AppointmentResource extends Resource
                             ]),
                     ]),
 
+                Forms\Components\Section::make('Servicio y Pago')
+                    ->description('Selecciona el servicio y método de pago')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('service_id')
+                                    ->label('Servicio')
+                                    ->relationship('service', 'name', function (Builder $query) {
+                                        return $query->where('user_id', Auth::id())->where('is_active', true);
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        if ($state) {
+                                            $service = \App\Models\Service::find($state);
+                                            if ($service) {
+                                                $set('service_price', $service->price);
+                                            }
+                                        } else {
+                                            $set('service_price', null);
+                                        }
+                                    })
+                                    ->helperText('Selecciona el servicio profesional a realizar'),
+
+                                Forms\Components\TextInput::make('service_price')
+                                    ->label('Precio del Servicio (COP)')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->readonly()
+                                    ->helperText('Precio se actualiza automáticamente al seleccionar servicio'),
+                            ]),
+
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Select::make('payment_method')
+                                    ->label('Método de Pago')
+                                    ->options([
+                                        'efectivo' => 'Efectivo',
+                                        'transferencia' => 'Transferencia Bancaria',
+                                        'tarjeta_debito' => 'Tarjeta de Débito (Wompi)',
+                                    ])
+                                    ->native(false)
+                                    ->helperText('Cómo pagará el cliente el servicio'),
+
+                                Forms\Components\Select::make('payment_status')
+                                    ->label('Estado del Pago')
+                                    ->options([
+                                        'pending' => 'Pendiente',
+                                        'paid' => 'Pagado',
+                                        'failed' => 'Fallido',
+                                        'cancelled' => 'Cancelado',
+                                    ])
+                                    ->default('pending')
+                                    ->native(false)
+                                    ->required()
+                                    ->helperText('Estado actual del pago'),
+
+                                Forms\Components\Placeholder::make('invoice_info')
+                                    ->label('Facturación')
+                                    ->content(function ($record) {
+                                        if (!$record)
+                                            return 'La factura se generará automáticamente';
+
+                                        $invoiceCount = $record->invoices()->count();
+                                        if ($invoiceCount > 0) {
+                                            return "✅ {$invoiceCount} factura(s) generada(s)";
+                                        }
+
+                                        return 'Pendiente de facturación';
+                                    }),
+                            ]),
+                    ]),
+
                 Forms\Components\Tabs::make('Tabs')
                     ->tabs([
                         Forms\Components\Tabs\Tab::make('Estado y Detalles')
@@ -228,7 +302,7 @@ class AppointmentResource extends Resource
                                 Forms\Components\Grid::make(2)
                                     ->schema([
                                         Forms\Components\Select::make('status')
-                                            ->label('Estado')
+                                            ->label('Estado de la Cita')
                                             ->options([
                                                 'pending' => 'Pendiente',
                                                 'confirmed' => 'Confirmada',
@@ -238,19 +312,7 @@ class AppointmentResource extends Resource
                                             ->default('pending')
                                             ->native(false)
                                             ->required()
-                                            ->reactive(),
-
-                                        Forms\Components\Select::make('payment_status')
-                                            ->label('Estado del Pago')
-                                            ->options([
-                                                'pending' => 'Pendiente',
-                                                'paid' => 'Pagado',
-                                                'failed' => 'Fallido',
-                                                'cancelled' => 'Cancelado',
-                                            ])
-                                            ->default('pending')
-                                            ->native(false)
-                                            ->required(),
+                                            ->columnSpanFull(),
                                     ]),
 
                                 Forms\Components\RichEditor::make('notes')
@@ -321,6 +383,34 @@ class AppointmentResource extends Resource
                     ->sortable()
                     ->description(fn(Appointment $record): string => $record->end_time ?
                         'Hasta: ' . date('H:i', strtotime($record->end_time)) : ''),
+
+                Tables\Columns\TextColumn::make('service.name')
+                    ->label('Servicio')
+                    ->searchable()
+                    ->sortable()
+                    ->description(
+                        fn(Appointment $record): string =>
+                        $record->service_price ? '$' . number_format((float) $record->service_price, 0, ',', '.') : 'Sin precio'
+                    )
+                    ->placeholder('Sin servicio')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Método de Pago')
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                        'efectivo' => 'Efectivo',
+                        'transferencia' => 'Transferencia',
+                        'tarjeta_debito' => 'Tarjeta de Débito',
+                        default => 'No especificado',
+                    })
+                    ->badge()
+                    ->color(fn(?string $state): string => match ($state) {
+                        'efectivo' => 'success',
+                        'transferencia' => 'info',
+                        'tarjeta_debito' => 'warning',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
@@ -433,16 +523,53 @@ class AppointmentResource extends Resource
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
                         ->action(function (Appointment $record) {
-                            // Lógica para sincronizar con Google Calendar
-                            Notification::make()
-                                ->title('Sincronización iniciada')
-                                ->success()
-                                ->send();
+                            try {
+                                // Verificar que el profesional tiene token de Google
+                                if (!$record->user || !$record->user->google_token) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('El profesional no tiene configurado Google Calendar.')
+                                        ->danger()
+                                        ->send();
+                                    return;
+                                }
+
+                                // Usar el servicio de Google Calendar
+                                $googleService = app(\App\Services\GoogleCalendarService::class);
+
+                                // Temporalmente autenticar como el profesional
+                                $originalUser = Auth::user();
+                                Auth::login($record->user);
+
+                                $eventId = $googleService->createEvent($record);
+                                $record->google_event_id = $eventId;
+                                $record->save();
+
+                                // Restaurar usuario original
+                                if ($originalUser) {
+                                    Auth::login($originalUser);
+                                }
+
+                                Notification::make()
+                                    ->title('Sincronizado')
+                                    ->body('Cita sincronizada con Google Calendar correctamente.')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error de sincronización')
+                                    ->body('Error: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
                         })
                         ->requiresConfirmation()
+                        ->modalHeading('Sincronizar con Google Calendar')
+                        ->modalDescription('¿Estás seguro de que deseas sincronizar esta cita con Google Calendar?')
                         ->visible(
                             fn(Appointment $record) =>
-                            Auth::user()->google_token &&
+                            $record->user &&
+                            $record->user->google_token &&
                             !$record->google_event_id
                         ),
 

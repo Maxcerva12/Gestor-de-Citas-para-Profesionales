@@ -48,7 +48,8 @@ class ClientPanelProvider extends PanelProvider
                     ->selectable(false) // Cambiado a false para evitar selección
                     ->editable(false)   // Cambiado a false para evitar edición
                     ->timezone(config('app.timezone')) // Usa la zona horaria de la app
-                    ->locale(config('app.locale')), // Usa el idioma de la app
+                    ->locale(config('app.locale')) // Usa el idioma de la app
+                    ->schedulerLicenseKey('GPL-My-Project-Is-Open-Source'), // Licencia GPL para proyectos open source
 
                 FilamentEditProfilePlugin::make()
                     ->shouldShowAvatarForm(

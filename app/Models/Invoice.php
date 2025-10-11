@@ -66,7 +66,7 @@ class Invoice extends BaseInvoice
                     // Usar los métodos del objeto Money para hacer los cálculos
                     $itemSubtotal = $item->unit_price->multipliedBy($item->quantity);
                     $subtotalAmount += $itemSubtotal->getAmount()->toFloat();
-                    
+
                     $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
                     $taxAmount += $itemSubtotal->getAmount()->toFloat() * ($taxPercentage / 100);
                 } else {
@@ -74,7 +74,7 @@ class Invoice extends BaseInvoice
                     $unitAmount = (float) $item->unit_price;
                     $itemSubtotal = $unitAmount * $item->quantity;
                     $subtotalAmount += $itemSubtotal;
-                    
+
                     $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
                     $taxAmount += $itemSubtotal * ($taxPercentage / 100);
                 }
@@ -117,6 +117,11 @@ class Invoice extends BaseInvoice
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function appointment(): BelongsTo
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     public function getLogo(): ?string

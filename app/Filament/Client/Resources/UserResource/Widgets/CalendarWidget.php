@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 
 class CalendarWidget extends FullCalendarWidget
 {
@@ -25,6 +26,9 @@ class CalendarWidget extends FullCalendarWidget
     public $selectedStartTimeFormatted = null;
     public $selectedEndTimeFormatted = null;
     public $appointmentNotes = null;
+    public $selectedServiceId = null;
+    public $selectedServicePrice = null;
+    public $selectedPaymentMethod = null;
 
     // Configuración del calendario
     public function config(): array
@@ -136,7 +140,11 @@ class CalendarWidget extends FullCalendarWidget
         $schedule = Schedule::find($event['id']);
 
         if (!$schedule) {
-            $this->notify('error', 'No se pudo encontrar el horario seleccionado.');
+            Notification::make()
+                ->title('Error')
+                ->body('No se pudo encontrar el horario seleccionado.')
+                ->danger()
+                ->send();
             return;
         }
 
@@ -144,15 +152,23 @@ class CalendarWidget extends FullCalendarWidget
         $startDateTime = Carbon::parse($dateOnly . ' ' . $schedule->start_time);
         Log::info('Fecha y hora de inicio parseada: ' . $startDateTime->toDateTimeString());
         if ($startDateTime->isPast()) {
-            $this->notify('error', 'No se puede agendar una cita en un horario pasado.');
+            Notification::make()
+                ->title('Error')
+                ->body('No se puede agendar una cita en un horario pasado.')
+                ->danger()
+                ->send();
             return;
         }
 
         try {
             $date = Carbon::parse($schedule->date)->format('Y-m-d');
             $dateFormatted = Carbon::parse($schedule->date)->format('d/m/Y');
-            $startTime = Carbon::createFromFormat('h:i A', $schedule->start_time);
-            $endTime = Carbon::createFromFormat('h:i A', $schedule->end_time);
+
+            // Parsear las horas correctamente - pueden estar en formato H:i:s o H:i
+            $startTime = Carbon::createFromFormat('H:i:s', $schedule->start_time)
+                ?: Carbon::createFromFormat('H:i', $schedule->start_time);
+            $endTime = Carbon::createFromFormat('H:i:s', $schedule->end_time)
+                ?: Carbon::createFromFormat('H:i', $schedule->end_time);
 
             $startDateTime = Carbon::parse($date)->setTime($startTime->hour, $startTime->minute, 0);
             $endDateTime = Carbon::parse($date)->setTime($endTime->hour, $endTime->minute, 0);
@@ -170,7 +186,9 @@ class CalendarWidget extends FullCalendarWidget
             $this->selectedStartTimeFormatted = $startTimeFormatted;
             $this->selectedEndTimeFormatted = $endTimeFormatted;
             $this->appointmentNotes = null;
-            $this->selectedPriceId = null;
+            $this->selectedServiceId = null;
+            $this->selectedServicePrice = null;
+            $this->selectedPaymentMethod = null;
 
             Log::info('Datos asignados a propiedades del widget:', [
                 'schedule_id' => $this->selectedScheduleId,
@@ -184,7 +202,11 @@ class CalendarWidget extends FullCalendarWidget
             $this->mountAction('create');
         } catch (\Exception $e) {
             Log::error('Error al procesar las horas: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            $this->notify('error', 'Error al procesar el horario seleccionado: ' . $e->getMessage());
+            Notification::make()
+                ->title('Error')
+                ->body('Error al procesar el horario seleccionado: ' . $e->getMessage())
+                ->danger()
+                ->send();
         }
     }
 
@@ -243,7 +265,7 @@ class CalendarWidget extends FullCalendarWidget
                                 ->minutesStep(15)
                                 ->displayFormat('d/m/Y H:i')
                                 ->timezone('America/Bogota')
-                                ->native(false)
+                                ->native(true)
                                 ->readOnly()
                                 ->required(),
 
@@ -255,13 +277,71 @@ class CalendarWidget extends FullCalendarWidget
                                 ->displayFormat('d/m/Y H:i')
                                 ->timezone('America/Bogota')
                                 ->after('start_time')
-                                ->native(false)
+                                ->native(true)
                                 ->readOnly()
                                 ->required(),
                         ]),
 
                     Forms\Components\Grid::make(2)
                         ->schema([
+                            Forms\Components\Select::make('service_id')
+                                ->label('Servicio Requerido')
+                                ->options(function () {
+                                    if (!$this->record)
+                                        return [];
+                                    return \App\Models\Service::where('user_id', $this->record->id)
+                                        ->where('is_active', true)
+                                        ->pluck('name', 'id')
+                                        ->map(function ($name, $id) {
+                                            $service = \App\Models\Service::find($id);
+                                            return $name . ' - $' . number_format((float) $service->price, 0, ',', '.');
+                                        });
+                                })
+                                ->searchable()
+                                ->preload()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    if ($state) {
+                                        $service = \App\Models\Service::find($state);
+                                        if ($service) {
+                                            $set('service_price', $service->price);
+                                            $this->selectedServiceId = $state;
+                                            $this->selectedServicePrice = $service->price;
+                                        }
+                                    } else {
+                                        $set('service_price', null);
+                                        $this->selectedServiceId = null;
+                                        $this->selectedServicePrice = null;
+                                    }
+                                })
+                                ->helperText('Selecciona el servicio que necesitas')
+                                ->required(),
+
+                            Forms\Components\TextInput::make('service_price')
+                                ->label('Precio del Servicio (COP)')
+                                ->prefix('$')
+                                ->numeric()
+                                ->readOnly()
+                                ->placeholder('Selecciona un servicio')
+                                ->helperText('El precio se actualiza automáticamente'),
+                        ]),
+
+                    Forms\Components\Grid::make(1)
+                        ->schema([
+                            Forms\Components\Select::make('payment_method')
+                                ->label('Método de Pago Preferido')
+                                ->options([
+                                    'efectivo' => 'Efectivo (pagar en clínica)',
+                                    'transferencia' => 'Transferencia bancaria',
+                                    'tarjeta_debito' => 'Tarjeta de débito (pago en línea)',
+                                ])
+                                ->native(false)
+                                ->reactive()
+                                ->afterStateUpdated(function ($state) {
+                                    $this->selectedPaymentMethod = $state;
+                                })
+                                ->helperText('Como prefieres pagar este servicio')
+                                ->required(),
                         ]),
                 ]),
 
@@ -339,17 +419,29 @@ class CalendarWidget extends FullCalendarWidget
                 'user_id' => $schedule->user_id,
                 'client_id' => $client->id,
                 'schedule_id' => $schedule->id,
+                'service_id' => $data['service_id'] ?? null,
+                'service_price' => $data['service_price'] ?? null,
+                'payment_method' => $data['payment_method'] ?? 'efectivo',
+                'payment_status' => 'pending',
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
                 'notes' => $data['notes'] ?? null,
                 'status' => 'pending',
             ]);
             $schedule->update(['is_available' => false]);
-            $this->notify('success', 'Cita reservada correctamente. Continúa con el pago.');
+            Notification::make()
+                ->title('Éxito')
+                ->body('Cita reservada correctamente. Continúa con el pago.')
+                ->success()
+                ->send();
             $this->redirect(route('client.payment.process', ['appointment' => $appointment->id]));
         } catch (\Exception $e) {
             Log::error('Error al crear la cita: ' . $e->getMessage());
-            $this->notify('error', 'Error al crear la cita: ' . $e->getMessage());
+            Notification::make()
+                ->title('Error')
+                ->body('Error al crear la cita: ' . $e->getMessage())
+                ->danger()
+                ->send();
         }
     }
 }
