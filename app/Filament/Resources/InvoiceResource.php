@@ -653,7 +653,7 @@ class InvoiceResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('state', InvoiceState::Draft)->count();
+        return static::getModel()::where('state', InvoiceState::Paid)->count();
     }
 
     public static function getPermissionPrefixes(): array

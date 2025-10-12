@@ -151,12 +151,23 @@ class AppointmentResource extends Resource
                                 Forms\Components\Select::make('schedule_id')
                                     ->label('Horario')
                                     ->relationship('schedule', 'date', function (Builder $query) {
-                                        return $query->where('user_id', Auth::id());
+                                        return $query->where('user_id', Auth::id())
+                                            ->reallyAvailable()
+                                            ->orderBy('date', 'asc')
+                                            ->orderBy('start_time', 'asc');
+                                    })
+                                    ->getOptionLabelFromRecordUsing(function ($record) {
+                                        return date('d/m/Y', strtotime($record->date)) .
+                                            ' - ' .
+                                            date('H:i', strtotime($record->start_time)) .
+                                            ' a ' .
+                                            date('H:i', strtotime($record->end_time));
                                     })
                                     ->searchable()
                                     ->preload()
                                     ->required()
                                     ->reactive()
+                                    ->helperText('Solo se muestran horarios disponibles (no ocupados y no expirados)')
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         if ($state) {
                                             // Buscar el horario seleccionado

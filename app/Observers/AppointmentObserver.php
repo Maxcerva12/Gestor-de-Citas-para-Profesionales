@@ -26,6 +26,8 @@ class AppointmentObserver
      */
     public function created(Appointment $appointment): void
     {
+        Log::info("AppointmentObserver: Cita creada {$appointment->id} para cliente {$appointment->client_id}");
+
         // Marcar el horario como no disponible cuando se crea una cita
         if ($appointment->schedule) {
             try {
@@ -36,31 +38,43 @@ class AppointmentObserver
             }
         }
 
-        // Verificar si el profesional (user) tiene configurado Google Calendar
-        if ($appointment->user && $appointment->user->google_token) {
-            try {
-                // Temporalmente establecer el usuario profesional como autenticado para la sincronización
-                $originalUser = Auth::user();
-                Auth::login($appointment->user);
+        // Verificar configuración de Google Calendar
+        if (!$appointment->user) {
+            Log::warning("AppointmentObserver: Cita {$appointment->id} sin profesional asociado");
+            return;
+        }
 
-                $eventId = $this->googleService->createEvent($appointment);
-                $appointment->google_event_id = $eventId;
-                $appointment->save();
+        if (!$appointment->user->google_token) {
+            Log::info("AppointmentObserver: Profesional {$appointment->user->name} sin Google Calendar configurado");
+            return;
+        }
 
-                // Restaurar el usuario original
-                if ($originalUser) {
-                    Auth::login($originalUser);
-                } else {
-                    Auth::logout();
-                }
-            } catch (\Exception $e) {
-                // Log del error para debugging
-                \Log::error('Error al sincronizar cita con Google Calendar: ' . $e->getMessage(), [
-                    'appointment_id' => $appointment->id,
-                    'user_id' => $appointment->user_id,
-                    'error' => $e->getTraceAsString()
-                ]);
-            }
+        // Sincronizar con Google Calendar
+        Log::info("AppointmentObserver: Iniciando sincronización con Google Calendar para cita {$appointment->id}");
+
+        try {
+            // Crear una instancia nueva del servicio para evitar conflictos de contexto
+            $googleService = app(\App\Services\GoogleCalendarService::class);
+
+            // Establecer directamente el token sin cambiar la autenticación de sesión
+            $googleService->getClient()->setAccessToken($appointment->user->google_token);
+
+            $eventId = $googleService->createEvent($appointment);
+
+            // Usar updateQuietly para evitar disparar eventos del Observer nuevamente
+            $appointment->updateQuietly(['google_event_id' => $eventId]);
+
+            Log::info("AppointmentObserver: Cita {$appointment->id} sincronizada exitosamente con Google Calendar (Event ID: {$eventId})");
+
+        } catch (\Exception $e) {
+            // Log del error para debugging
+            \Log::error('AppointmentObserver: Error al sincronizar cita con Google Calendar', [
+                'appointment_id' => $appointment->id,
+                'user_id' => $appointment->user_id,
+                'error_message' => $e->getMessage(),
+                'error_line' => $e->getLine(),
+                'error_file' => $e->getFile()
+            ]);
         }
     }
 

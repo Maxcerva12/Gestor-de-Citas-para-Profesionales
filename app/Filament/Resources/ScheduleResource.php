@@ -170,7 +170,7 @@ class ScheduleResource extends Resource
                             ->label('Disponible para citas')
                             ->helperText('Marque esta opción si este horario está disponible para que los clientes puedan reservar citas')
                             ->default(true)
-                            ->onColor('success')
+                            ->onColor('primary')
                             ->offColor('danger'),
                     ]),
             ]);

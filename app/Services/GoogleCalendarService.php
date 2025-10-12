@@ -61,14 +61,38 @@ class GoogleCalendarService
         return new Calendar($this->client);
     }
 
+    public function isTokenValid()
+    {
+        try {
+            if (!$this->client->getAccessToken()) {
+                return false;
+            }
+
+            if ($this->client->isAccessTokenExpired()) {
+                Log::warning('Token de Google Calendar expirado');
+                return false;
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error al verificar token de Google Calendar: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function createEvent($appointment)
     {
+        // Verificar que el token sea válido antes de proceder
+        if (!$this->isTokenValid()) {
+            throw new \Exception('Token de Google Calendar inválido o expirado');
+        }
+
         $calendarService = $this->getCalendarService();
 
         $event = new \Google\Service\Calendar\Event([
             'summary' => 'Cita con ' . $appointment->client->name,
             'location' => $appointment->location ?? 'Sin ubicación',
-            'description' => 
+            'description' =>
                 "Cliente: {$appointment->client->name}\n" .
                 "Profesional: {$appointment->user->name}\n" .
                 "Notas: {$appointment->notes}",
