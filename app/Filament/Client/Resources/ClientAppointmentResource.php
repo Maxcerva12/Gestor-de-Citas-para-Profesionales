@@ -45,9 +45,11 @@ class ClientAppointmentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('client_id', auth()->id())
+        $count = static::getModel()::where('client_id', auth()->id())
             ->where('status', 'pending')
-            ->count() ?: null;
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function table(Table $table): Table

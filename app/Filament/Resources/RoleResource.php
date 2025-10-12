@@ -414,9 +414,9 @@ class RoleResource extends Resource implements HasShieldPermissions
         $count = static::getEloquentQuery()->count();
 
         return match (true) {
-            $count === 0 => 'danger',
-            $count <= 3 => 'warning',
-            $count <= 10 => 'success',
+            $count === 0 => 'primary',
+            $count <= 3 => 'primary',
+            $count <= 10 => 'primary',
             default => 'primary'
         };
     }

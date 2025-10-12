@@ -10,6 +10,7 @@ use Filament\Forms;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
 
 class CalendarWidget extends FullCalendarWidget
 {
@@ -92,19 +93,13 @@ class CalendarWidget extends FullCalendarWidget
 
         Log::info('Generando eventos para profesional ID: ' . $this->record->id);
 
-        // Obtener los horarios disponibles y filtrar por fecha/hora actual usando PHP
+        // Obtener solo horarios REALMENTE disponibles usando el scope del modelo
         $availableSlots = Schedule::where('user_id', $this->record->id)
-            ->where('is_available', true)
+            ->reallyAvailable()
             ->whereBetween('date', [$fetchInfo['start'], $fetchInfo['end']])
-            ->get()
-            ->filter(function ($slot) {
-                // Combinar fecha y hora del slot
-                $slotDateTime = Carbon::parse($slot->date->format('Y-m-d') . ' ' . $slot->start_time);
-                // Solo mostrar slots que sean en el futuro
-                return $slotDateTime->isFuture();
-            });
+            ->get();
 
-        Log::info('Horarios encontrados: ' . $availableSlots->count());
+        Log::info('Horarios realmente disponibles encontrados: ' . $availableSlots->count());
 
         $events = [];
 
@@ -403,43 +398,67 @@ class CalendarWidget extends FullCalendarWidget
 
         try {
             $schedule = Schedule::findOrFail($data['schedule_id']);
-            if (!$schedule->is_available) {
-                throw new \Exception('El horario seleccionado ya no está disponible.');
+
+            // Verificar si el horario está realmente disponible
+            if (!$schedule->isReallyAvailable()) {
+                throw new \Exception('El horario seleccionado ya no está disponible o ha expirado.');
             }
-            $startDateTime = Carbon::parse($schedule->date . ' ' . $schedule->start_time);
-            if ($startDateTime->isPast()) {
-                throw new \Exception('No se puede agendar una cita en un horario pasado.');
-            }
+
             $client = auth()->user();
             if (!$client || !$client instanceof \App\Models\Client) {
                 throw new \Exception('No hay un cliente autenticado para reservar la cita.');
             }
 
-            $appointment = Appointment::create([
-                'user_id' => $schedule->user_id,
-                'client_id' => $client->id,
-                'schedule_id' => $schedule->id,
-                'service_id' => $data['service_id'] ?? null,
-                'service_price' => $data['service_price'] ?? null,
-                'payment_method' => $data['payment_method'] ?? 'efectivo',
-                'payment_status' => 'pending',
-                'start_time' => $data['start_time'],
-                'end_time' => $data['end_time'],
-                'notes' => $data['notes'] ?? null,
-                'status' => 'pending',
-            ]);
-            $schedule->update(['is_available' => false]);
+            // Verificar que no haya otra cita en este horario
+            $existingAppointment = $schedule->appointments()
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->first();
+
+            if ($existingAppointment) {
+                throw new \Exception('Este horario ya tiene una cita asignada.');
+            }
+
+            // Usar transacción para asegurar atomicidad
+            $appointmentId = \DB::transaction(function () use ($data, $schedule, $client) {
+                // Crear la cita
+                $appointment = Appointment::create([
+                    'user_id' => $schedule->user_id,
+                    'client_id' => $client->id,
+                    'schedule_id' => $schedule->id,
+                    'service_id' => $data['service_id'] ?? null,
+                    'service_price' => $data['service_price'] ?? null,
+                    'payment_method' => $data['payment_method'] ?? 'efectivo',
+                    'payment_status' => 'pending',
+                    'start_time' => $data['start_time'],
+                    'end_time' => $data['end_time'],
+                    'notes' => $data['notes'] ?? null,
+                    'status' => 'pending',
+                ]);
+
+                // Marcar horario como no disponible
+                $schedule->markAsUnavailable();
+
+                Log::info("Cita creada con ID: {$appointment->id}, horario {$schedule->id} marcado como no disponible");
+
+                return $appointment->id;
+            });
+
             Notification::make()
-                ->title('Éxito')
-                ->body('Cita reservada correctamente. Continúa con el pago.')
+                ->title('¡Cita reservada exitosamente!')
+                ->body('Su cita ha sido reservada. Continúe con el proceso de pago.')
                 ->success()
                 ->send();
-            $this->redirect(route('client.payment.process', ['appointment' => $appointment->id]));
+
+            // Forzar recarga del calendario para mostrar cambios
+            $this->dispatch('refresh-calendar');
+
+            $this->redirect(route('client.payment.process', ['appointment' => $appointmentId]));
+
         } catch (\Exception $e) {
             Log::error('Error al crear la cita: ' . $e->getMessage());
             Notification::make()
-                ->title('Error')
-                ->body('Error al crear la cita: ' . $e->getMessage())
+                ->title('Error al reservar cita')
+                ->body('Error: ' . $e->getMessage())
                 ->danger()
                 ->send();
         }

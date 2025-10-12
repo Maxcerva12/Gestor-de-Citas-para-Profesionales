@@ -26,6 +26,16 @@ class AppointmentObserver
      */
     public function created(Appointment $appointment): void
     {
+        // Marcar el horario como no disponible cuando se crea una cita
+        if ($appointment->schedule) {
+            try {
+                $appointment->schedule->update(['is_available' => false]);
+                Log::info("Horario {$appointment->schedule->id} marcado como no disponible por cita {$appointment->id}");
+            } catch (\Exception $e) {
+                Log::error("Error al marcar horario como no disponible para cita {$appointment->id}: " . $e->getMessage());
+            }
+        }
+
         // Verificar si el profesional (user) tiene configurado Google Calendar
         if ($appointment->user && $appointment->user->google_token) {
             try {
@@ -59,6 +69,33 @@ class AppointmentObserver
      */
     public function updated(Appointment $appointment): void
     {
+        // Si la cita fue cancelada, hacer el horario disponible nuevamente
+        // solo si no ha expirado
+        if ($appointment->isDirty('status') && $appointment->status === 'canceled') {
+            Log::info("Observer: Cita {$appointment->id} cancelada");
+
+            if ($appointment->schedule) {
+                try {
+                    Log::info("Observer: Procesando horario {$appointment->schedule->id} para cita cancelada {$appointment->id}");
+
+                    // Verificar si el horario ha expirado  
+                    $date = \Carbon\Carbon::parse($appointment->schedule->date)->format('Y-m-d');
+                    $scheduleDateTime = \Carbon\Carbon::parse($date . ' ' . $appointment->schedule->start_time);
+                    Log::info("Observer: Fecha/hora del horario: {$scheduleDateTime}, Ahora: " . \Carbon\Carbon::now());
+                    if (!$scheduleDateTime->isPast()) {
+                        $appointment->schedule->update(['is_available' => true]);
+                        Log::info("Observer: Horario {$appointment->schedule->id} marcado como disponible por cancelación de cita {$appointment->id}");
+                    } else {
+                        Log::info("Observer: Horario {$appointment->schedule->id} ha expirado, no se marca como disponible");
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Observer: Error al procesar cancelación de cita {$appointment->id}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+                }
+            } else {
+                Log::warning("Observer: Cita {$appointment->id} no tiene horario asociado");
+            }
+        }
+
         // Verificar si cambió el estado de pago
         if ($appointment->isDirty('payment_status')) {
             $this->handlePaymentStatusChange($appointment);
@@ -95,7 +132,31 @@ class AppointmentObserver
      */
     public function deleted(Appointment $appointment): void
     {
-        //
+        Log::info("Observer: Eliminando cita {$appointment->id}");
+
+        // Si se elimina la cita, hacer el horario disponible nuevamente
+        // solo si no ha expirado
+        if ($appointment->schedule) {
+            try {
+                Log::info("Observer: Procesando horario {$appointment->schedule->id} para cita eliminada {$appointment->id}");
+
+                // Verificar si el horario ha expirado
+                $date = \Carbon\Carbon::parse($appointment->schedule->date)->format('Y-m-d');
+                $scheduleDateTime = \Carbon\Carbon::parse($date . ' ' . $appointment->schedule->start_time);
+                Log::info("Observer: Fecha/hora del horario: {$scheduleDateTime}, Ahora: " . \Carbon\Carbon::now());
+
+                if (!$scheduleDateTime->isPast()) {
+                    $appointment->schedule->update(['is_available' => true]);
+                    Log::info("Observer: Horario {$appointment->schedule->id} marcado como disponible por eliminación de cita {$appointment->id}");
+                } else {
+                    Log::info("Observer: Horario {$appointment->schedule->id} ha expirado, no se marca como disponible");
+                }
+            } catch (\Exception $e) {
+                Log::error("Observer: Error al procesar eliminación de cita {$appointment->id}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            }
+        } else {
+            Log::warning("Observer: Cita {$appointment->id} no tiene horario asociado");
+        }
     }
 
     /**

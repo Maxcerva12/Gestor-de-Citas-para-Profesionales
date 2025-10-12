@@ -118,25 +118,8 @@ class ScheduleResource extends Resource
                                     ->native(false)
                                     ->format('Y-m-d')
                                     ->displayFormat('d/m/Y')
-                                    ->reactive()
                                     ->columnSpan(1)
-                                    ->weekStartsOnMonday()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        if ($state) {
-                                            $dayOfWeek = date('N', strtotime($state));
-                                            if ($dayOfWeek > 5) {
-                                                $set('date', null);
-                                                \Filament\Notifications\Notification::make()
-                                                    ->title('Fecha no válida')
-                                                    ->body('Solo se pueden crear citas de lunes a viernes.')
-                                                    ->danger()
-                                                    ->send();
-                                            } else {
-                                                // Verificar si hay horarios existentes al cambiar la fecha
-                                                self::checkOverlappingSchedules($state, $get('start_time'), $get('end_time'), $get('user_id'), $set);
-                                            }
-                                        }
-                                    }),
+                                    ->weekStartsOnMonday(),
 
                                 Forms\Components\Select::make('user_id')
                                     ->label('Profesional')
@@ -166,15 +149,9 @@ class ScheduleResource extends Resource
                                     ->minutesStep(30)
                                     ->hoursStep(1)
                                     ->format('h:i A')
-                                    ->reactive()
                                     ->validationMessages([
                                         'required' => 'La hora de inicio es obligatoria',
-                                    ])
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        if ($state && $get('date') && $get('end_time')) {
-                                            self::checkOverlappingSchedules($get('date'), $state, $get('end_time'), $get('user_id'), $set);
-                                        }
-                                    }),
+                                    ]),
 
                                 Forms\Components\TimePicker::make('end_time')
                                     ->label('Hora de Fin')
@@ -184,30 +161,9 @@ class ScheduleResource extends Resource
                                     ->minutesStep(30)
                                     ->hoursStep(1)
                                     ->format('h:i A')
-                                    ->reactive()
                                     ->validationMessages([
                                         'required' => 'La hora de fin es obligatoria',
-                                    ])
-                                    ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                        // Validar que la hora de fin sea posterior a la de inicio
-                                        $startTime = $get('start_time');
-                                        if ($startTime && $state) {
-                                            $start = strtotime($startTime);
-                                            $end = strtotime($state);
-
-                                            if ($end <= $start) {
-                                                $set('end_time', null);
-                                                \Filament\Notifications\Notification::make()
-                                                    ->title('Horario inválido')
-                                                    ->body('La hora de fin debe ser posterior a la hora de inicio.')
-                                                    ->danger()
-                                                    ->send();
-                                            } else if ($get('date')) {
-                                                // Verificar si hay horarios existentes al cambiar la hora de fin
-                                                self::checkOverlappingSchedules($get('date'), $startTime, $state, $get('user_id'), $set);
-                                            }
-                                        }
-                                    }),
+                                    ]),
                             ]),
 
                         Forms\Components\Toggle::make('is_available')
@@ -224,12 +180,17 @@ class ScheduleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('avatar_url')
+                Tables\Columns\ImageColumn::make('user.avatar_url')
                     ->label('Avatar')
                     ->circular()
-                    ->defaultImageUrl(function ($record) {
-                        // Mostrar avatar por defecto si no hay URL
-                        return 'https://ui-avatars.com/api/?name=' . urlencode(User::find($record->user_id)->name ?? 'Usuario');
+                    ->getStateUsing(function ($record) {
+                        $user = User::find($record->user_id);
+                        // Si el usuario tiene una imagen subida, usar esa
+                        if ($user && $user->getFilamentAvatarUrl()) {
+                            return $user->getFilamentAvatarUrl();
+                        }
+                        // Si no tiene imagen, usar el avatar por defecto
+                        return 'https://ui-avatars.com/api/?name=' . urlencode($user->name ?? 'Usuario');
                     })
                     ->size(40),
 
@@ -255,13 +216,60 @@ class ScheduleResource extends Resource
                     ->time('h:i A') // Cambiado para mostrar formato 12 horas con AM/PM
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('is_available')
-                    ->label('Disponible')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger')
+                Tables\Columns\TextColumn::make('availability_status')
+                    ->label('Estado')
+                    ->badge()
+                    ->getStateUsing(function ($record) {
+                        try {
+                            if (!$record->is_available) {
+                                return 'No disponible';
+                            }
+
+                            // Verificar si está expirado
+                            $date = \Carbon\Carbon::parse($record->date)->format('Y-m-d');
+                            $scheduleDateTime = \Carbon\Carbon::parse($date . ' ' . $record->start_time);
+                            if ($scheduleDateTime->isPast()) {
+                                return 'Expirado';
+                            }
+
+                            // Verificar si está ocupado
+                            $hasAppointments = $record->appointments()
+                                ->whereIn('status', ['pending', 'confirmed'])
+                                ->exists();
+                            if ($hasAppointments) {
+                                return 'Ocupado';
+                            }
+
+                            return 'Disponible';
+                        } catch (\Exception $e) {
+                            \Log::error('Error en availability_status: ' . $e->getMessage());
+                            return $record->is_available ? 'Disponible' : 'No disponible';
+                        }
+                    })
+                    ->color(function ($record) {
+                        try {
+                            if (!$record->is_available) {
+                                return 'danger';
+                            }
+
+                            $date = \Carbon\Carbon::parse($record->date)->format('Y-m-d');
+                            $scheduleDateTime = \Carbon\Carbon::parse($date . ' ' . $record->start_time);
+                            if ($scheduleDateTime->isPast()) {
+                                return 'warning';
+                            }
+
+                            $hasAppointments = $record->appointments()
+                                ->whereIn('status', ['pending', 'confirmed'])
+                                ->exists();
+                            if ($hasAppointments) {
+                                return 'info';
+                            }
+
+                            return 'success';
+                        } catch (\Exception $e) {
+                            return $record->is_available ? 'success' : 'danger';
+                        }
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
@@ -349,14 +357,67 @@ class ScheduleResource extends Resource
                     ->iconButton()
                     ->color('warning')
                     ->action(function (Schedule $record) {
-                        $record->is_available = !$record->is_available;
-                        $record->save();
+                        try {
+                            \Log::info("Intentando cambiar disponibilidad del horario {$record->id}. Estado actual: " . ($record->is_available ? 'disponible' : 'no disponible'));
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Disponibilidad actualizada')
-                            ->body('El estado de disponibilidad ha sido actualizado correctamente.')
-                            ->success()
-                            ->send();
+                            // Si se intenta activar un horario que está desactivado
+                            if (!$record->is_available) {
+                                // Verificar si el horario ha expirado
+                                $date = \Carbon\Carbon::parse($record->date)->format('Y-m-d');
+                                $scheduleDateTime = \Carbon\Carbon::parse($date . ' ' . $record->start_time);
+                                \Log::info("Fecha/hora del horario: {$scheduleDateTime}, Ahora: " . \Carbon\Carbon::now());
+
+                                if ($scheduleDateTime->isPast()) {
+                                    \Log::info("Horario ha expirado, no se puede activar");
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Acción no permitida')
+                                        ->body('No se puede activar un horario que ya ha expirado.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                // Verificar si tiene citas confirmadas o pendientes (recargar relación)
+                                $record->load('appointments');
+                                $appointments = $record->appointments()
+                                    ->whereIn('status', ['pending', 'confirmed'])
+                                    ->get();
+
+                                \Log::info("Citas encontradas: " . $appointments->count());
+
+                                if ($appointments->count() > 0) {
+                                    \Log::info("Horario tiene citas asignadas, no se puede activar");
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Acción no permitida')
+                                        ->body('No se puede activar un horario que tiene citas asignadas.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+                            }
+
+                            // Cambiar el estado
+                            $newStatus = !$record->is_available;
+                            $record->update(['is_available' => $newStatus]);
+
+                            \Log::info("Horario {$record->id} actualizado a: " . ($newStatus ? 'disponible' : 'no disponible'));
+
+                            $status = $newStatus ? 'activado' : 'desactivado';
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Disponibilidad actualizada')
+                                ->body("El horario ha sido {$status} correctamente.")
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            \Log::error('Error en toggle availability: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al cambiar la disponibilidad: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
             ])
             ->bulkActions([
@@ -412,61 +473,5 @@ class ScheduleResource extends Resource
             ->count();
     }
 
-    protected static function checkOverlappingSchedules($date, $startTime, $endTime, $userId, $set)
-    {
-        if (!$date || !$startTime || !$endTime || !$userId) {
-            return;
-        }
 
-        $recordId = null;
-
-        try {
-            // Método alternativo para obtener el registro actual
-            if (request()->route('record')) {
-                $recordId = request()->route('record');
-            } elseif (request()->has('record')) {
-                $recordId = request()->input('record');
-            }
-        } catch (\Exception $e) {
-            // Si hay algún error, continuamos sin excluir ningún registro
-        }
-
-        // Convertir los tiempos a objetos DateTime para comparar
-        $start = strtotime($startTime);
-        $end = strtotime($endTime);
-
-        // Buscar horarios existentes para la misma fecha y usuario
-        $existingSchedules = Schedule::where('date', $date)
-            ->where('user_id', $userId)
-            ->when($recordId, function ($query) use ($recordId) {
-                // Excluir el registro actual si estamos editando
-                return $query->where('id', '!=', $recordId);
-            })
-            ->get();
-
-        // Verificar si hay alguna superposición de horarios
-        foreach ($existingSchedules as $schedule) {
-            $existingStart = strtotime($schedule->start_time);
-            $existingEnd = strtotime($schedule->end_time);
-
-            // Comprobar si hay superposición
-            if (
-                ($start >= $existingStart && $start < $existingEnd) ||
-                ($end > $existingStart && $end <= $existingEnd) ||
-                ($start <= $existingStart && $end >= $existingEnd)
-            ) {
-                // Hay superposición, mostrar notificación
-                \Filament\Notifications\Notification::make()
-                    ->title('Horario superpuesto')
-                    ->body('Ya existe un horario para este profesional en esta fecha que se superpone con el horario seleccionado.')
-                    ->danger()
-                    ->send();
-
-                $set('start_time', null);
-                $set('end_time', null);
-
-                return;
-            }
-        }
-    }
 }
