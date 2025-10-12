@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\Service;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Service;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ServicePolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return true; // Los usuarios pueden ver servicios
+        return $user->can('view_any_service');
     }
 
     /**
@@ -21,13 +23,7 @@ class ServicePolicy
      */
     public function view(User $user, Service $service): bool
     {
-        // Super admin puede ver todos los servicios
-        if ($user->hasRole('super_admin')) {
-            return true;
-        }
-
-        // Los usuarios solo pueden ver sus propios servicios
-        return $service->user_id === $user->id;
+        return $user->can('view_service');
     }
 
     /**
@@ -35,7 +31,7 @@ class ServicePolicy
      */
     public function create(User $user): bool
     {
-        return true; // Todos los usuarios pueden crear servicios
+        return $user->can('create_service');
     }
 
     /**
@@ -43,13 +39,7 @@ class ServicePolicy
      */
     public function update(User $user, Service $service): bool
     {
-        // Super admin puede editar todos los servicios
-        if ($user->hasRole('super_admin')) {
-            return true;
-        }
-
-        // Los usuarios solo pueden editar sus propios servicios
-        return $service->user_id === $user->id;
+        return $user->can('update_service');
     }
 
     /**
@@ -57,33 +47,62 @@ class ServicePolicy
      */
     public function delete(User $user, Service $service): bool
     {
-        // Super admin puede eliminar todos los servicios
-        if ($user->hasRole('super_admin')) {
-            return true;
-        }
-
-        // Los usuarios solo pueden eliminar sus propios servicios si no tienen citas asociadas
-        if ($service->user_id !== $user->id) {
-            return false;
-        }
-
-        // No permitir eliminar servicios que ya tienen citas
-        return $service->appointments()->count() === 0;
+        return $user->can('delete_service');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, Service $service): bool
+    public function deleteAny(User $user): bool
     {
-        return false;
+        return $user->can('delete_any_service');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, Service $service): bool
     {
-        return false;
+        return $user->can('force_delete_service');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_service');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Service $service): bool
+    {
+        return $user->can('restore_service');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_service');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Service $service): bool
+    {
+        return $user->can('replicate_service');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_service');
     }
 }

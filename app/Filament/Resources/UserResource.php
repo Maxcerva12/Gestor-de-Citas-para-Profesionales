@@ -23,6 +23,7 @@ use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
+use App\Services\RoleManagerService;
 
 class UserResource extends Resource implements HasShieldPermissions
 {
@@ -112,6 +113,30 @@ class UserResource extends Resource implements HasShieldPermissions
             'Especialidad' => $record->especialty,
             'Profesión' => $record->profession,
         ];
+    }
+
+    /**
+     * Obtiene las categorías de roles organizadas
+     */
+    public static function getRoleCategories(): array
+    {
+        return RoleManagerService::getRoleCategories();
+    }
+
+    /**
+     * Obtiene los nombres de roles para una categoría específica
+     */
+    public static function getRoleNamesForCategory(string $category): array
+    {
+        return RoleManagerService::getRoleNamesForCategory($category);
+    }
+
+    /**
+     * Obtiene todos los roles categorizados (excluyendo 'Otros')
+     */
+    public static function getCategorizedRoleNames(): array
+    {
+        return RoleManagerService::getCategorizedRoleNames();
     }
 
     public static function form(Form $form): Form
@@ -248,64 +273,29 @@ class UserResource extends Resource implements HasShieldPermissions
                                             ->multiple()
                                             ->relationship('roles', 'name')
                                             ->options(function () {
-                                                // Mapeo de nombres bonitos
-                                                $prettyNames = [
-                                                    'odontologo-general' => 'Odontólogo General',
-                                                    'ortodoncista' => 'Ortodoncista',
-                                                    'endodoncista' => 'Endodoncista',
-                                                    'periodoncista' => 'Periodoncista',
-                                                    'cirujano-oral' => 'Cirujano Oral',
-                                                    'higienista-dental' => 'Higienista Dental',
-                                                    'auxiliar-odontologia' => 'Auxiliar de Odontología',
-                                                    'recepcionista' => 'Recepcionista',
-                                                    'secretaria' => 'Secretaria',
-                                                    'asesor-comercial' => 'Asesor Comercial',
-                                                    'contador' => 'Contador',
-                                                    'gerencia' => 'Gerencia',
-                                                    'coordinador-clinica' => 'Coordinador de Clínica',
-                                                ];
-
-                                                $categories = [
-                                                    'Personal Odontológico' => [
-                                                        'odontologo-general',
-                                                        'ortodoncista',
-                                                        'endodoncista',
-                                                        'periodoncista',
-                                                        'cirujano-oral',
-                                                        'higienista-dental',
-                                                        'auxiliar-odontologia',
-                                                    ],
-                                                    'Personal Administrativo' => [
-                                                        'recepcionista',
-                                                        'secretaria',
-                                                        'asesor-comercial',
-                                                        'contador',
-                                                    ],
-                                                    'Gerencia' => [
-                                                        'gerencia',
-                                                        'coordinador-clinica',
-                                                    ],
-                                                ];
-
                                                 $rolesByName = Role::all()->keyBy('name');
                                                 $groupedOptions = [];
 
-                                                foreach ($categories as $category => $roleNames) {
-                                                    foreach ($roleNames as $roleName) {
+                                                // Usar el servicio centralizado para obtener opciones agrupadas
+                                                $categories = RoleManagerService::getRoleCategories();
+
+                                                // Procesar roles categorizados
+                                                foreach ($categories as $categoryName => $roleMap) {
+                                                    foreach ($roleMap as $roleName => $roleLabel) {
                                                         if ($rolesByName->has($roleName)) {
                                                             $role = $rolesByName->get($roleName);
-                                                            $label = $prettyNames[$roleName] ?? $role->name;
-                                                            $groupedOptions[$category][$role->id] = $label;
+                                                            $groupedOptions[$categoryName][$role->id] = $roleLabel;
                                                         }
                                                     }
                                                 }
 
                                                 // Añadir roles no categorizados en "Otros"
-                                                $categorizedRoleNames = collect($categories)->flatten()->toArray();
+                                                $categorizedRoleNames = RoleManagerService::getCategorizedRoleNames();
                                                 $uncategorizedRoles = $rolesByName->whereNotIn('name', $categorizedRoleNames);
                                                 if ($uncategorizedRoles->isNotEmpty()) {
                                                     foreach ($uncategorizedRoles as $role) {
-                                                        $groupedOptions['Otros'][$role->id] = $prettyNames[$role->name] ?? $role->name;
+                                                        $prettyName = RoleManagerService::getPrettyName($role->name);
+                                                        $groupedOptions['Otros'][$role->id] = $prettyName;
                                                     }
                                                 }
 
@@ -359,23 +349,6 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->color('success')
                     ->toggleable()
                     ->formatStateUsing(function ($state, $record) {
-                        // Mapeo de nombres bonitos
-                        $prettyNames = [
-                            'odontologo-general' => 'Odontólogo General',
-                            'ortodoncista' => 'Ortodoncista',
-                            'endodoncista' => 'Endodoncista',
-                            'periodoncista' => 'Periodoncista',
-                            'cirujano-oral' => 'Cirujano Oral',
-                            'higienista-dental' => 'Higienista Dental',
-                            'auxiliar-odontologia' => 'Auxiliar de Odontología',
-                            'recepcionista' => 'Recepcionista',
-                            'secretaria' => 'Secretaria',
-                            'asesor-comercial' => 'Asesor Comercial',
-                            'contador' => 'Contador',
-                            'gerencia' => 'Gerencia',
-                            'coordinador-clinica' => 'Coordinador de Clínica',
-                        ];
-
                         // $state puede ser string o array dependiendo de la relación
                         $roles = $record->roles ?? [];
                         if ($roles instanceof \Illuminate\Support\Collection) {
@@ -388,7 +361,7 @@ class UserResource extends Resource implements HasShieldPermissions
 
                         $labels = [];
                         foreach ($roles as $roleName) {
-                            $labels[] = $prettyNames[$roleName] ?? $roleName;
+                            $labels[] = RoleManagerService::getPrettyName($roleName);
                         }
                         return implode(', ', $labels);
                     }),

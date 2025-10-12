@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Services\RoleManagerService;
 use Filament\Resources\Pages\ListRecords;
 use AymanAlhattami\FilamentPageWithSidebar\Traits\HasPageSidebar;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,21 +24,8 @@ class OtherRolesList extends ListRecords
     protected function getTableQuery(): Builder
     {
         return parent::getTableQuery()->whereDoesntHave('roles', function (Builder $query) {
-            $query->whereIn('name', [
-                'odontologo-general',
-                'ortodoncista',
-                'endodoncista',
-                'periodoncista',
-                'cirujano-oral',
-                'higienista-dental',
-                'auxiliar-odontologia',
-                'recepcionista',
-                'secretaria',
-                'asesor-comercial',
-                'contador',
-                'gerencia',
-                'coordinador-clinica',
-            ]);
+            $categorizedRoles = RoleManagerService::getCategorizedRoleNames();
+            $query->whereIn('name', $categorizedRoles);
         });
     }
 }

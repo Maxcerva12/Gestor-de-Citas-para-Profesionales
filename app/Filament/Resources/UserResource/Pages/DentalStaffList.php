@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Services\RoleManagerService;
 use Filament\Resources\Pages\ListRecords;
 use AymanAlhattami\FilamentPageWithSidebar\Traits\HasPageSidebar;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,16 +24,9 @@ class DentalStaffList extends ListRecords
 
     protected function getTableQuery(): Builder
     {
-return parent::getTableQuery()->whereHas('roles', function (Builder $query) {
-            $query->whereIn('name', [
-                'odontologo-general',
-                'ortodoncista',
-                'endodoncista',
-                'periodoncista',
-                'cirujano-oral',
-                'higienista-dental',
-                'auxiliar-odontologia'
-            ]);
+        return parent::getTableQuery()->whereHas('roles', function (Builder $query) {
+            $dentalRoles = RoleManagerService::getRoleNamesForCategory('Personal Odontológico');
+            $query->whereIn('name', $dentalRoles);
         });
     }
 }
