@@ -401,7 +401,7 @@ class AppointmentResource extends Resource
                     ->sortable()
                     ->description(
                         fn(Appointment $record): string =>
-                        $record->service_price ? '$' . number_format((float) $record->service_price, 0, ',', '.') : 'Sin precio'
+                        $record->service_price ? '$' . number_format((float) $record->service_price, 2, ',', '.') : 'Sin precio'
                     )
                     ->placeholder('Sin servicio')
                     ->toggleable(),

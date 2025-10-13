@@ -406,7 +406,7 @@ class InvoiceResource extends Resource
                             $amount = (float) $state;
                         }
 
-                        return '$' . number_format($amount, 0, ',', '.');
+                        return '$' . number_format($amount, 2, ',', '.');
                     })
                     ->weight(FontWeight::Bold)
                     ->color('success')

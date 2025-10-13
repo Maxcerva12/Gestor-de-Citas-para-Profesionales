@@ -26,6 +26,9 @@ use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use App\Filament\Widgets\TotalAppointmentsChart;
 use App\Filament\Widgets\AppointmentsByStatusChart;
+use App\Filament\Widgets\RevenueOverviewWidget;
+use App\Filament\Widgets\MonthlyRevenueChart;
+use App\Filament\Widgets\TopProfessionalsChart;
 use App\Filament\Pages\Auth\CustomLogin;
 
 
@@ -58,13 +61,16 @@ class AdminPanelProvider extends PanelProvider
 
             // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-                // \App\Filament\Widgets\StatsProfessionalsOverview::class,
-                // \App\Filament\Widgets\StatsClientsOverview::class,
+                    // Widgets\AccountWidget::class,
+                    // Widgets\FilamentInfoWidget::class,
+                    // \App\Filament\Widgets\StatsProfessionalsOverview::class,
+                    // \App\Filament\Widgets\StatsClientsOverview::class,
+                RevenueOverviewWidget::class,
                 \App\Filament\Widgets\CombinedStatsOverview::class,
-                TotalAppointmentsChart::class,
+                MonthlyRevenueChart::class,
+                TopProfessionalsChart::class,
                 AppointmentsByStatusChart::class,
+                TotalAppointmentsChart::class,
 
 
             ])
