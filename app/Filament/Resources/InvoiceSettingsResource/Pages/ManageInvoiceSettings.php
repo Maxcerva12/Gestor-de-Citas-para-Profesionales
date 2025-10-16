@@ -28,6 +28,9 @@ class ManageInvoiceSettings extends Page implements HasForms
 
     protected static ?string $title = 'Configuración de Facturas';
 
+    // Configuración para colapsar el sidebar por defecto
+    protected static bool $shouldCollapseSidebar = true;
+
     public ?array $data = [];
 
     public function mount(): void
@@ -51,6 +54,16 @@ class ManageInvoiceSettings extends Page implements HasForms
         ];
 
         $this->settingsForm->fill($this->data);
+
+        // Forzar el colapso del sidebar al cargar la página
+        $this->dispatch('collapse-sidebar');
+    }
+
+    public function getViewData(): array
+    {
+        return array_merge(parent::getViewData(), [
+            'sidebarCollapsed' => true,
+        ]);
     }
 
     protected function getForms(): array
@@ -375,5 +388,54 @@ class ManageInvoiceSettings extends Page implements HasForms
         }
 
         return InvoiceSettings::getCompanyLogo();
+    }
+
+    protected function getLayoutData(): array
+    {
+        return array_merge(parent::getLayoutData(), [
+            'isSidebarCollapsed' => true,
+        ]);
+    }
+
+    public function getExtraHeadContent(): ?string
+    {
+        return '
+        <style>
+            .fi-invoice-settings .fi-sidebar {
+                transform: translateX(-100%) !important;
+            }
+            .fi-invoice-settings .fi-main {
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+            }
+            .fi-invoice-settings .fi-sidebar-collapsed .fi-sidebar {
+                width: 0 !important;
+                min-width: 0 !important;
+            }
+        </style>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                setTimeout(function() {
+                    const sidebar = document.querySelector(".fi-sidebar");
+                    const main = document.querySelector(".fi-main");
+                    const toggleButton = document.querySelector("[data-sidebar-toggle]") || 
+                                       document.querySelector(".fi-sidebar-toggle") ||
+                                       document.querySelector("button[aria-label*=\"sidebar\"]");
+                    
+                    if (sidebar && sidebar.classList.contains("fi-sidebar-open")) {
+                        if (toggleButton) {
+                            toggleButton.click();
+                        }
+                    }
+                }, 50);
+            });
+        </script>';
+    }
+
+    public function getExtraBodyAttributes(): array
+    {
+        return [
+            'class' => 'fi-invoice-settings-page'
+        ];
     }
 }

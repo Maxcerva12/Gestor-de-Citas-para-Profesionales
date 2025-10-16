@@ -38,11 +38,13 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->sidebarCollapsibleOnDesktop()
-            ->collapsedSidebarWidth('9rem')
+            ->collapsedSidebarWidth('5rem')
             ->default()
             ->id('admin')
             ->path('admin')
             ->brandName('Fundacion Odontológica Zoila Padilla')
+            ->brandLogo(asset('storage/imagen/LOGO FUNDAZION ZOILA.svg'))
+            ->brandLogoHeight('2.5rem')
             ->login(CustomLogin::class)
             ->databaseNotifications()
             ->colors([

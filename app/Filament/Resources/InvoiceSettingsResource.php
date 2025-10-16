@@ -36,6 +36,8 @@ class InvoiceSettingsResource extends Resource
 
     protected static ?string $slug = 'invoice-settings';
 
+
+
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -45,16 +47,6 @@ class InvoiceSettingsResource extends Resource
             'update',
             'delete',
             'delete_any',
-        ];
-    }
-
-
-    public static function layout(): array
-    {
-        return [
-            'sidebar' => [
-                'is_collapsed_on_start' => true,
-            ],
         ];
     }
 
