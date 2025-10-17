@@ -73,6 +73,11 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         return $this->hasMany(Appointment::class);
     }
 
+    public function medicalHistory()
+    {
+        return $this->hasOne(MedicalHistory::class);
+    }
+
     public function getFilamentAvatarUrl(): ?string
     {
         if ($this->avatar_url) {
