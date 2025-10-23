@@ -22,18 +22,23 @@ class CombinedStatsOverview extends BaseWidget
         $canViewAllRevenue = $currentUser->hasRole('super_admin') ||
             $currentUser->hasPermissionTo('view_all_revenue');
 
-        // Definir el período (últimos 30 días)
-        $startDate = Carbon::now()->subDays(30);
+        // Definir el período (últimos 6 meses para ver mejor los datos)
+        $startDate = Carbon::now()->subMonths(6);
         $endDate = Carbon::now();
 
         // Total de Profesionales
         $totalProfessionals = User::count();
 
-        // Datos históricos para el gráfico de profesionales (registros por día)
-        $professionalsData = User::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        // Datos históricos para el gráfico de profesionales (registros por semana para mejor visualización)
+        $professionalsData = User::select(
+            DB::raw('EXTRACT(WEEK FROM created_at) as week'),
+            DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+            DB::raw('count(*) as total')
+        )
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupBy('week', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('week', 'asc')
             ->get()
             ->pluck('total')
             ->map(fn($value) => (int) $value)
@@ -42,11 +47,16 @@ class CombinedStatsOverview extends BaseWidget
         // Total de Clientes
         $totalClients = Client::count();
 
-        // Datos históricos para el gráfico de clientes (registros por día)
-        $clientsData = Client::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        // Datos históricos para el gráfico de clientes (registros por semana)
+        $clientsData = Client::select(
+            DB::raw('EXTRACT(WEEK FROM created_at) as week'),
+            DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+            DB::raw('count(*) as total')
+        )
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupBy('week', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('week', 'asc')
             ->get()
             ->pluck('total')
             ->map(fn($value) => (int) $value)
@@ -81,24 +91,26 @@ class CombinedStatsOverview extends BaseWidget
 
     private function getFoundationInvoiceStats($startDate, $endDate): Stat
     {
-        // Total de facturas generadas este mes
-        $currentMonth = Carbon::now();
-        $totalInvoicesThisMonth = Invoice::whereMonth('created_at', $currentMonth->month)
-            ->whereYear('created_at', $currentMonth->year)
-            ->count();
+        // Total de facturas generadas en los últimos 6 meses
+        $totalInvoices = Invoice::whereBetween('created_at', [$startDate, $endDate])->count();
 
-        // Datos históricos para el gráfico (facturas por día, últimos 30 días)
-        $invoicesData = Invoice::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        // Datos históricos para el gráfico (facturas por semana, últimos 6 meses)
+        $invoicesData = Invoice::select(
+            DB::raw('EXTRACT(WEEK FROM created_at) as week'),
+            DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+            DB::raw('count(*) as total')
+        )
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupBy('week', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('week', 'asc')
             ->get()
             ->pluck('total')
             ->map(fn($value) => (int) $value)
             ->toArray();
 
-        return Stat::make('Facturas Generadas (Fundación)', number_format($totalInvoicesThisMonth))
-            ->description('Facturas de toda la fundación este mes')
+        return Stat::make('Facturas Generadas (Fundación)', number_format($totalInvoices))
+            ->description('Facturas de toda la fundación (6 meses)')
             ->descriptionIcon('heroicon-m-document-text')
             ->chart($invoicesData ?: [0])
             ->color('success');
@@ -106,26 +118,29 @@ class CombinedStatsOverview extends BaseWidget
 
     private function getProfessionalInvoiceStats($user, $startDate, $endDate): Stat
     {
-        // Total de facturas generadas por el profesional este mes
-        $currentMonth = Carbon::now();
-        $totalInvoicesThisMonth = Invoice::where('user_id', $user->id)
-            ->whereMonth('created_at', $currentMonth->month)
-            ->whereYear('created_at', $currentMonth->year)
+        // Total de facturas generadas por el profesional en los últimos 6 meses
+        $totalInvoices = Invoice::where('user_id', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-        // Datos históricos para el gráfico (facturas del profesional por día, últimos 30 días)
-        $invoicesData = Invoice::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        // Datos históricos para el gráfico (facturas del profesional por semana, últimos 6 meses)
+        $invoicesData = Invoice::select(
+            DB::raw('EXTRACT(WEEK FROM created_at) as week'),
+            DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+            DB::raw('count(*) as total')
+        )
             ->where('user_id', $user->id)
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupBy('week', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('week', 'asc')
             ->get()
             ->pluck('total')
             ->map(fn($value) => (int) $value)
             ->toArray();
 
-        return Stat::make('Mis Facturas Generadas', number_format($totalInvoicesThisMonth))
-            ->description('Facturas de mis servicios este mes')
+        return Stat::make('Mis Facturas Generadas', number_format($totalInvoices))
+            ->description('Facturas de mis servicios (6 meses)')
             ->descriptionIcon('heroicon-m-document-text')
             ->chart($invoicesData ?: [0])
             ->color('info');

@@ -69,10 +69,10 @@ class AdminPanelProvider extends PanelProvider
                     // \App\Filament\Widgets\StatsClientsOverview::class,
                 RevenueOverviewWidget::class,
                 \App\Filament\Widgets\CombinedStatsOverview::class,
-                MonthlyRevenueChart::class,
                 TopProfessionalsChart::class,
                 AppointmentsByStatusChart::class,
                 TotalAppointmentsChart::class,
+                MonthlyRevenueChart::class,
 
 
             ])

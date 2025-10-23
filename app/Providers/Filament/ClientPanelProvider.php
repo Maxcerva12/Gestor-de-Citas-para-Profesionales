@@ -37,6 +37,9 @@ class ClientPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
             ])
             ->login()
+            ->brandName('Fundacion Odontológica Zoila Padilla')
+            ->brandLogo(asset('storage/imagen/LOGO FUNDAZION ZOILA.svg'))
+            ->brandLogoHeight('2.5rem')
             ->registration()
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
             ->discoverPages(in: app_path('Filament/Client/Pages'), for: 'App\\Filament\\Client\\Pages')
@@ -76,8 +79,10 @@ class ClientPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Client/Widgets'), for: 'App\\Filament\\Client\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                \App\Filament\Client\Widgets\ClientWelcomeWidget::class,
+                \App\Filament\Client\Widgets\ClientStatsOverviewWidget::class,
+                \App\Filament\Client\Widgets\NextAppointmentWidget::class,
+                \App\Filament\Client\Widgets\HealthSummaryWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

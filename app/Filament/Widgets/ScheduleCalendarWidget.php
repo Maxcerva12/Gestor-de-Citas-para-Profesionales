@@ -92,7 +92,7 @@ class ScheduleCalendarWidget extends FullCalendarWidget
 
         foreach ($query->get() as $schedule) {
             // Crear objetos Carbon para mejor manipulación de fechas
-            $dateStr = $schedule->date->format('Y-m-d');
+            $dateStr = Carbon::parse($schedule->date)->format('Y-m-d');
             $startTimeStr = Carbon::parse($schedule->start_time)->format('H:i:s');
             $endTimeStr = Carbon::parse($schedule->end_time)->format('H:i:s');
 
@@ -121,10 +121,10 @@ class ScheduleCalendarWidget extends FullCalendarWidget
 
             // Configurar título según estado
             $title = match ($status) {
-                'past' => '⏱️ Horario Pasado',
-                'booked' => '🔵 Reservado',
-                'unavailable' => '❌ No Disponible',
-                'available' => '✅ Disponible',
+                'past' => 'Horario Pasado',
+                'booked' => 'Reservado',
+                'unavailable' => 'No Disponible',
+                'available' => 'Disponible',
             };
 
             // Información del profesional con formato mejorado
@@ -147,7 +147,7 @@ class ScheduleCalendarWidget extends FullCalendarWidget
             }
 
             // Información para el tooltip
-            $tooltip = "{$profesionalInfo}\nFecha: " . $schedule->date->format('d/m/Y') .
+            $tooltip = "{$profesionalInfo}\nFecha: " . Carbon::parse($schedule->date)->format('d/m/Y') .
                 "\nHorario: " . Carbon::parse($schedule->start_time)->format('H:i') .
                 " - " . Carbon::parse($schedule->end_time)->format('H:i');
 
@@ -205,136 +205,172 @@ class ScheduleCalendarWidget extends FullCalendarWidget
     }
 
     /**
-     * Define el formulario para crear/editar horarios desde el calendario.
+     * Define el formulario para solo ver los detalles del horario (solo lectura).
      */
     public function getFormSchema(): array
     {
-        $user = Auth::user();
-        $schema = [];
+        return [
+            Forms\Components\Section::make('Información del Horario')
+                ->description('Detalles del horario seleccionado')
+                ->schema([
+                    Forms\Components\TextInput::make('user.name')
+                        ->label('Profesional')
+                        ->disabled()
+                        ->formatStateUsing(function ($record) {
+                            if (!$record || !$record->user)
+                                return 'No disponible';
 
-        // Verificar permisos de gestión
-        $canManageSchedules = $user->hasRole('super_admin') ||
-            $user->hasPermissionTo('manage_schedules') ||
-            $user->hasRole('professional');
+                            $name = $record->user->name;
+                            if ($record->user->last_name) {
+                                $name .= ' ' . $record->user->last_name;
+                            }
 
-        // Solo usuarios con permisos pueden ver/editar el horario
-        if ($canManageSchedules) {
-            // Si el usuario es super_admin o tiene permiso especial, mostrar selector de profesional
-            if ($user->hasRole('super_admin') || $user->hasPermissionTo('edit_all_schedules')) {
-                $schema[] = Forms\Components\Select::make('user_id')
-                    ->label('Profesional')
-                    ->relationship(
-                        name: 'user',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query) => $query
-                    )
-                    ->getOptionLabelFromRecordUsing(
-                        fn(Model $record) =>
-                        $record->name . ' ' . $record->last_name .
-                        ($record->especialty ? " ({$record->especialty})" : '')
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->required();
-            } else {
-                // Para otros usuarios, solo pueden asignar a sí mismos
-                $schema[] = Forms\Components\Hidden::make('user_id')
-                    ->default($user->id);
-            }
+                            $extraInfo = [];
+                            if ($record->user->especialty) {
+                                $extraInfo[] = $record->user->especialty;
+                            }
+                            if ($record->user->profession) {
+                                $extraInfo[] = $record->user->profession;
+                            }
 
-            // Resto del esquema de formulario común con mejor organización
-            $schema = array_merge($schema, [
-                Forms\Components\Section::make('Información del Horario')
-                    ->description('Establezca la fecha y hora de disponibilidad')
-                    ->schema([
-                        Forms\Components\Grid::make()
-                            ->schema([
-                                Forms\Components\DatePicker::make('date')
-                                    ->label('Fecha')
-                                    ->required()
-                                    ->minDate(now())
-                                    ->displayFormat('d/m/Y')
-                                    ->weekStartsOnMonday()
-                                    ->native(false)
-                                    ->reactive(),
+                            if (!empty($extraInfo)) {
+                                $name .= ' (' . implode(' - ', $extraInfo) . ')';
+                            }
 
-                                Forms\Components\TimePicker::make('start_time')
-                                    ->label('Hora de Inicio')
-                                    ->required()
-                                    ->seconds(false)
-                                    ->minutesStep(30)
-                                    ->displayFormat('H:i')
-                                    ->native(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                                        $this->validateTimeRange($state, $get('end_time'), $set);
-                                    }),
+                            return $name;
+                        }),
 
-                                Forms\Components\TimePicker::make('end_time')
-                                    ->label('Hora de Fin')
-                                    ->required()
-                                    ->seconds(false)
-                                    ->minutesStep(30)
-                                    ->displayFormat('H:i')
-                                    ->native(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                                        $this->validateTimeRange($get('start_time'), $state, $set);
-                                    }),
-                            ])->columns(3),
-                    ]),
+                    Forms\Components\Grid::make()
+                        ->schema([
+                            Forms\Components\DatePicker::make('date')
+                                ->label('Fecha')
+                                ->disabled()
+                                ->displayFormat('d/m/Y'),
 
-                Forms\Components\Section::make('Configuración de Disponibilidad')
-                    ->schema([
-                        Forms\Components\Toggle::make('is_available')
-                            ->label('Disponible para citas')
-                            ->helperText('Marque esta opción si este horario está disponible para reservas')
-                            ->default(true)
-                            ->onColor('success')
-                            ->offColor('danger'),
+                            Forms\Components\TimePicker::make('start_time')
+                                ->label('Hora de Inicio')
+                                ->disabled()
+                                ->displayFormat('H:i'),
 
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Notas')
-                            ->placeholder('Añada información adicional sobre este horario (opcional)')
-                            ->maxLength(255),
-                    ]),
-            ]);
-        }
+                            Forms\Components\TimePicker::make('end_time')
+                                ->label('Hora de Fin')
+                                ->disabled()
+                                ->displayFormat('H:i'),
+                        ])->columns(3),
+                ]),
 
-        return $schema;
+            Forms\Components\Section::make('Estado de Disponibilidad')
+                ->schema([
+                    Forms\Components\Toggle::make('is_available')
+                        ->label('Disponible para citas')
+                        ->disabled()
+                        ->formatStateUsing(function ($record) {
+                            if (!$record)
+                                return false;
+
+                            // Verificar si el horario ya pasó
+                            $dateStr = Carbon::parse($record->date)->format('Y-m-d');
+                            $startTimeStr = Carbon::parse($record->start_time)->format('H:i:s');
+                            $startDateTime = Carbon::parse("$dateStr $startTimeStr");
+                            $isPast = $startDateTime->isPast();
+
+                            // Verificar si está reservado
+                            $isBooked = $record->appointments()
+                                ->where('status', 'confirmed')
+                                ->exists();
+
+                            // Disponible solo si no ha pasado el horario, no está reservado y está marcado como disponible
+                            return !$isPast && !$isBooked && $record->is_available;
+                        })
+                        ->onColor('success')
+                        ->offColor('danger'),
+
+                    Forms\Components\TextInput::make('status_display')
+                        ->label('Estado del horario')
+                        ->disabled()
+                        ->formatStateUsing(function ($record) {
+                            if (!$record)
+                                return 'Estado no disponible';
+
+                            // Verificar si el horario ya pasó
+                            $dateStr = Carbon::parse($record->date)->format('Y-m-d');
+                            $startTimeStr = Carbon::parse($record->start_time)->format('H:i:s');
+                            $startDateTime = Carbon::parse("$dateStr $startTimeStr");
+                            $isPast = $startDateTime->isPast();
+
+                            // Verificar si está reservado
+                            $isBooked = $record->appointments()
+                                ->where('status', 'confirmed')
+                                ->exists();
+
+                            return match (true) {
+                                $isPast => 'Horario pasado - No disponible',
+                                $isBooked => 'Horario reservado - No disponible',
+                                !$record->is_available => 'Marcado como no disponible',
+                                default => 'Disponible para citas',
+                            };
+                        })
+                        ->prefixIcon(function ($record) {
+                            if (!$record)
+                                return 'heroicon-o-information-circle';
+
+                            // Verificar si el horario ya pasó
+                            $dateStr = Carbon::parse($record->date)->format('Y-m-d');
+                            $startTimeStr = Carbon::parse($record->start_time)->format('H:i:s');
+                            $startDateTime = Carbon::parse("$dateStr $startTimeStr");
+                            $isPast = $startDateTime->isPast();
+
+                            // Verificar si está reservado
+                            $isBooked = $record->appointments()
+                                ->where('status', 'confirmed')
+                                ->exists();
+
+                            return match (true) {
+                                $isPast => 'heroicon-o-clock',
+                                $isBooked => 'heroicon-o-check-circle',
+                                !$record->is_available => 'heroicon-o-x-circle',
+                                default => 'heroicon-o-check-badge',
+                            };
+                        })
+                        ->prefixIconColor(function ($record) {
+                            if (!$record)
+                                return 'gray';
+
+                            // Verificar si el horario ya pasó
+                            $dateStr = Carbon::parse($record->date)->format('Y-m-d');
+                            $startTimeStr = Carbon::parse($record->start_time)->format('H:i:s');
+                            $startDateTime = Carbon::parse("$dateStr $startTimeStr");
+                            $isPast = $startDateTime->isPast();
+
+                            // Verificar si está reservado
+                            $isBooked = $record->appointments()
+                                ->where('status', 'confirmed')
+                                ->exists();
+
+                            return match (true) {
+                                $isPast => 'gray',
+                                $isBooked => 'info',
+                                !$record->is_available => 'danger',
+                                default => 'success',
+                            };
+                        }),
+
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Notas')
+                        ->disabled()
+                        ->placeholder('Sin notas adicionales')
+                        ->visible(fn($record) => $record && !empty($record->notes)),
+                ]),
+        ];
     }
 
-    /**
-     * Valida que la hora de fin sea posterior a la hora de inicio.
-     */
-    protected function validateTimeRange($startTime, $endTime, $set): void
-    {
-        if ($startTime && $endTime) {
-            $startDateTime = Carbon::parse($startTime);
-            $endDateTime = Carbon::parse($endTime);
 
-            if ($endDateTime->lte($startDateTime)) {
-                $set('end_time', null);
-                $this->notify('error', 'La hora de fin debe ser posterior a la hora de inicio');
-            } elseif ($endDateTime->diffInMinutes($startDateTime) < 30) {
-                $set('end_time', $startDateTime->copy()->addMinutes(30)->format('H:i'));
-                $this->notify('warning', 'La duración mínima del horario debe ser de 30 minutos');
-            }
-        }
-    }
 
     /**
-     * Configuración adicional del calendario con mejor UX.
+     * Configuración del calendario para solo visualización.
      */
     public function config(): array
     {
-        $user = Auth::user();
-
-        // Verificar permisos de gestión
-        $canManageSchedules = $user->hasRole('super_admin') ||
-            $user->hasPermissionTo('manage_schedules') ||
-            $user->hasRole('professional');
-
         return [
             'headerToolbar' => [
                 'left' => 'prev,next today',
@@ -364,13 +400,14 @@ class ScheduleCalendarWidget extends FullCalendarWidget
             'firstDay' => 1, // Lunes
             'locale' => 'es',
             'timeZone' => config('app.timezone'),
-            'selectable' => true,
-            'editable' => $canManageSchedules,
+            // Configuraciones para solo visualización
+            'selectable' => false,
+            'editable' => false,
+            'eventResizableFromStart' => false,
+            'eventDurationEditable' => false,
+            'eventStartEditable' => false,
+            'droppable' => false,
             'eventOverlap' => false,
-            'eventResizableFromStart' => true,
-            'eventClick' => [
-                'display' => 'auto', // Muestra el modal al hacer clic
-            ],
             'views' => [
                 'dayGridMonth' => [
                     'dayMaxEventRows' => 4,
@@ -404,123 +441,26 @@ class ScheduleCalendarWidget extends FullCalendarWidget
     }
 
     /**
-     * Acciones disponibles en el encabezado.
+     * Sin acciones disponibles en el encabezado (solo visualización).
      */
     protected function headerActions(): array
     {
-        $user = Auth::user();
-
-        // Verificar permisos de gestión
-        $canManageSchedules = $user->hasRole('super_admin') ||
-            $user->hasPermissionTo('manage_schedules') ||
-            $user->hasRole('professional');
-
-        // Solo mostrar el botón de crear si el usuario tiene los permisos adecuados
-        if (!$canManageSchedules) {
-            return [];
-        }
-
-        return [
-            \Saade\FilamentFullCalendar\Actions\CreateAction::make()
-                ->modalHeading('Crear nuevo horario')
-                ->modalWidth('lg')
-                ->modalAlignment('center')
-                ->icon('heroicon-o-plus-circle')
-                ->color('success')
-                ->label('Nuevo horario')
-                ->successNotificationTitle('Horario creado correctamente'),
-        ];
+        return [];
     }
 
     /**
-     * Acciones disponibles en el modal al interactuar con un evento.
+     * Solo acción de visualización disponible en el modal.
      */
     protected function modalActions(): array
     {
-        $user = Auth::user();
-        $actions = [];
-
-        // Verificar permisos de gestión
-        $canManageSchedules = $user->hasRole('super_admin') ||
-            $user->hasPermissionTo('manage_schedules') ||
-            $user->hasRole('professional');
-
-        // Vista detallada siempre disponible
-        $actions[] = \Saade\FilamentFullCalendar\Actions\ViewAction::make()
-            ->modalHeading('Detalles del horario')
-            ->modalWidth('lg')
-            ->icon('heroicon-o-eye')
-            ->label('Ver detalles');
-
-        // Editar solo si tiene permisos
-        if ($canManageSchedules) {
-            $actions[] = \Saade\FilamentFullCalendar\Actions\EditAction::make()
-                ->modalHeading('Editar horario')
+        return [
+            \Saade\FilamentFullCalendar\Actions\ViewAction::make()
+                ->modalHeading('Detalles del horario')
                 ->modalWidth('lg')
-                ->visible(function (array $arguments) use ($user) {
-                    // Verificar que exista el ID
-                    if (!isset($arguments['id'])) {
-                        return false;
-                    }
-
-                    $schedule = Schedule::find($arguments['id']);
-                    if (!$schedule) {
-                        return false;
-                    }
-
-                    // Verificar si el horario está reservado
-                    $isBooked = $schedule->appointments()
-                        ->where('status', 'confirmed')
-                        ->exists();
-
-                    // Super admin o usuario con permiso especial puede editar cualquier horario no reservado
-                    if ($user->hasRole('super_admin') || $user->hasPermissionTo('edit_all_schedules')) {
-                        return !$isBooked;
-                    }
-
-                    // Usuarios solo pueden editar sus propios horarios no reservados
-                    return $schedule->user_id === $user->id && !$isBooked;
-                })
-                ->icon('heroicon-o-pencil-square')
-                ->color('primary')
-                ->successNotificationTitle('Horario actualizado correctamente');
-
-            $actions[] = \Saade\FilamentFullCalendar\Actions\DeleteAction::make()
-                ->modalHeading('Eliminar horario')
-                ->modalAlignment('center')
-                ->modalWidth('sm')
-                ->requiresConfirmation()
-                ->visible(function (array $arguments) use ($user) {
-                    // Verificar que exista el ID
-                    if (!isset($arguments['id'])) {
-                        return false;
-                    }
-
-                    $schedule = Schedule::find($arguments['id']);
-                    if (!$schedule) {
-                        return false;
-                    }
-
-                    // Verificar si el horario está reservado
-                    $isBooked = $schedule->appointments()
-                        ->where('status', 'confirmed')
-                        ->exists();
-
-                    // Super admin o usuario con permiso especial puede eliminar cualquier horario no reservado
-                    if ($user->hasRole('super_admin') || $user->hasPermissionTo('delete_all_schedules')) {
-                        return !$isBooked;
-                    }
-
-                    // Usuarios solo pueden eliminar sus propios horarios no reservados
-                    return $schedule->user_id === $user->id && !$isBooked;
-                })
-                ->icon('heroicon-o-trash')
-                ->color('danger')
-                ->modalDescription('¿Está seguro que desea eliminar este horario? Esta acción no se puede deshacer.')
-                ->successNotificationTitle('Horario eliminado correctamente');
-        }
-
-        return $actions;
+                ->icon('heroicon-o-eye')
+                ->label('Ver detalles')
+                ->color('info'),
+        ];
     }
 
     /**

@@ -648,16 +648,19 @@
                 getTeethForView(jaw) {
                     const teethMap = {
                         permanent: {
-                            upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
-                            lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+                            // Orden anatómico correcto según FDI
+                            upper: [11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28],
+                            lower: [41, 42, 43, 44, 45, 46, 47, 48, 31, 32, 33, 34, 35, 36, 37, 38]
                         },
                         temporal: {
-                            upper: [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
-                            lower: [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+                            // Orden anatómico correcto para dientes temporales
+                            upper: [51, 52, 53, 54, 55, 61, 62, 63, 64, 65],
+                            lower: [81, 82, 83, 84, 85, 71, 72, 73, 74, 75]
                         },
                         mixed: {
-                            upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28, 55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
-                            lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38, 85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+                            // Para dentición mixta, mantener el orden anatómico
+                            upper: [11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28, 51, 52, 53, 54, 55, 61, 62, 63, 64, 65],
+                            lower: [41, 42, 43, 44, 45, 46, 47, 48, 31, 32, 33, 34, 35, 36, 37, 38, 81, 82, 83, 84, 85, 71, 72, 73, 74, 75]
                         }
                     };
 
@@ -676,22 +679,25 @@
                 getTeethForQuadrant(quadrant) {
                     const teethMap = {
                         permanent: {
-                            1: [18, 17, 16, 15, 14, 13, 12, 11], // Superior derecho
-                            2: [21, 22, 23, 24, 25, 26, 27, 28], // Superior izquierdo  
+                            // Cuadrantes organizados según FDI estándar
+                            1: [11, 12, 13, 14, 15, 16, 17, 18], // Superior derecho
+                            2: [21, 22, 23, 24, 25, 26, 27, 28], // Superior izquierdo
                             3: [31, 32, 33, 34, 35, 36, 37, 38], // Inferior izquierdo
-                            4: [48, 47, 46, 45, 44, 43, 42, 41]  // Inferior derecho
+                            4: [41, 42, 43, 44, 45, 46, 47, 48]  // Inferior derecho
                         },
                         temporal: {
-                            1: [55, 54, 53, 52, 51], // Superior derecho temporal
-                            2: [61, 62, 63, 64, 65], // Superior izquierdo temporal  
-                            3: [71, 72, 73, 74, 75], // Inferior izquierdo temporal
-                            4: [85, 84, 83, 82, 81]  // Inferior derecho temporal
+                            // Mapeo de cuadrantes visuales (1-4) a cuadrantes FDI temporales (5-8)
+                            1: [51, 52, 53, 54, 55], // Superior derecho temporal (cuadrante 5 FDI)
+                            2: [61, 62, 63, 64, 65], // Superior izquierdo temporal (cuadrante 6 FDI)
+                            3: [71, 72, 73, 74, 75], // Inferior izquierdo temporal (cuadrante 7 FDI)
+                            4: [81, 82, 83, 84, 85]  // Inferior derecho temporal (cuadrante 8 FDI)
                         },
                         mixed: {
-                            1: [18, 17, 16, 15, 14, 13, 12, 11, 55, 54, 53, 52, 51], 
+                            // Para dentición mixta, combinar permanentes y temporales
+                            1: [11, 12, 13, 14, 15, 16, 17, 18, 51, 52, 53, 54, 55], 
                             2: [21, 22, 23, 24, 25, 26, 27, 28, 61, 62, 63, 64, 65],  
                             3: [31, 32, 33, 34, 35, 36, 37, 38, 71, 72, 73, 74, 75], 
-                            4: [48, 47, 46, 45, 44, 43, 42, 41, 85, 84, 83, 82, 81]  
+                            4: [41, 42, 43, 44, 45, 46, 47, 48, 81, 82, 83, 84, 85]  
                         }
                     };
 

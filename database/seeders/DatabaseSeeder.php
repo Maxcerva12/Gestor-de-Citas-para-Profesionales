@@ -9,13 +9,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+                // Primero crear usuarios y permisos básicos
             UserSeeder::class,
-            ClientSeeder::class,
-            // ScheduleSeeder::class,
-            // AppointmentSeeder::class,
-            TestUserSeeder::class,
-            // PriceSeeder::class,
             SchedulePermissionsSeeder::class,
+            ServiceSeeder::class,
+
+                // Luego generar datos realistas distribuidos en el tiempo
+            RealisticDataSeeder::class,
+
+                // Finalmente usuarios y clientes adicionales para pruebas
+            TestUserSeeder::class,
+            ClientSeeder::class,
+            AppointmentSeeder::class,
         ]);
     }
 }

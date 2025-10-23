@@ -6,7 +6,7 @@
     <nav class="flex items-center gap-x-2 bg-white px-4 py-2 rounded-md dark:bg-gray-900 dark:ring-white/10 md:px-4 lg:px-4 overflow-x-scroll">
         @if ($sidebar->getTitle() != null || $sidebar->getDescription() != null)
             <div class="me-6 hidden lg:flex flex-col">
-                <h3 class="text-base font-medium text-slate-700 dark:text-white truncate block">
+                <h3 class="text-base font-medium text-black dark:text-black truncate block">
                     {{ $sidebar->getTitle() }}
                 </h3>
                 <p class="text-xs text-gray-400 flex items-center gap-x-1">

@@ -341,6 +341,8 @@ class MedicalHistoryResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
+                    ->tooltip(fn(MedicalHistory $record) => $record->has_odontogram ? 'Tiene odontograma registrado' : 'Sin odontograma')
+                    // ->tooltip(fn($record) => $record->has_odontogram ? 'Tiene odontograma registrado' : 'Sin odontograma')
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('consentimiento_informado')
@@ -348,6 +350,7 @@ class MedicalHistoryResource extends Resource
                     ->boolean()
                     ->trueIcon('heroicon-o-document-check')
                     ->falseIcon('heroicon-o-document')
+                    ->tooltip(fn($record) => $record->consentimiento_informado ? 'Tiene consentimiento informado' : 'Sin consentimiento informado')
                     ->trueColor('success')
                     ->falseColor('warning')
                     ->toggleable(),

@@ -111,21 +111,39 @@ class MedicalHistory extends Model
             return false;
         }
 
-        // Verificar si hay datos reales en permanent, temporary o mixed
+        // Verificar si hay datos reales en permanent, temporary, temporal (ambas formas), o mixed
         $permanent = $this->odontogram['permanent'] ?? [];
         $temporary = $this->odontogram['temporary'] ?? [];
+        $temporal = $this->odontogram['temporal'] ?? []; // Agregar soporte para 'temporal'
         $mixed = $this->odontogram['mixed'] ?? [];
 
-        foreach ([$permanent, $temporary, $mixed] as $section) {
+        foreach ([$permanent, $temporary, $temporal, $mixed] as $section) {
             if (!empty($section)) {
-                foreach ($section as $tooth) {
-                    // Verificar si tiene faces con datos, o conditions/treatments
-                    if (
-                        !empty($tooth['faces']) ||
-                        !empty($tooth['conditions']) ||
-                        !empty($tooth['treatments'])
-                    ) {
-                        return true;
+                // Si es un array indexado (formato antiguo), verificar cada elemento
+                if (is_array($section) && isset($section[0])) {
+                    foreach ($section as $tooth) {
+                        if (
+                            $tooth !== null && (
+                                !empty($tooth['faces']) ||
+                                !empty($tooth['conditions']) ||
+                                !empty($tooth['treatments'])
+                            )
+                        ) {
+                            return true;
+                        }
+                    }
+                } else {
+                    // Si es un objeto/array asociativo (formato nuevo), verificar cada diente
+                    foreach ($section as $toothNumber => $tooth) {
+                        if (
+                            $tooth !== null && (
+                                !empty($tooth['faces']) ||
+                                !empty($tooth['conditions']) ||
+                                !empty($tooth['treatments'])
+                            )
+                        ) {
+                            return true;
+                        }
                     }
                 }
             }

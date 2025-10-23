@@ -6,9 +6,10 @@ class OdontogramService
 {
     /**
      * Sistema de numeración FDI para dientes permanentes
+     * Organizados por cuadrantes según el sistema FDI estándar
      */
     public const PERMANENT_TEETH = [
-        // Cuadrante 1 (Superior derecho)
+        // Cuadrante 1 (Superior derecho) - del centro hacia atrás
         11,
         12,
         13,
@@ -17,7 +18,7 @@ class OdontogramService
         16,
         17,
         18,
-        // Cuadrante 2 (Superior izquierdo)
+        // Cuadrante 2 (Superior izquierdo) - del centro hacia atrás  
         21,
         22,
         23,
@@ -26,7 +27,7 @@ class OdontogramService
         26,
         27,
         28,
-        // Cuadrante 3 (Inferior izquierdo)
+        // Cuadrante 3 (Inferior izquierdo) - del centro hacia atrás
         31,
         32,
         33,
@@ -35,7 +36,7 @@ class OdontogramService
         36,
         37,
         38,
-        // Cuadrante 4 (Inferior derecho)
+        // Cuadrante 4 (Inferior derecho) - del centro hacia atrás
         41,
         42,
         43,
@@ -48,27 +49,28 @@ class OdontogramService
 
     /**
      * Sistema de numeración FDI para dientes temporales/deciduos
+     * Organizados por cuadrantes según el sistema FDI estándar
      */
     public const TEMPORARY_TEETH = [
-        // Cuadrante 5 (Superior derecho)
+        // Cuadrante 5 (Superior derecho) - del centro hacia atrás
         51,
         52,
         53,
         54,
         55,
-        // Cuadrante 6 (Superior izquierdo)
+        // Cuadrante 6 (Superior izquierdo) - del centro hacia atrás
         61,
         62,
         63,
         64,
         65,
-        // Cuadrante 7 (Inferior izquierdo)
+        // Cuadrante 7 (Inferior izquierdo) - del centro hacia atrás
         71,
         72,
         73,
         74,
         75,
-        // Cuadrante 8 (Inferior derecho)
+        // Cuadrante 8 (Inferior derecho) - del centro hacia atrás
         81,
         82,
         83,
@@ -88,6 +90,50 @@ class OdontogramService
         'crown' => ['label' => 'Corona', 'color' => '#F59E0B', 'description' => 'Corona dental'],
         'root_canal' => ['label' => 'Endodoncia', 'color' => '#EC4899', 'description' => 'Tratamiento de conducto'],
     ];
+
+    /**
+     * Obtener dientes permanentes organizados por cuadrantes
+     */
+    public static function getPermanentTeethByQuadrants(): array
+    {
+        return [
+            1 => [11, 12, 13, 14, 15, 16, 17, 18], // Superior derecho
+            2 => [21, 22, 23, 24, 25, 26, 27, 28], // Superior izquierdo
+            3 => [31, 32, 33, 34, 35, 36, 37, 38], // Inferior izquierdo
+            4 => [41, 42, 43, 44, 45, 46, 47, 48], // Inferior derecho
+        ];
+    }
+
+    /**
+     * Obtener dientes temporales organizados por cuadrantes
+     */
+    public static function getTemporaryTeethByQuadrants(): array
+    {
+        return [
+            5 => [51, 52, 53, 54, 55], // Superior derecho temporal
+            6 => [61, 62, 63, 64, 65], // Superior izquierdo temporal
+            7 => [71, 72, 73, 74, 75], // Inferior izquierdo temporal
+            8 => [81, 82, 83, 84, 85], // Inferior derecho temporal
+        ];
+    }
+
+    /**
+     * Obtener dientes organizados para la vista del odontograma
+     * Respetando el orden anatómico correcto
+     */
+    public static function getTeethForOdontogramView(): array
+    {
+        return [
+            'permanent' => [
+                'upper' => [11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28],
+                'lower' => [41, 42, 43, 44, 45, 46, 47, 48, 31, 32, 33, 34, 35, 36, 37, 38]
+            ],
+            'temporary' => [
+                'upper' => [51, 52, 53, 54, 55, 61, 62, 63, 64, 65],
+                'lower' => [81, 82, 83, 84, 85, 71, 72, 73, 74, 75]
+            ]
+        ];
+    }
 
     /**
      * Inicializar un odontograma vacío
