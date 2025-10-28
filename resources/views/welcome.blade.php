@@ -1,867 +1,1393 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ProAppointments - Professional Appointment Management</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600|inter:300,400,500,600,700" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Fundación Odontológica Zoila Padilla - Atención dental especializada con compromiso social en Ciénaga. Servicios de calidad, prevención y acceso equitativo a la salud oral.">
+    <meta name="keywords"
+        content="odontología, dental, fundación, Ciénaga, salud oral, prevención dental, tratamientos dentales">
+    <meta name="author" content="Fundación Odontológica Zoila Padilla">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Fundación Odontológica Zoila Padilla">
+    <meta property="og:description" content="Atención dental especializada con compromiso social">
+    <meta property="og:url" content="{{ url('/') }}">
+
+    <title>Fundación Odontológica Zoila Padilla - Atención Dental Especializada</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.5/cdn.min.js" defer></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        
-        .slide-in {
-            animation: slide-in 0.5s ease-out;
-        }
-        
-        @keyframes slide-in {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-        }
-    </style>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Instrument Sans', 'sans-serif'],
+                    colors: {
+                        'dental-blue': '#2563eb',
+                        'dental-teal': '#0d9488',
+                        'dental-green': '#059669',
+                        'soft-gray': '#f8fafc',
+                        'warm-gray': '#6b7280'
                     },
+                    fontFamily: {
+                        'display': ['Inter', 'system-ui', 'sans-serif'],
+                        'body': ['Inter', 'system-ui', 'sans-serif']
+                    }
                 }
             }
         }
-        
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('app', () => ({
-                darkMode: false,
-                mobileMenuOpen: false,
-                testimonials: [
-                    {
-                        name: 'Sarah Johnson',
-                        role: 'Therapist',
-                        image: '/api/placeholder/64/64',
-                        content: 'ProAppointments has reduced my no-shows by 75% and saves me hours every week on scheduling tasks.'
-                    },
-                    {
-                        name: 'Michael Chen',
-                        role: 'Financial Advisor',
-                        image: '/api/placeholder/64/64',
-                        content: 'The client portal and automated reminders have transformed my practice. My clients love the ease of scheduling.'
-                    },
-                    {
-                        name: 'Alicia Rodriguez',
-                        role: 'Legal Consultant',
-                        image: '/api/placeholder/64/64',
-                        content: 'I can manage my complex schedule across multiple locations seamlessly. The ROI has been incredible.'
-                    }
-                ],
-                currentTestimonial: 0,
-
-                init() {
-                    if (localStorage.getItem('darkMode') === 'true' || 
-                        (!('darkMode' in localStorage) && 
-                         window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                        this.darkMode = true;
-                        document.documentElement.classList.add('dark');
-                    }
-                    
-                    setInterval(() => {
-                        this.currentTestimonial = (this.currentTestimonial + 1) % this.testimonials.length;
-                    }, 5000);
-                },
-                
-                toggleDarkMode() {
-                    this.darkMode = !this.darkMode;
-                    localStorage.setItem('darkMode', this.darkMode);
-                    
-                    if (this.darkMode) {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                }
-            }));
-        });
     </script>
+
+    <!-- Custom styles and animations -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-subtle {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .animate-rotate {
+            animation: rotate 20s linear infinite;
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-pulse-subtle {
+            animation: pulse-subtle 3s ease-in-out infinite;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Focus styles for accessibility */
+        .focus-ring:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-100" x-data="app">
+
+<body class="font-body text-gray-900 bg-white antialiased">
     <!-- Header -->
-    <header class="w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-50 transition-all duration-200" 
-            x-bind:class="{ 'shadow-md': window.pageYOffset > 0 }"
-            @scroll.window="navbarShadow = (window.pageYOffset > 0)">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav class="flex items-center justify-between py-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600 dark:bg-indigo-500 rounded-lg p-2">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" role="banner" id="navbar">
+        <div class="bg-gradient-to-br from-blue-50 backdrop-blur-xl shadow-lg shadow-gray-500/5">
+            <nav class="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Navegación principal">
+                <div class="flex justify-between items-center h-20">
+
+                    <!-- Logo Section -->
+                    <div class="flex-shrink-0">
+                        <a href="/" class="group flex items-center space-x-3 focus-ring rounded-xl p-2 -m-2"
+                            aria-label="Inicio - Fundación Odontológica Zoila Padilla">
+                            <div class="relative">
+                                <img src="{{ asset('storage/img/lg_zoila_padilla.svg') }}"
+                                    alt="Logo Fundación Odontológica Zoila Padilla"
+                                    class="h-10 w-auto md:h-12 transition-all duration-300 group-hover:scale-110">
+                            </div>
+
+                        </a>
                     </div>
-                    <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Gestor Médico</span>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center">
+                        <div class="flex items-center space-x-1 bg-gray-50/80 rounded-full p-1 backdrop-blur-sm">
+                            <a href="#inicio"
+                                class="group relative px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-dental-blue transition-all duration-300 rounded-full hover:bg-white hover:shadow-sm focus-ring">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                                        </path>
+                                    </svg>
+                                    <span>Inicio</span>
+                                </span>
+                            </a>
+                            <a href="#sobre-nosotros"
+                                class="group relative px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-dental-blue transition-all duration-300 rounded-full hover:bg-white hover:shadow-sm focus-ring">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                        </path>
+                                    </svg>
+                                    <span>Nosotros</span>
+                                </span>
+                            </a>
+                            <a href="#servicios"
+                                class="group relative px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-dental-blue transition-all duration-300 rounded-full hover:bg-white hover:shadow-sm focus-ring">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                                        </path>
+                                    </svg>
+                                    <span>Servicios</span>
+                                </span>
+                            </a>
+                            <a href="#testimonios"
+                                class="group relative px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-dental-blue transition-all duration-300 rounded-full hover:bg-white hover:shadow-sm focus-ring">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                        </path>
+                                    </svg>
+                                    <span>Testimonios</span>
+                                </span>
+                            </a>
+
+                        </div>
+                    </div>
+
+                    <!-- CTA Section -->
+                    <div class="hidden md:flex items-center space-x-3">
+                        <!-- Primary CTA -->
+                        <a href="{{ url('/client') }}"
+                            class="inline-flex items-center justify-center px-4 py-2 border-2 border-dental-blue text-dental-blue font-semibold rounded-full hover:bg-dental-blue hover:text-white transition-all duration-300 focus-ring">
+                            Agenda tu Cita
+                        </a>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="lg:hidden">
+                        <button type="button"
+                            class="relative p-2.5 rounded-xl text-gray-700 hover:text-dental-blue hover:bg-gray-50 transition-all duration-300 focus-ring group"
+                            aria-label="Abrir menú de navegación" onclick="toggleMobileMenu()">
+                            <div class="relative w-5 h-5">
+                                <span
+                                    class="absolute top-0 left-0 w-full h-0.5 bg-current transition-all duration-300 group-hover:bg-dental-blue"
+                                    id="line1"></span>
+                                <span
+                                    class="absolute top-2 left-0 w-full h-0.5 bg-current transition-all duration-300 group-hover:bg-dental-blue"
+                                    id="line2"></span>
+                                <span
+                                    class="absolute top-4 left-0 w-full h-0.5 bg-current transition-all duration-300 group-hover:bg-dental-blue"
+                                    id="line3"></span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
-                
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#features" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Características</a>
-                    <a href="#testimonials" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Testimonios</a>
-                    <a href="#pricing" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Precios</a>
-                    <a href="#contact" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contacto</a>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-4">
-                    <button @click="toggleDarkMode" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <svg x-show="darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </button>
-                    <a href="/admin" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition">Log in</a>
-                 
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button @click="toggleDarkMode" class="p-2 mr-4 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <svg x-show="darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </button>
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg x-show="!mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <svg x-show="mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl border-t border-gray-100/50 mt-1 rounded-b-2xl shadow-lg overflow-hidden">
+                        <div class="px-6 py-6 space-y-1">
+                            <a href="#inicio"
+                                class="group flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-dental-blue hover:bg-dental-blue/5 rounded-xl transition-all duration-300 font-medium">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-dental-blue transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                                    </path>
+                                </svg>
+                                <span>Inicio</span>
+                            </a>
+                            <a href="#sobre-nosotros"
+                                class="group flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-dental-blue hover:bg-dental-blue/5 rounded-xl transition-all duration-300 font-medium">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-dental-blue transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                    </path>
+                                </svg>
+                                <span>Sobre Nosotros</span>
+                            </a>
+                            <a href="#servicios"
+                                class="group flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-dental-blue hover:bg-dental-blue/5 rounded-xl transition-all duration-300 font-medium">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-dental-blue transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                                    </path>
+                                </svg>
+                                <span>Servicios</span>
+                            </a>
+                            <a href="#testimonios"
+                                class="group flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-dental-blue hover:bg-dental-blue/5 rounded-xl transition-all duration-300 font-medium">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-dental-blue transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                    </path>
+                                </svg>
+                                <span>Testimonios</span>
+                            </a>
+
+
+                            <!-- Mobile CTA Section -->
+                            <div class="pt-6 space-y-4 border-t border-gray-100 mt-6">
+                                <a href="{{ url('/client') }}"
+                                    class="flex items-center justify-center space-x-2 bg-gradient-to-r from-dental-blue to-dental-teal text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-105">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                    <span>Agenda tu Cita</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </nav>
-        </div>
-        
-        <!-- Mobile Navigation -->
-        <div x-show="mobileMenuOpen" x-cloak class="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-4">
-            <div class="pt-2 pb-4 px-4 space-y-1">
-                <a href="#features" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Características</a>
-                <a href="#testimonials" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Testimonios</a>
-                <a href="#pricing" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Precios</a>
-                <a href="#contact" @click="mobileMenuOpen = false" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Contacto</a>
-                <div class="pt-2 border-t border-gray-200 dark:border-gray-800 mt-4">
-                    <a href="/login" class="block py-2 px-4 text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition">Log in</a>
-                </div>
-            </div>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="relative w-full bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-        <div class="absolute inset-0 bg-grid-indigo-100 dark:bg-grid-indigo-900 bg-opacity-50"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="space-y-8">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                        Con la confianza de más de 10.000 profesionales
-                    </span>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight">
-                        Administrar citas <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Con confianza</span>
-                    </h1>
-                    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                        Optimiza tu agenda, reduce las inasistencias y concéntrate en lo que más importa. El sistema de citas integral diseñado para profesionales.                    </p>
-                    
-                    <div class="pt-4">
-                        <div class="flex items-center">
-                            {{-- <div class="flex -space-x-2">
-                                <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
-                                <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
-                                <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
-                                <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800">
-                            </div> --}}
-                            <div class="ml-3">
-                                <div class="flex items-center">
-                                    <div class="flex text-yellow-400">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
+    <main>
+        <section id="inicio"
+            class="pt-24 min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 overflow-hidden"
+            role="main">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[80vh]">
+
+                    <!-- Content Column -->
+                    <div class="space-y-8 animate-fade-in-up">
+                        <!-- Badge -->
+                        <div class="inline-flex items-center space-x-3 bg-dental-blue/10 px-4 py-2 rounded-full">
+                            <div class="w-2 h-2 bg-dental-blue rounded-full animate-pulse-subtle"></div>
+                            <span class="text-sm font-medium text-dental-blue uppercase tracking-wide">
+                                Fundación con Propósito Social
+                            </span>
+                        </div>
+
+                        <!-- Main Heading -->
+                        <div class="space-y-4">
+                            <h1
+                                class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight">
+                                <span class="text-gray-900">Sonrisas</span>
+                                <span class="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl">🦷</span>
+                                <br>
+                                <span
+                                    class="bg-gradient-to-r from-dental-blue to-dental-teal bg-clip-text text-transparent">
+                                    Saludables
+                                </span>
+                                <span class="text-gray-900">para Todos</span>
+                            </h1>
+
+                            <p class="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl">
+                                En la <strong class="text-dental-blue">Fundación Odontológica Zoila Padilla</strong>
+                                brindamos atención dental especializada con compromiso social,
+                                promoviendo la prevención y el acceso equitativo a la salud oral en Ciénaga.
+                            </p>
+                        </div>
+
+                        <!-- CTA Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                            <a href="{{ url('/client') }}"
+                                class="group inline-flex items-center justify-center px-8 py-4 bg-dental-blue text-white font-semibold rounded-full hover:bg-dental-blue/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus-ring">
+                                <span>Agenda tu Cita</span>
+                                <svg class="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </a>
+
+
+                        </div>
+
+                        <!-- Trust Indicators -->
+                        <div class="flex items-center space-x-6 pt-8 border-t border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-12 h-12 bg-dental-blue/10 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-dental-blue" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">Profesionales Certificados</p>
+                                    <p class="text-xs text-gray-600">Equipo especializado</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <div class="w-12 h-12 bg-dental-teal/10 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-dental-teal" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">Atención Humanizada</p>
+                                    <p class="text-xs text-gray-600">Cuidado integral</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Column -->
+                    <div class="relative lg:order-last">
+                        <!-- Background decoration -->
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-dental-blue/20 to-dental-teal/20 rounded-3xl transform rotate-3">
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-dental-teal/20 to-dental-blue/20 rounded-3xl transform -rotate-3">
+                        </div>
+
+                        <!-- Main image -->
+                        <div
+                            class="relative bg-white rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                            <img src="{{ asset('storage/img/img-principal.jpg') }}"
+                                alt="Paciente sonriendo después de tratamiento dental en la Fundación Odontológica Zoila Padilla"
+                                class="w-full h-96 lg:h-[600px] object-cover">
+
+                            <!-- Overlay with stats -->
+                            <div
+                                class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                                <div class="text-white">
+                                    <div class="flex space-x-6 mb-4">
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold">500+</div>
+                                            <div class="text-sm opacity-90">Pacientes Atendidos</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold">15+</div>
+                                            <div class="text-sm opacity-90">Años de Experiencia</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold">98%</div>
+                                            <div class="text-sm opacity-90">Satisfacción</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    <span class="font-medium text-gray-900 dark:text-white">4.9/5</span> de más de 1200 reseñas
+                            </div>
+                        </div>
+
+                        <!-- Floating elements -->
+                        <div
+                            class="absolute -top-4 -left-4 w-8 h-8 bg-dental-blue rounded-full opacity-60 animate-pulse-subtle">
+                        </div>
+                        <div class="absolute -bottom-4 -right-4 w-12 h-12 bg-dental-teal rounded-full opacity-40 animate-pulse-subtle"
+                            style="animation-delay: 1s;"></div>
+                        <div class="absolute top-1/2 -right-8 w-6 h-6 bg-blue-400 rounded-full opacity-80 animate-pulse-subtle"
+                            style="animation-delay: 2s;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Us Section -->
+        <section id="sobre-nosotros" class="py-20 lg:py-28 bg-gradient-to-b from-white to-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Section Header -->
+                <div class="text-center mb-16">
+                    <div class="inline-flex items-center space-x-2 bg-dental-blue/10 px-4 py-2 rounded-full mb-6">
+                        <span class="text-sm font-medium text-dental-blue uppercase tracking-wide">
+                            Sobre Nosotros
+                        </span>
+                    </div>
+                    <h2 class="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-6">
+                        Una <span class="text-dental-blue">Fundación</span> con Propósito Social
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        Comprometidos con brindar atención odontológica de calidad,
+                        accesible y humana para toda la comunidad de Ciénaga.
+                    </p>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid lg:grid-cols-2 gap-16 items-center mb-20">
+
+                    <!-- Content -->
+                    <div class="space-y-8">
+                        <div class="prose prose-lg max-w-none">
+                            <p class="text-gray-700 leading-relaxed">
+                                La <strong class="text-dental-blue">Fundación Odontológica Zoila Padilla</strong>
+                                nació con el compromiso de brindar atención odontológica especializada
+                                a la población de Ciénaga y sus alrededores.
+                            </p>
+
+                            <p class="text-gray-700 leading-relaxed">
+                                Nuestro equipo de profesionales trabaja bajo principios de ética,
+                                calidad y responsabilidad social, promoviendo la prevención y el
+                                acceso equitativo a servicios de salud oral.
+                            </p>
+                        </div>
+
+                        <!-- Mission & Vision -->
+                        <div class="grid sm:grid-cols-2 gap-6">
+                            <div class="bg-dental-blue/5 p-6 rounded-2xl">
+                                <div
+                                    class="w-12 h-12 bg-dental-blue/10 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-dental-blue" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2">Nuestra Misión</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">
+                                    Proporcionar servicios odontológicos de excelencia con responsabilidad social.
+                                </p>
+                            </div>
+
+                            <div class="bg-dental-teal/5 p-6 rounded-2xl">
+                                <div
+                                    class="w-12 h-12 bg-dental-teal/10 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-6 h-6 text-dental-teal" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2">Nuestra Visión</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">
+                                    Ser referente en salud oral comunitaria y responsabilidad social.
                                 </p>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="relative">
-                    <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-30 dark:opacity-40 animate-pulse"></div>
-                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <div class="bg-gray-100 dark:bg-gray-700 px-4 py-2 flex items-center space-x-1">
-                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <div class="ml-2 text-sm text-gray-500 dark:text-gray-400">ProAppointments Dashboard</div>
-                        </div>
-                        <img src="https://images.ctfassets.net/pdf29us7flmy/50kVKgdwULKaOgvkJBRic5/68591241ae297e886978aa9f17d16e00/resized.png?w=1440&q=100&fm=avif" alt="ProAppointments Dashboard" class="w-full h-64 sm:h-80 object-cover object-top">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Companies banner -->
-        <div class="relative border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 py-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">Con la confianza de empresas líderes a nivel mundial</p>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 justify-items-center items-center">
-                    <div class="h-8 text-gray-400 dark:text-gray-500">ECOPETROL</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">BANCOLOMBIA</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">GRUPO NUTRESA</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">GRUPO ÉXITO</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">AVIANCA</div>
-                    <div class="h-8 text-gray-400 dark:text-gray-500">JUAN VALDEZ</div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="w-full py-16 md:py-24 bg-white dark:bg-gray-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold font-display mb-4">Todas Las Herramientas Que Necesitas</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">Optimiza tu flujo de trabajo con nuestras funciones completas diseñadas específicamente para profesionales.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-700" 
-                     x-data="{hover: false}" 
-                     @mouseenter="hover = true" 
-                     @mouseleave="hover = false">
-                    <div class="p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg inline-block mb-6" 
-                         x-bind:class="{ 'bg-indigo-200 dark:bg-indigo-900': hover }">
-                        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Programación Inteligente</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Crea páginas de reserva personalizables, establece tiempos de espera y gestiona tu disponibilidad en múltiples ubicaciones y servicios.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Ventanas de reserva personalizadas</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Tiempo de margen entre citas</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Soporte para múltiples ubicaciones</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-8 shadow-md border border-indigo-100 dark:border-indigo-800/30"
-                     x-data="{hover: false}" 
-                     @mouseenter="hover = true" 
-                     @mouseleave="hover = false">
-                    <div class="p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg inline-block mb-6"
-                         x-bind:class="{ 'bg-indigo-200 dark:bg-indigo-900': hover }">
-                        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Recordatorios Inteligentes</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Reduce las inasistencias con recordatorios automáticos y personalizables que mantienen a tus clientes informados y preparados.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Notificaciones por email, SMS y push</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Frecuencia y tiempo personalizado</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Contenido personalizado y marca</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-700"
-                     x-data="{hover: false}" 
-                     @mouseenter="hover = true" 
-                     @mouseleave="hover = false">
-                    <div class="p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg inline-block mb-6"
-                         x-bind:class="{ 'bg-indigo-200 dark:bg-indigo-900': hover }">
-                        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10m6 0V9m0 10h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v8" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Análisis de Negocio</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">Rastrea métricas clave con análisis potentes que te ayudan a optimizar tu agenda y hacer crecer tu negocio.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Informes completos</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Seguimiento de inasistencias y cancelaciones</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm">Información de ingresos y utilización</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- More Features Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 flex items-start space-x-4 hover:shadow-sm transition">
-                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Seguridad Avanzada</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Seguridad de nivel empresarial con cifrado de datos y cumplimiento de estándares de la industria para proteger tu información y la de tus clientes.</p>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 flex items-start space-x-4 hover:shadow-sm transition">
-                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Pagos Integrados</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">Acepta depósitos, procesa pagos completos o cobra tarifas de cancelación directamente a través de la plataforma con múltiples opciones de pago.</p>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="w-full py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-12">
-                <h2 class="text-3xl font-bold font-display mb-4">Amado por Profesionales</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">No confíe sólo en nuestra palabra. Vea lo que otros profesionales dicen sobre ProAppointments.</p>
-            </div>
-            
-            <div class="relative">
-                <div class="max-w-3xl mx-auto">
-                    <div class="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 relative">
-                        <div class="absolute top-0 right-0 -mt-4 -mr-4 bg-indigo-500 text-white rounded-full p-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd" />
-                            </svg>
+                    <!-- Team Image -->
+                    <div class="relative">
+                        <div class="relative bg-white rounded-3xl overflow-hidden shadow-2xl">
+                            <picture>
+                                <source srcset="{{ asset('storage/img/grupo.jpg') }}" type="image/webp">
+                                <img src="{{ asset('storage/img/team.jpg') }}"
+                                    alt="Equipo de profesionales de la Fundación Odontológica Zoila Padilla"
+                                    class="w-full h-96 lg:h-[420px] object-cover" loading="lazy">
+                            </picture>
                         </div>
-                        
-                        <div x-show="currentTestimonial === 0" class="slide-in" style="height: 300px">
-                            <svg class="w-10 h-10 text-indigo-200 dark:text-indigo-800 mb-6" fill="currentColor" viewBox="0 0 32 32">
-                                <path d="M9.352 4C4.582 7.552 1.428 13.548 1.428 20.295c0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.862-4.488-0.213 0-0.636 0-0.85 0.111 0.85-3.060 3.434-7.121 6.655-9.43L9.352 4zM25.002 4c-4.771 3.552-7.924 9.548-7.924 16.295 0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.861-4.488-0.213 0-0.637 0-0.851 0.111 0.85-3.060 3.435-7.121 6.656-9.43L25.002 4z"/>
-                            </svg>
-                            
-                            <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                ProAppointments ha reducido mis inasistencias en un 75% y me ahorra horas cada semana en tareas de programación. Sus recordatorios automáticos han revolucionado mi práctica.
-                            </p>
-                            
-                            <div class="flex items-center">
-                               
+
+                        <!-- Floating stats -->
+                        <div
+                            class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-dental-blue/10 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-dental-blue" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
                                 <div>
-                                    <h4 class="font-medium text-gray-900 dark:text-white">Sarah Johnson</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Terapeuta</p>
+                                    <p class="text-2xl font-bold text-gray-900">500+</p>
+                                    <p class="text-sm text-gray-600">Pacientes Satisfechos</p>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div x-show="currentTestimonial === 1" class="slide-in" style="height: 300px">
-                            <svg class="w-10 h-10 text-indigo-200 dark:text-indigo-800 mb-6" fill="currentColor" viewBox="0 0 32 32">
-                                <path d="M9.352 4C4.582 7.552 1.428 13.548 1.428 20.295c0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.862-4.488-0.213 0-0.636 0-0.85 0.111 0.85-3.060 3.434-7.121 6.655-9.43L9.352 4zM25.002 4c-4.771 3.552-7.924 9.548-7.924 16.295 0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.861-4.488-0.213 0-0.637 0-0.851 0.111 0.85-3.060 3.435-7.121 6.656-9.43L25.002 4z"/>
-                            </svg>
-                            
-                            <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                El portal para clientes y los recordatorios automáticos han transformado mi práctica. A mis clientes les encanta la facilidad de programar citas y yo aprecio la impresión profesional que crea.
-                            </p>
-                            
-                            <div class="flex items-center">
-                                
-                                <div>
-                                    <h4 class="font-medium text-gray-900 dark:text-white">Michael Chen</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Asesor Financiero</p>
+
+                        <div
+                            class="absolute -top-6 -right-6 bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-dental-teal/10 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-dental-teal" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div x-show="currentTestimonial === 2" class="slide-in" style="height: 300px">
-                            <svg class="w-10 h-10 text-indigo-200 dark:text-indigo-800 mb-6" fill="currentColor" viewBox="0 0 32 32">
-                                <path d="M9.352 4C4.582 7.552 1.428 13.548 1.428 20.295c0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.862-4.488-0.213 0-0.636 0-0.85 0.111 0.85-3.060 3.434-7.121 6.655-9.43L9.352 4zM25.002 4c-4.771 3.552-7.924 9.548-7.924 16.295 0 3.19 1.816 5.497 4.75 5.497 2.5 0 4.618-1.913 4.618-4.687 0-2.51-1.553-4.488-3.861-4.488-0.213 0-0.637 0-0.851 0.111 0.85-3.060 3.435-7.121 6.656-9.43L25.002 4z"/>
-                            </svg>
-                            
-                            <p class="text-xl text-gray-700 dark:text-gray-200 font-medium italic mb-8">
-                                Puedo gestionar mi compleja agenda en múltiples ubicaciones sin problemas. El retorno de inversión ha sido increíble — recuperé el costo de mi suscripción anual en solo el primer mes.
-                            </p>
-                            
-                            <div class="flex items-center">
-                               
                                 <div>
-                                    <h4 class="font-medium text-gray-900 dark:text-white">Alicia Rodriguez</h4>
-                                    <p class="text-gray-600 dark:text-gray-400">Consultora Legal</p>
+                                    <p class="text-2xl font-bold text-gray-900">15+</p>
+                                    <p class="text-sm text-gray-600">Años de Experiencia</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="flex justify-center mt-6 space-x-2">
-                    <button @click="currentTestimonial = 0" class="w-3 h-3 rounded-full" 
-                            :class="currentTestimonial === 0 ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-gray-300 dark:bg-gray-600'"></button>
-                    <button @click="currentTestimonial = 1" class="w-3 h-3 rounded-full" 
-                            :class="currentTestimonial === 1 ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-gray-300 dark:bg-gray-600'"></button>
-                    <button @click="currentTestimonial = 2" class="w-3 h-3 rounded-full" 
-                            :class="currentTestimonial === 2 ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-gray-300 dark:bg-gray-600'"></button>
-                </div>
-            </div>
-            
-            <!-- Stats -->
-            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
-                    <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">96%</div>
-                    <p class="text-gray-600 dark:text-gray-300">Reducción en carga de trabajo de programación</p>
-                </div>
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
-                    <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">75%</div>
-                    <p class="text-gray-600 dark:text-gray-300">Menos inasistencias a citas</p>
-                </div>
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 text-center">
-                    <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">10k+</div>
-                    <p class="text-gray-600 dark:text-gray-300">Profesionales satisfechos</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Pricing Section -->
-    {{-- <section id="pricing" class="w-full py-16 md:py-24 bg-white dark:bg-gray-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold font-display mb-4">Simple, Transparent Pricing</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">Choose the plan that's right for your business. All plans include a 14-day free trial.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Starter Plan -->
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition duration-300">
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-1">Starter</h3>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">Perfect for solo practitioners</p>
-                        <div class="flex items-baseline mb-6">
-                            <span class="text-4xl font-bold">$19</span>
-                            <span class="text-gray-500 dark:text-gray-400 ml-2">/month</span>
+                <!-- Values Section -->
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="text-center group">
+                        <div
+                            class="w-16 h-16 bg-dental-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dental-blue/20 transition-colors">
+                            <svg class="w-8 h-8 text-dental-blue" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
                         </div>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Up to 100 appointments/month</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Email reminders</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Basic reporting</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>1 user account</span>
-                            </li>
-                        </ul>
-                        <a href="/register" class="block w-full py-3 px-4 text-center font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-sm">
-                            Start Free Trial
-                        </a>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Compromiso Social</h3>
+                        <p class="text-gray-600 text-sm">Atención accesible para toda la comunidad</p>
                     </div>
-                </div>
-                
-                <!-- Professional Plan -->
-                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border-2 border-indigo-500 dark:border-indigo-400 transform hover:-translate-y-1 transition duration-300">
-                    <div class="absolute inset-x-0 -top-px h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    <div class="bg-indigo-500 dark:bg-indigo-600 text-white px-6 py-2">
-                        <span class="text-xs font-semibold uppercase tracking-wider">Most Popular</span>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-1">Professional</h3>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">Ideal for growing practices</p>
-                        <div class="flex items-baseline mb-6">
-                            <span class="text-4xl font-bold">$49</span>
-                            <span class="text-gray-500 dark:text-gray-400 ml-2">/month</span>
-                        </div>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Unlimited appointments</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Email & SMS reminders</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Advanced analytics</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Up to 5 user accounts</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Payment processing</span>
-                            </li>
-                        </ul>
-                        <a href="/register" class="block w-full py-3 px-4 text-center font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-md pulse">
-                            Start Free Trial
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Business Plan -->
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition duration-300">
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-1">Business</h3>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">For multi-location businesses</p>
-                        <div class="flex items-baseline mb-6">
-                            <span class="text-4xl font-bold">$99</span>
-                            <span class="text-gray-500 dark:text-gray-400 ml-2">/month</span>
-                        </div>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Everything in Professional</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Multiple locations</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Unlimited user accounts</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>API access</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <span>Dedicated support</span>
-                            </li>
-                        </ul>
-                        <a href="/register" class="block w-full py-3 px-4 text-center font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-sm">
-                            Start Free Trial
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-16 bg-gray-50 dark:bg-gray-800 rounded-xl p-8 border border-gray-100 dark:border-gray-700 text-center">
-                <h3 class="text-xl font-semibold mb-4">Need a custom solution?</h3>
-                <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-                    We offer tailored enterprise solutions for larger organizations with specific requirements. Our team will work with you to create a custom plan.
-                </p>
-                <a href="#contact" class="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
-                    Contact Sales
-                </a>
-            </div>
-        </div>
-    </section> --}}
 
-    <!-- Contact Section -->
-    {{-- <section id="contact" class="w-full py-16 md:py-24 bg-gray-50 dark:bg-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold font-display mb-4">Get In Touch</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300">Have questions or need more information? Our team is here to help.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <form>
-                        <div class="mb-6">
-                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                            <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800 transition">
-                        </div>
-                        <div class="mb-6">
-                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
-                            <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800 transition">
-                        </div>
-                        <div class="mb-6">
-                            <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
-                            <select id="subject" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800 transition">
-                                <option value="">Select a topic</option>
-                                <option value="pricing">Pricing & Plans</option>
-                                <option value="features">Features</option>
-                                <option value="support">Technical Support</option>
-                                <option value="partnership">Partnership Opportunities</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="mb-6">
-                            <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Message</label>
-                            <textarea id="message" rows="5" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800 transition"></textarea>
-                        </div>
-                        <button type="submit" class="w-full py-3 px-4 text-center font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition shadow-sm">
-                            Send Message
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="space-y-8">
-                    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex items-start space-x-4">
-                        <div class="flex-shrink-0 p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-full">
-                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <div class="text-center group">
+                        <div
+                            class="w-16 h-16 bg-dental-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dental-teal/20 transition-colors">
+                            <svg class="w-8 h-8 text-dental-teal" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
                             </svg>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">Email Us</h3>
-                            <p class="text-gray-600 dark:text-gray-300 mb-2">For general inquiries and support:</p>
-                            <a href="mailto:info@proappointments.com" class="text-indigo-600 dark:text-indigo-400 hover:underline">info@proappointments.com</a>
-                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Calidad Garantizada</h3>
+                        <p class="text-gray-600 text-sm">Estándares internacionales de atención</p>
                     </div>
-                    
-                    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex items-start space-x-4">
-                        <div class="flex-shrink-0 p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-full">
-                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">Call Us</h3>
-                            <p class="text-gray-600 dark:text-gray-300 mb-2">Monday to Friday, 9am to 5pm:</p>
-                            <p class="text-indigo-600 dark:text-indigo-400">+1 (555) 123-4567</p>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex items-start space-x-4">
-                        <div class="flex-shrink-0 p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-full">
-                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">Live Chat</h3>
-                            <p class="text-gray-600 dark:text-gray-300 mb-2">Available during business hours:</p>
-                            <a href="#" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Start a conversation
-                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 shadow-sm border border-indigo-100 dark:border-indigo-800/30">
-                        <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
-                        <div class="flex space-x-4">
-                            <a href="#" class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:shadow-md transition">
-                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
-                                </svg>
-                            </a>
-                            <a href="#" class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:shadow-md transition">
-                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                                </svg>
-                            </a>
-                            <a href="#" class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:shadow-md transition">
-                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm-1-6.7c-.66 0-1.2-.54-1.2-1.2 0-.65.55-1.2 1.2-1.2.66 0 1.2.55 1.2 1.2 0 .66-.54 1.2-1.2 1.2zM17 17h-2v-3c0-1.85-2-1.7-2 0v3h-2v-6h2v1.2c.58-.7 2-1.35 2 .72V17z"/>
-                                </svg>
-                            </a>
-                            <a href="#" class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:shadow-md transition">
-                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25zM12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> --}}
 
-    <!-- Pie de página -->
-    <footer class="w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-12 pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                <div class="col-span-1 md:col-span-1">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div class="bg-indigo-600 dark:bg-indigo-500 rounded-lg p-2">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="text-center group">
+                        <div
+                            class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
                             </svg>
                         </div>
-                        <span class="text-xl font-display font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">Gestor Médico</span>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Equipo Experto</h3>
+                        <p class="text-gray-600 text-sm">Profesionales certificados y especializados</p>
                     </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        Simplificando la gestión de citas para profesionales en todo el mundo desde 2023.
+
+                    <div class="text-center group">
+                        <div
+                            class="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-sky-200 transition-colors">
+                            <svg class="w-8 h-8 text-sky-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Innovación</h3>
+                        <p class="text-gray-600 text-sm">Tecnología dental de vanguardia</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="servicios" class="py-20 lg:py-28 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Section Header -->
+                <div class="text-center mb-16">
+                    <div class="inline-flex items-center space-x-2 bg-dental-teal/10 px-4 py-2 rounded-full mb-6">
+                        <span class="text-sm font-medium text-dental-teal uppercase tracking-wide">
+                            Nuestros Servicios
+                        </span>
+                    </div>
+                    <h2 class="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-6">
+                        Atención <span class="text-dental-teal">Integral</span> para tu Sonrisa
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        Ofrecemos una amplia gama de servicios odontológicos con tecnología avanzada
+                        y un equipo comprometido con tu bienestar.
                     </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm-1-6.7c-.66 0-1.2-.54-1.2-1.2 0-.65.55-1.2 1.2-1.2.66 0 1.2.55 1.2 1.2 0 .66-.54 1.2-1.2 1.2zM17 17h-2v-3c0-1.85-2-1.7-2 0v3h-2v-6h2v1.2c.58-.7 2-1.35 2 .72V17z"/>
-                            </svg>
-                        </a>
+                </div>
+
+                <!-- Featured Services Grid -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+
+                    <!-- Service 1: Odontología General -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/odontologiaGeneral.jpg') }}"
+                                alt="Servicios de Odontología General - Consultas y limpiezas dentales profesionales"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dental-blue/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-dental-blue transition-colors">
+                                Odontología General
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Consultas, limpiezas dentales, extracciones y tratamientos preventivos
+                                para mantener tu salud oral en óptimas condiciones.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-blue/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-blue" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Exámenes orales completos</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-blue/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-blue" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Limpiezas profesionales</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-blue/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-blue" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Radiografías digitales</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Service 2: Operatoria Dental -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/operacion.jpg') }}"
+                                alt="Operatoria Dental - Restauraciones estéticas y tratamiento de caries"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dental-teal/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-dental-teal transition-colors">
+                                Operatoria Dental
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Restauración de dientes dañados con materiales de alta calidad
+                                para devolver funcionalidad y estética a tu sonrisa.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-teal/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-teal" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Resinas estéticas</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-teal/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-teal" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Tratamiento de caries</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-dental-teal/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-dental-teal" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Incrustaciones dentales</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Service 3: Endodoncia -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/endodoncia.jpg') }}"
+                                alt="Endodoncia - Tratamientos de conducto especializados"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-blue-600/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                                Endodoncia
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Tratamientos de conducto especializados para preservar
+                                tus dientes naturales y eliminar el dolor.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Tratamientos de conducto</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Retratamientos endodónticos</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Cirugía endodóntica</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Service 4: Periodoncia -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/periodoncia.jpg') }}"
+                                alt="Periodoncia - Tratamiento especializado de encías"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-cyan-600/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-cyan-600 transition-colors">
+                                Periodoncia
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Tratamiento especializado de encías y tejidos que sostienen
+                                los dientes para una base sólida y saludable.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-cyan-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Tratamiento de gingivitis</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-cyan-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Raspado y alisado radicular</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-cyan-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Cirugía periodontal</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Service 5: Odontopediatría -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/odontopediatria.jpg') }}"
+                                alt="Odontopediatría - Atención dental especializada para niños"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-sky-600/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-sky-600 transition-colors">
+                                Odontopediatría
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Atención dental especializada para niños en un ambiente
+                                amigable y cómodo que fomenta buenos hábitos.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-sky-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-sky-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Consultas preventivas</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-sky-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-sky-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Sellantes de fosas y fisuras</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-sky-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-sky-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Educación en higiene oral</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Service 6: Rehabilitación Oral -->
+                    <div
+                        class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
+                        <!-- Image Section -->
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ asset('storage/img/rehabilitacion-oral.jpg') }}"
+                                alt="Rehabilitación Oral - Prótesis dentales y tratamientos integrales"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-blue-600/30 to-transparent"></div>
+                        </div>
+
+                        <!-- Content Section -->
+                        <div class="p-6">
+                            <h3
+                                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                                Rehabilitación Oral
+                            </h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed text-sm">
+                                Restauración completa de la función y estética dental
+                                con prótesis y tratamientos integrales.
+                            </p>
+                            <ul class="space-y-3 text-sm text-gray-600">
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Prótesis dentales</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Coronas y puentes</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <div
+                                        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <span>Implantes dentales</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                
+
+                <!-- Testimonials Section -->
+                <section id="testimonios" class="py-20 lg:py-28 bg-gradient-to-b from-gray-50 to-white">
+                    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                        <!-- Section Header -->
+                        <div class="text-center mb-16">
+                            <div class="inline-flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full mb-6">
+                                <span class="text-sm font-medium text-blue-700 uppercase tracking-wide">
+                                    Testimonios
+                                </span>
+                            </div>
+                            <h2 class="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-6">
+                                Lo que Dicen Nuestros <span class="text-dental-blue">Pacientes</span>
+                            </h2>
+                            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                                La satisfacción de nuestros pacientes es nuestro mayor logro.
+                                Conoce sus experiencias transformadoras.
+                            </p>
+                        </div>
+
+                        <!-- Stats Section -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                            <div class="text-center">
+                                <div class="text-4xl lg:text-5xl font-bold text-dental-blue mb-2">98%</div>
+                                <p class="text-gray-600 font-medium">Satisfacción del Paciente</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl lg:text-5xl font-bold text-dental-teal mb-2">500+</div>
+                                <p class="text-gray-600 font-medium">Pacientes Atendidos</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl lg:text-5xl font-bold text-dental-green mb-2">15+</div>
+                                <p class="text-gray-600 font-medium">Años de Experiencia</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl lg:text-5xl font-bold text-blue-600 mb-2">24/7</div>
+                                <p class="text-gray-600 font-medium">Atención de Emergencia</p>
+                            </div>
+                        </div>
+
+                        <!-- Testimonials Grid -->
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+
+                            <!-- Testimonial 1 -->
+                            <div
+                                class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+                                <div class="flex items-center mb-6">
+                                    <div class="flex text-blue-400">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <blockquote class="text-gray-700 leading-relaxed mb-6">
+                                    "Excelente atención desde el primer momento. El Dr. y su equipo me hicieron sentir
+                                    muy
+                                    cómoda durante todo el tratamiento. Mi sonrisa ahora es completamente diferente."
+                                </blockquote>
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-300 rounded-full flex items-center justify-center text-white font-semibold">
+                                        MP
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="font-semibold text-gray-900">María Pérez</div>
+                                        <div class="text-sm text-gray-600">Paciente desde 2022</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Testimonial 2 -->
+                            <div
+                                class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+                                <div class="flex items-center mb-6">
+                                    <div class="flex text-blue-400">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <blockquote class="text-gray-700 leading-relaxed mb-6">
+                                    "Como padre de familia, valoro mucho el trato especial que le dan a los niños. Mi
+                                    hijo ahora
+                                    no tiene miedo al dentista y siempre quiere volver."
+                                </blockquote>
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-300 rounded-full flex items-center justify-center text-white font-semibold">
+                                        CL
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="font-semibold text-gray-900">Carlos López</div>
+                                        <div class="text-sm text-gray-600">Padre de familia</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Testimonial 3 -->
+                            <div
+                                class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+                                <div class="flex items-center mb-6">
+                                    <div class="flex text-blue-400">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <blockquote class="text-gray-700 leading-relaxed mb-6">
+                                    "La tecnología que manejan es impresionante. Todo fue muy rápido y sin dolor.
+                                    Definitivamente la mejor experiencia dental que he tenido."
+                                </blockquote>
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-300 rounded-full flex items-center justify-center text-white font-semibold">
+                                        AG
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="font-semibold text-gray-900">Ana García</div>
+                                        <div class="text-sm text-gray-600">Profesional</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+
+                <!-- Brand -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center mb-6">
+                        <img src="{{ asset('storage/img/lg_zoila_padilla.svg') }}"
+                            alt="Logo Fundación Odontológica Zoila Padilla" class="h-12 w-auto mr-4 ">
+                    </div>
+                    <p class="text-gray-400 leading-relaxed max-w-md">
+                        Comprometidos con brindar atención odontológica de calidad y
+                        accesible para toda la comunidad de Ciénaga.
+                    </p>
+                    <div class="flex space-x-4 mt-6">
+                        <a href="https://www.instagram.com/tu_cuenta" target="_blank"
+                            class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-dental-blue transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.97.24 2.43.405a4.92 4.92 0 0 1 1.675 1.01 4.92 4.92 0 0 1 1.01 1.675c.165.46.351 1.26.405 2.43.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.24 1.97-.405 2.43a4.92 4.92 0 0 1-1.01 1.675 4.92 4.92 0 0 1-1.675 1.01c-.46.165-1.26.351-2.43.405-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.97-.24-2.43-.405a4.92 4.92 0 0 1-1.675-1.01 4.92 4.92 0 0 1-1.01-1.675c-.165-.46-.351-1.26-.405-2.43C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.054-1.17.24-1.97.405-2.43a4.92 4.92 0 0 1 1.01-1.675 4.92 4.92 0 0 1 1.675-1.01c.46-.165 1.26-.351 2.43-.405C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.18 0-3.558.012-4.805.07-.99.045-1.52.2-1.87.332-.47.182-.8.4-1.15.75-.35.35-.568.68-.75 1.15-.132.35-.287.88-.332 1.87-.058 1.247-.07 1.625-.07 4.805s.012 3.558.07 4.805c.045.99.2 1.52.332 1.87.182.47.4.8.75 1.15.35.35.68.568 1.15.75.35.132.88.287 1.87.332 1.247.058 1.625.07 4.805.07s3.558-.012 4.805-.07c.99-.045 1.52-.2 1.87-.332.47-.182.8-.4 1.15-.75.35-.35.568-.68.75-1.15.132-.35.287-.88.332-1.87.058-1.247.07-1.625.07-4.805s-.012-3.558-.07-4.805c-.045-.99-.2-1.52-.332-1.87-.182-.47-.4-.8-.75-1.15-.35-.35-.68-.568-1.15-.75-.35-.132-.88-.287-1.87-.332-1.247-.058-1.625-.07-4.805-.07zm0 3.248a5.752 5.752 0 1 1 0 11.504 5.752 5.752 0 0 1 0-11.504zm0 1.837a3.915 3.915 0 1 0 0 7.83 3.915 3.915 0 0 0 0-7.83zm6.406-.92a1.34 1.34 0 1 1 0 2.68 1.34 1.34 0 0 1 0-2.68z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.facebook.com/tu_cuenta" target="_blank"
+                            class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-dental-blue transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495v-9.294H9.691v-3.622h3.129V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.794.715-1.794 1.763v2.31h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.324-.593 1.324-1.324V1.325C24 .593 23.407 0 22.675 0z" />
+                            </svg>
+                        </a>
+
+                    </div>
+                </div>
+
+                <!-- Services -->
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Producto</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#features" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Características</a></li>
-                        <li><a href="#pricing" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Precios</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Integraciones</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Actualizaciones</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Servicios</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Odontología General</a>
+                        </li>
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Operatoria Dental</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Endodoncia</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Periodoncia</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Odontopediatría</a></li>
                     </ul>
                 </div>
-                
+
+                <!-- Quick Links -->
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Empresa</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Acerca de</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Blog</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Carreras</a></li>
-                        <li><a href="#contact" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Contacto</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Recursos</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Centro de Ayuda</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Documentación</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Referencia de API</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Política de Privacidad</a></li>
-                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">Términos de Servicio</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Enlaces Rápidos</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#sobre-nosotros" class="hover:text-white transition-colors">Sobre Nosotros</a>
+                        </li>
+                        <li><a href="#servicios" class="hover:text-white transition-colors">Servicios</a></li>
+                        <li><a href="#testimonios" class="hover:text-white transition-colors">Testimonios</a></li>
+                        <li><a href="#contacto" class="hover:text-white transition-colors">Contacto</a></li>
+                        <li><a href="{{ url('/client') }}" class="hover:text-white transition-colors">Agendar
+                                Cita</a>
+                        </li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
-                    &copy; 2023 Gestor Médico. Todos los derechos reservados.
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 Fundación Odontológica Zoila Padilla. Todos los derechos reservados.
                 </p>
-                <div class="flex items-center mt-4 md:mt-0">
-                    <button @click="toggleDarkMode" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400">
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <svg x-show="darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </button>
-                </div>
             </div>
         </div>
     </footer>
-</body>
-</html>
+
+    <!-- Enhanced JavaScript for Professional UX -->
+    <script>
+        // Enhanced Mobile Menu Toggle with Animation
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const line1 = document.getElementById('line1');
+            const line2 = document.getElementById('line2');
+            const line3 = document.getElementById('line3');
+
+            // Toggle menu visibility with slide animation
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                // Animate hamburger to X
+                line1.style.transform = 'rotate(45deg) translate(6px, 6px)';
+                line2.style.opacity = '0';
+                line3.style.transform = 'rotate(-45deg) translate(6px, -6px)';
+
+                // Add slide down animation
+                setTimeout(() => {
+                    mobileMenu.querySelector('div').style.transform = 'translateY(0)';
+                    mobileMenu.querySelector('div').style.opacity = '1';
+                }, 10);
+            } else {
+                // Animate hamburger back to normal
+                line1.style.transform = 'rotate(0) translate(0, 0)';
+                line2.style.opacity = '1';
+                line3.style.transform = 'rotate(0) translate(0, 0)';
+
+                // Add slide up animation
+                mobileMenu.querySelector('div').style.transform = 'translateY(-10px)';
+                mobileMenu.querySelector('div').style.opacity = '0';
+
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 200);
+            }
+        }
+
+        // Enhanced Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    // Calculate offset for fixed header
+                    const headerHeight = document.querySelector('header').offsetHeight;
+                    const targetPosition = target.offsetTop - headerHeight - 20;
+
+                    // Smooth scroll with custom easing
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        toggleMobileMenu();
+                    }
+
+                    // Update active navigation state
+                    updateActiveNavigation(this.getAttribute('href'));
+                }
+            });
+        });
+
+        // Update Active Navigation State
+        function updateActiveNavigation(activeHref) {
+            // Remove active state from all nav links
+            document.querySelectorAll('nav a[href^="#"]').forEach(link => {
+                link.classList.remove('text-dental-blue', 'bg-white', 'shadow-sm');
+            });
+
+            // Add active state to current link
+            document.querySelectorAll(`nav a[href="${activeHref}"]`).forEach(link => {
+                if (link.closest('.lg\\:flex')) { // Desktop nav
+                    link.classList.add('text-dental-blue', 'bg-white', 'shadow-sm');
+                }
+            });
+        }
+
+        // Navbar Scroll Effect
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('navbar');
+
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Change navbar appearance based on scroll position
+            if (scrollTop > 100) {
+                navbar.querySelector('div').classList.add('shadow-xl');
+                navbar.querySelector('div').classList.remove('shadow-lg');
+            } else {
+                navbar.querySelector('div').classList.remove('shadow-xl');
+                navbar.querySelector('div').classList.add('shadow-lg');
+            }
+
+            lastScrollTop = scrollTop;
+        }, false);
+
+        // Intersection Observer for Active Navigation
+        const observerOptions = {
+            rootMargin: '-20% 0px -70% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    if (id) {
+                        updateActiveNavigation(`#${id}`);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('section[id]').forEach(section => {
+                observer.observe(section);
+            });
+
+            // Initialize mobile menu styles
+            const mobileMenuContent = document.querySelector('#mobile-menu > div');
+            if (mobileMenuContent) {
+                mobileMenuContent.style.transform = 'translateY(-10px)';
+                mobileMenuContent.style.opacity = '0';
+                mobileMenuContent.style.transition = 'all 0.2s ease-out';
+            }
+
+            // Add loading animation fade-in
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease-in';
+
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Enhanced Focus Management for Accessibility
+        document.addEventListener('keydown', function(e) {
+            // Close mobile menu with Escape key
+            if (e.key === 'Escape') {
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    toggleMobileMenu();
+                }
+            }
+        });
+
+        // Prevent body scroll when mobile menu is open
+        function preventBodyScroll(prevent) {
+            if (prevent) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Add click outside to close mobile menu
+        document.addEventListener('click', function(e) {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuButton = document.querySelector('[onclick="toggleMobileMenu()"]');
+
+            if (!mobileMenu.classList.contains('hidden') &&
+                !mobileMenu.contains(e.target) &&
+                !menuButton.contains(e.target)) {
+                toggleMobileMenu();
+            }
+        });
+    </script>
