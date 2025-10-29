@@ -56,22 +56,6 @@
             </div>
             <div class="types-cards-grid">
                 <div class="type-card-professional" 
-                     :class="{ 'active': selectedType === 'permanent' }"
-                     x-on:click="changeType('permanent')">
-                    <div class="type-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div class="type-card-content">
-                        <h4 class="type-card-title">Dentición Permanente</h4>
-                        <p class="type-card-description">32 dientes • Adultos (17+ años)</p>
-                        <div class="type-card-detail">Numeración FDI: 11-48</div>
-                    </div>
-                    <div class="type-card-indicator"></div>
-                </div>
-
-                <div class="type-card-professional" 
                      :class="{ 'active': selectedType === 'temporal' }"
                      x-on:click="changeType('temporal')">
                     <div class="type-card-icon">
@@ -99,6 +83,22 @@
                         <h4 class="type-card-title">Dentición Mixta</h4>
                         <p class="type-card-description">Temporales + Permanentes • Niños (6-12 años)</p>
                         <div class="type-card-detail">Transición gradual</div>
+                    </div>
+                    <div class="type-card-indicator"></div>
+                </div>
+
+                <div class="type-card-professional" 
+                     :class="{ 'active': selectedType === 'permanent' }"
+                     x-on:click="changeType('permanent')">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Dentición Permanente</h4>
+                        <p class="type-card-description">32 dientes • Adultos (17+ años)</p>
+                        <div class="type-card-detail">Numeración FDI: 11-48</div>
                     </div>
                     <div class="type-card-indicator"></div>
                 </div>
@@ -556,7 +556,7 @@
         <script>
             function professionalOdontogramComponent(state) {
             return {
-                selectedType: 'permanent', // Se ajustará en init()
+                selectedType: 'temporal', // Se ajustará en init()
                 selectedStatus: 'healthy',
                 odontogramState: {},
                 showTooltip: false,
@@ -572,15 +572,15 @@
                         const wireState = this.$wire.get(state);
                         this.odontogramState = wireState && typeof wireState === 'object' ? wireState : {};
                         
-                        // Selección automática del tipo según los datos
-                        if (this.odontogramState.mixed && Object.keys(this.odontogramState.mixed).length > 0) {
+                        // Selección automática del tipo según los datos (prioridad: temporal → mixto → permanente)
+                        if (this.odontogramState.temporal && Object.keys(this.odontogramState.temporal).length > 0) {
+                            this.selectedType = 'temporal';
+                        } else if (this.odontogramState.mixed && Object.keys(this.odontogramState.mixed).length > 0) {
                             this.selectedType = 'mixed';
                         } else if (this.odontogramState.permanent && Object.keys(this.odontogramState.permanent).length > 0) {
                             this.selectedType = 'permanent';
-                        } else if (this.odontogramState.temporal && Object.keys(this.odontogramState.temporal).length > 0) {
-                            this.selectedType = 'temporal';
                         } else {
-                            this.selectedType = 'permanent';
+                            this.selectedType = 'temporal';
                         }
                         
                         this.watchStateChanges(state);
@@ -588,7 +588,7 @@
                     } catch (error) {
                         console.error('Error en init:', error);
                         this.odontogramState = {};
-                        this.selectedType = 'permanent';
+                        this.selectedType = 'temporal';
                         this.watchStateChanges(state);
                     }
                 },

@@ -1,5 +1,5 @@
 @php
-    $record = $getState(); // Obtener el record desde el state
+    $record = $this->record ?? $getRecord(); // Obtener el record desde el context
     $odontogramData = $record->odontogram ?? ['permanent' => [], 'temporal' => []];
 
     $toothStatuses = [
@@ -18,7 +18,8 @@
     $showPermanent = !empty($odontogramData['permanent']);
     $showTemporary = !empty($odontogramData['temporal']);
     $showMixed = !empty($odontogramData['mixed']);
-    $defaultView = $showMixed ? 'mixed' : ($showPermanent ? 'permanent' : ($showTemporary ? 'temporal' : 'permanent'));
+    // Prioridad: temporal → mixto → permanente
+    $defaultView = $showTemporary ? 'temporal' : ($showMixed ? 'mixed' : ($showPermanent ? 'permanent' : 'temporal'));
 @endphp
 
 <div 
@@ -43,7 +44,7 @@
                     </svg>
                 </div>
                 <div class="header-text">
-                    <h2 class="header-title">Odontograma Digital - {{ $record->name }}</h2>
+                    <h2 class="header-title">Odontograma Digital - {{ $record->client->name }} {{ $record->client->apellido }}</h2>
                     <p class="header-subtitle">Sistema FDI • Vista de solo lectura • Registro profesional</p>
                 </div>
             </div>
@@ -68,23 +69,38 @@
     <div class="odontogram-types-professional">
         <div class="types-header">
             <h3 class="types-title">Tipos de Odontograma Registrados</h3>
-            <p class="types-description">Información dental disponible para {{ $record->name }}</p>
+            <p class="types-description">Información dental disponible para {{ $record->client->name }} {{ $record->client->apellido }}</p>
         </div>
-        <div class="types-cards-grid">
+                <div class="types-cards-grid">
 
+            @if($showTemporary)
+                <div class="type-card-professional" 
+                     :class="{ 'active': selectedType === 'temporal' }"
+                     x-on:click="changeType('temporal')">
+                    <div class="type-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </div>
+                    <div class="type-card-content">
+                        <h4 class="type-card-title">Dentición Temporal</h4>
+                        <p class="type-card-description">20 dientes de leche (2-6 años)</p>
+                    </div>
+                    <div class="type-card-indicator"></div>
+                </div>
+            @endif
             @if($showMixed)
                 <div class="type-card-professional"
                      :class="{ 'active': selectedType === 'mixed' }"
                      x-on:click="changeType('mixed')">
                     <div class="type-card-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                         </svg>
                     </div>
                     <div class="type-card-content">
                         <h4 class="type-card-title">Dentición Mixta</h4>
-                        <p class="type-card-description">Permanentes + Temporales • Registros disponibles</p>
-                        <div class="type-card-detail">Transición gradual</div>
+                        <p class="type-card-description">Permanentes y temporales (6-12 años)</p>
                     </div>
                     <div class="type-card-indicator"></div>
                 </div>
@@ -100,45 +116,11 @@
                     </div>
                     <div class="type-card-content">
                         <h4 class="type-card-title">Dentición Permanente</h4>
-                        <p class="type-card-description">32 dientes • Registros disponibles</p>
-                        <div class="type-card-detail">Numeración FDI: 11-48</div>
+                        <p class="type-card-description">32 dientes permanentes (12+ años)</p>
                     </div>
                     <div class="type-card-indicator"></div>
                 </div>
             @endif
-            @if($showTemporary)
-                <div class="type-card-professional" 
-                     :class="{ 'active': selectedType === 'temporal' }"
-                     x-on:click="changeType('temporal')">
-                    <div class="type-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                    </div>
-                    <div class="type-card-content">
-                        <h4 class="type-card-title">Dentición Temporal</h4>
-                        <p class="type-card-description">20 dientes • Registros disponibles</p>
-                        <div class="type-card-detail">Numeración FDI: 51-85</div>
-                    </div>
-                    <div class="type-card-indicator"></div>
-                </div>
-            @endif
-
-            @if(!$showPermanent && !$showTemporary && !$showMixed)
-                <div class="type-card-professional">
-                    <div class="type-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                        </svg>
-                    </div>
-                    <div class="type-card-content">
-                        <h4 class="type-card-title">Sin Registros</h4>
-                        <p class="type-card-description">No hay información dental registrada</p>
-                        <div class="type-card-detail">Crear un registro para comenzar</div>
-                    </div>
-                </div>
-            @endif
-        </div>
     </div>
 
     <!-- Professional Legend -->
@@ -523,7 +505,7 @@
     <!-- Professional Summary Panel -->
     <div class="summary-panel-professional" x-show="showSummary" x-transition>
         <div class="summary-header">
-            <h3 class="summary-title">Resumen del Odontograma - {{ $record->name }}</h3>
+            <h3 class="summary-title">Resumen del Odontograma - {{ $record->client->name }} {{ $record->client->apellido }}</h3>
             <button type="button" class="close-summary-btn" x-on:click="showSummary = false">
                 <svg viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
@@ -790,7 +772,7 @@ function exportOdontogramData() {
     };
     html2canvas(odontogramElement, options).then(canvas => {
         const link = document.createElement('a');
-        link.download = `odontograma_{{ $record->name }}_{{ now()->format('Y-m-d') }}.png`;
+        link.download = `odontograma_{{ $record->client->name }}_{{ $record->client->apellido }}_{{ now()->format('Y-m-d') }}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
     }).catch(error => {

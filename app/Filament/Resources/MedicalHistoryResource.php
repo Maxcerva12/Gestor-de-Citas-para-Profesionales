@@ -255,7 +255,7 @@ class MedicalHistoryResource extends Resource
                                     ->description('Mapa visual del estado actual de todas las piezas dentales del paciente')
                                     ->schema([
                                         Odontogram::make('odontogram')
-                                            ->label('Odontograma')
+                                            ->label('')
                                             ->columnSpanFull(),
 
                                         Forms\Components\Textarea::make('odontogram_observations')
