@@ -279,7 +279,7 @@ class ManageInvoiceSettings extends Page implements HasForms
             Actions\Action::make('save')
                 ->label('Guardar Configuración')
                 ->icon('heroicon-o-check')
-                ->color('success')
+                ->color('info')
                 ->action('save'),
         ];
     }

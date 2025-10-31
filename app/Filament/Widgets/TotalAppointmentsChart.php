@@ -18,8 +18,15 @@ class TotalAppointmentsChart extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $appointments = Appointment::select(DB::raw('DATE(start_time) as date'), DB::raw('count(*) as total'))
-            ->groupBy('date')
+        $user = auth()->user();
+        $query = Appointment::select(DB::raw('DATE(start_time) as date'), DB::raw('count(*) as total'));
+
+        // Aplicar filtros según el rol del usuario
+        if ($user && !$user->hasRole('super_admin')) {
+            $query->where('user_id', $user->id);
+        }
+
+        $appointments = $query->groupBy('date')
             ->orderBy('date')
             ->get();
 

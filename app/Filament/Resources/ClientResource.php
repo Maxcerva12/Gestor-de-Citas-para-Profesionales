@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class ClientResource extends Resource
 {
@@ -473,16 +474,23 @@ class ClientResource extends Resource
                 Tables\Filters\SelectFilter::make('aseguradora')
                     ->label('EPS/Aseguradora')
                     ->native(false)
+                    ->placeholder('Todas las aseguradoras')
                     ->options(function () {
-                        return Client::distinct()
-                            ->whereNotNull('aseguradora')
-                            ->pluck('aseguradora', 'aseguradora')
-                            ->toArray();
+                        return Cache::remember('client_aseguradoras_filter', 3600, function () {
+                            return Client::query()
+                                ->whereNotNull('aseguradora')
+                                ->where('aseguradora', '!=', '')
+                                ->distinct()
+                                ->orderBy('aseguradora')
+                                ->pluck('aseguradora', 'aseguradora')
+                                ->toArray();
+                        });
                     }),
 
                 Tables\Filters\SelectFilter::make('tipo_documento')
                     ->label('Tipo de Documento')
                     ->native(false)
+                    ->placeholder('Todos los tipos')
                     ->options([
                         'CC' => 'Cédula de Ciudadanía',
                         'CE' => 'Cédula de Extranjería',
@@ -493,6 +501,7 @@ class ClientResource extends Resource
                 Tables\Filters\SelectFilter::make('genero')
                     ->label('Género')
                     ->native(false)
+                    ->placeholder('Todos los géneros')
                     ->options([
                         'Masculino' => 'Masculino',
                         'Femenino' => 'Femenino',
@@ -502,49 +511,95 @@ class ClientResource extends Resource
                 Tables\Filters\SelectFilter::make('country')
                     ->label('País')
                     ->native(false)
+                    ->placeholder('Todos los países')
                     ->options(function () {
-                        $countries = Client::distinct()
-                            ->pluck('country', 'country')
-                            ->map(function ($country) {
-                                return $country ?? 'Sin especificar';
-                            })
-                            ->toArray();
-
-                        return $countries;
+                        return Cache::remember('client_countries_filter', 3600, function () {
+                            return Client::query()
+                                ->whereNotNull('country')
+                                ->where('country', '!=', '')
+                                ->distinct()
+                                ->orderBy('country')
+                                ->pluck('country', 'country')
+                                ->toArray();
+                        });
                     }),
 
-                Tables\Filters\Filter::make('active')
+                Tables\Filters\TernaryFilter::make('active')
                     ->label('Estado')
-                    ->toggle(),
+                    ->placeholder('Todos')
+                    ->trueLabel('Activos')
+                    ->falseLabel('Inactivos')
+                    ->native(false)
+                    ->queries(
+                        true: fn($query) => $query->where('active', true),
+                        false: fn($query) => $query->where('active', false),
+                        blank: fn($query) => $query,
+                    ),
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
                             ->native(false)
-                            ->label('Registrado desde'),
+                            ->label('Registrado desde')
+                            ->placeholder('dd/mm/yyyy')
+                            ->maxDate(fn(callable $get) => $get('created_until')),
                         Forms\Components\DatePicker::make('created_until')
                             ->native(false)
-                            ->label('Registrado hasta'),
+                            ->label('Registrado hasta')
+                            ->placeholder('dd/mm/yyyy')
+                            ->minDate(fn(callable $get) => $get('created_from')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                function ($q, $date) {
+                                    $date = preg_replace('/\s+00:00:00$/', '', $date); // Elimina hora extra si viene
+                                    return $q->where('created_at', '>=', $date . ' 00:00:00');
+                                }
                             )
                             ->when(
                                 $data['created_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                function ($q, $date) {
+                                    $date = preg_replace('/\s+00:00:00$/', '', $date); // Elimina hora extra si viene
+                                    return $q->where('created_at', '<=', $date . ' 23:59:59');
+                                }
                             );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse(preg_replace('/\s+00:00:00$/', '', $data['created_from']))->format('d/m/Y');
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse(preg_replace('/\s+00:00:00$/', '', $data['created_until']))->format('d/m/Y');
+                        }
+                        return $indicators;
                     }),
 
-                Tables\Filters\Filter::make('with_allergies')
-                    ->label('Con Alergias Registradas')
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('alergias')->where('alergias', '!=', '')),
+                Tables\Filters\TernaryFilter::make('has_allergies')
+                    ->label('Alergias')
+                    ->placeholder('Todos')
+                    ->trueLabel('Con alergias')
+                    ->falseLabel('Sin alergias')
+                    ->native(false)
+                    ->queries(
+                        true: fn($query) => $query->whereNotNull('alergias')->where('alergias', '!=', ''),
+                        false: fn($query) => $query->where(fn($q) => $q->whereNull('alergias')->orWhere('alergias', '')),
+                        blank: fn($query) => $query,
+                    ),
 
-                Tables\Filters\Filter::make('with_medical_history')
-                    ->label('Con Historial Médico')
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('historial_medico')->where('historial_medico', '!=', '')),
+                Tables\Filters\TernaryFilter::make('has_medical_history')
+                    ->label('Historial Médico')
+                    ->placeholder('Todos')
+                    ->trueLabel('Con historial')
+                    ->falseLabel('Sin historial')
+                    ->native(false)
+                    ->queries(
+                        true: fn($query) => $query->whereNotNull('historial_medico')->where('historial_medico', '!=', ''),
+                        false: fn($query) => $query->where(fn($q) => $q->whereNull('historial_medico')->orWhere('historial_medico', '')),
+                        blank: fn($query) => $query,
+                    ),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

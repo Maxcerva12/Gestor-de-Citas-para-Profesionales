@@ -286,63 +286,74 @@ class ScheduleResource extends Resource
             ])
             ->defaultSort('date', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('is_available')
-                    ->label('Disponibilidad')
+                Tables\Filters\SelectFilter::make('estado')
+                    ->label('Estado')
                     ->native(false)
                     ->options([
-                        '1' => 'Disponible',
-                        '0' => 'No disponible',
+                        'disponible' => 'Disponible',
+                        'no_disponible' => 'No disponible',
+                        'expirado' => 'Expirado',
                     ])
-                    ->placeholder('Todos los estados'),
+                    ->placeholder('Todos los estados')
+                    ->query(function (Builder $query, $data) {
+                        $value = is_array($data) && isset($data['value']) ? $data['value'] : $data;
 
+                        if (!$value)
+                            return;
+
+                        $currentDateTime = now()->format('Y-m-d H:i:s');
+
+                        match ($value) {
+                            'disponible' => $query->where('is_available', true)
+                                ->whereRaw("CONCAT(date, ' ', start_time) > ?", [$currentDateTime]),
+                            'no_disponible' => $query->where('is_available', false),
+                            'expirado' => $query->where('is_available', true)
+                                ->whereRaw("CONCAT(date, ' ', start_time) <= ?", [$currentDateTime]),
+                            default => null,
+                        };
+                    }),
+
+                // Filtro de Rango de Fechas
                 Tables\Filters\Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('date_from')
                             ->label('Desde')
                             ->native(false)
-                            ->placeholder(fn($state): string => now()->subMonth()->format('d/m/Y')),
+                            ->default(now()->subMonth())
+                            ->displayFormat('d/m/Y'),
                         Forms\Components\DatePicker::make('date_until')
                             ->label('Hasta')
                             ->native(false)
-                            ->placeholder(fn($state): string => now()->addMonths(2)->format('d/m/Y')),
+                            ->default(now()->addMonths(2))
+                            ->displayFormat('d/m/Y'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when(
-                                $data['date_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
-                            )
-                            ->when(
-                                $data['date_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
-                            );
+                            ->when($data['date_from'], fn($q, $date) => $q->where('date', '>=', $date))
+                            ->when($data['date_until'], fn($q, $date) => $q->where('date', '<=', $date));
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
 
                         if ($data['date_from'] ?? null) {
-                            $indicators['date_from'] = 'Desde ' . \Carbon\Carbon::parse($data['date_from'])->format('d/m/Y');
+                            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse($data['date_from'])->format('d/m/Y');
                         }
 
                         if ($data['date_until'] ?? null) {
-                            $indicators['date_until'] = 'Hasta ' . \Carbon\Carbon::parse($data['date_until'])->format('d/m/Y');
+                            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['date_until'])->format('d/m/Y');
                         }
 
                         return $indicators;
                     }),
 
+                // Filtro de Profesional
                 Tables\Filters\SelectFilter::make('user_id')
                     ->label('Profesional')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->native(false)
-                    ->preload()
-                    ->visible(function () {
-                        /** @var \App\Models\User $user */
-                        $user = Auth::user();
-                        return $user && $user->hasRole('super_admin');
-                    }),
-
+                    ->preload() // Quitar si tienes >100 profesionales
+                    ->visible(fn(): bool => auth()->user()?->hasRole('super_admin') ?? false),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

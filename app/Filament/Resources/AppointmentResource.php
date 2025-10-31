@@ -88,21 +88,50 @@ class AppointmentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('user_id', Auth::id())->where('status', 'pending')->count() ?: null;
+        $user = Auth::user();
+
+        if (!$user) {
+            return null;
+        }
+
+        $query = static::getModel()::where('status', 'pending');
+
+        // Si es super_admin, contar todas las citas pendientes
+        if ($user->hasRole('super_admin')) {
+            return $query->count() ?: null;
+        }
+
+        // Para usuarios con view_all_revenue o cualquier otro, mostrar solo sus citas pendientes
+        return $query->where('user_id', $user->id)->count() ?: null;
     }
 
     /**
-     * Restringe las citas al profesional autenticado.
+     * Restringe las citas según el rol y permisos del usuario.
      */
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
 
-        // Si el usuario es superAdmin, mostrar todas las citas
-        // Si no, mostrar solo las citas del usuario autenticado
-        if (!Auth::user() || !Auth::user()->hasRole('super_admin')) {
-            $query->where('user_id', Auth::id());
+        $user = Auth::user();
+
+        // Si no hay usuario autenticado, no mostrar nada
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
         }
+
+        // Si el usuario es superAdmin, mostrar todas las citas
+        if ($user->hasRole('super_admin')) {
+            return $query; // No aplicar filtros
+        }
+
+        // Si el usuario tiene el permiso view_all_revenue, mostrar solo sus citas
+        if ($user->can('view_all_revenue')) {
+            $query->where('user_id', $user->id);
+            return $query;
+        }
+
+        // Para cualquier otro usuario, mostrar solo sus citas
+        $query->where('user_id', $user->id);
 
         return $query;
     }
@@ -479,7 +508,8 @@ class AppointmentResource extends Resource
                         'confirmed' => 'Confirmada',
                         'canceled' => 'Cancelada',
                         'completed' => 'Completada',
-                    ]),
+                    ])
+                    ->placeholder('Todos los estados'),
 
                 Tables\Filters\SelectFilter::make('payment_status')
                     ->label('Estado del Pago')
@@ -489,37 +519,61 @@ class AppointmentResource extends Resource
                         'paid' => 'Pagado',
                         'failed' => 'Fallido',
                         'cancelled' => 'Cancelado',
-                    ]),
+                    ])
+                    ->placeholder('Todos los pagos'),
 
                 Tables\Filters\SelectFilter::make('client_id')
                     ->label('Cliente')
                     ->native(false)
                     ->relationship('client', 'name')
                     ->searchable()
-                    ->preload(),
+                    ->preload(fn() => \App\Models\Client::count() < 100) // Preload solo si hay <100 clientes
+                    ->getSearchResultsUsing(function (string $search) {
+                        return \App\Models\Client::where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('name', 'id');
+                    })
+                    ->placeholder('Buscar cliente...'),
 
-                Tables\Filters\Filter::make('date')
+                Tables\Filters\Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('from')
                             ->label('Desde')
                             ->native(false)
-                            ->placeholder('Desde fecha'),
+                            ->placeholder('dd/mm/yyyy')
+                            ->maxDate(fn(callable $get) => $get('until')), // No permitir fecha mayor a "hasta"
                         Forms\Components\DatePicker::make('until')
                             ->label('Hasta')
                             ->native(false)
-                            ->placeholder('Hasta fecha'),
+                            ->placeholder('dd/mm/yyyy')
+                            ->minDate(fn(callable $get) => $get('from')), // No permitir fecha menor a "desde"
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date),
+                                fn($q, $date) => $q->whereRaw('DATE(start_time) >= ?', [$date])
                             )
                             ->when(
                                 $data['until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date),
+                                fn($q, $date) => $q->whereRaw('DATE(start_time) <= ?', [$date])
                             );
-                    }),
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['from'] ?? null) {
+                            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                        }
+
+                        return $indicators;
+                    })
+                // Ocupa 2 columnas para mejor visualización
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

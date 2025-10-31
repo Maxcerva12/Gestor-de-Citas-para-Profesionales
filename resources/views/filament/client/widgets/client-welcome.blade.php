@@ -13,7 +13,7 @@
                 @if($nextAppointment)
                     <div class="bg-white/20 dark:bg-white/10 rounded-lg p-3 mt-4">
                         <div class="flex items-center gap-2 mb-1">
-                            <x-heroicon-o-calendar class="w-4 h-4 text-white dark:text-white" />
+                            <x-heroicon-o-calendar class="w-4 h-4 text-black dark:text-black" />
                             <span class="font-medium text-sm text-black dark:text-black">Próxima Cita</span>
                         </div>
                         <p class="text-sm text-white/90 dark:text-blue-100">

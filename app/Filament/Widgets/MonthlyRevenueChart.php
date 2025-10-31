@@ -39,7 +39,7 @@ class MonthlyRevenueChart extends ApexChartWidget
         $monthLabels = [];
 
         for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
+            $date = Carbon::now()->startOfMonth()->subMonths($i);
 
             // Ingresos por facturas del mes
             $invoiceAmount = Invoice::where('state', 'paid')
@@ -59,7 +59,7 @@ class MonthlyRevenueChart extends ApexChartWidget
             $totalAmount = $invoiceAmount + $appointmentAmount;
 
             $monthlyData[] = (int) $totalAmount;
-            $monthLabels[] = $date->format('M Y');
+            $monthLabels[] = $date->locale('es')->isoFormat('MMM YYYY');
         }
 
         // Calcular el promedio solo de los valores mayores a 0
@@ -168,7 +168,7 @@ class MonthlyRevenueChart extends ApexChartWidget
         $monthLabels = [];
 
         for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
+            $date = Carbon::now()->startOfMonth()->subMonths($i);
 
             // Ingresos por facturas del profesional
             $invoiceAmount = Invoice::where('user_id', $user->id)
@@ -190,12 +190,13 @@ class MonthlyRevenueChart extends ApexChartWidget
             $totalAmount = $invoiceAmount + $appointmentAmount;
 
             $monthlyData[] = (int) $totalAmount;
-            $monthLabels[] = $date->format('M Y');
+            $monthLabels[] = $date->locale('es')->isoFormat('MMM YYYY');
         }
 
         // Calcular el promedio solo de los meses con ingresos > 0
         $nonZeroMonths = array_filter($monthlyData, function ($value) {
-            return $value > 0; });
+            return $value > 0;
+        });
         $average = count($nonZeroMonths) > 0 ? array_sum($nonZeroMonths) / count($nonZeroMonths) : 0;
 
         // Obtener la meta mensual (si existe)
