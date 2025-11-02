@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use App\Notifications\UserUpdated;
+use Illuminate\Support\Facades\Cache;
 
 class UserObserver
 {
@@ -13,6 +14,9 @@ class UserObserver
      */
     public function created(User $user): void
     {
+        // Limpiar caché de filtros cuando se crea un usuario
+        $this->clearFiltersCache();
+        
         Notification::Make()
             ->title('User Created')
             ->body('A new user has been created.')
@@ -24,6 +28,11 @@ class UserObserver
      */
     public function updated(User $user): void
     {
+        // Limpiar caché de filtros si cambiaron profesión o especialidad
+        if ($user->isDirty(['profession', 'especialty'])) {
+            $this->clearFiltersCache();
+        }
+        
         // Enviar notificación usando el canal de base de datos
         $user->notify(new UserUpdated($user));
 
@@ -40,7 +49,8 @@ class UserObserver
      */
     public function deleted(User $user): void
     {
-        //
+        // Limpiar caché de filtros cuando se elimina un usuario
+        $this->clearFiltersCache();
     }
 
     /**
@@ -48,7 +58,8 @@ class UserObserver
      */
     public function restored(User $user): void
     {
-        //
+        // Limpiar caché de filtros cuando se restaura un usuario
+        $this->clearFiltersCache();
     }
 
     /**
@@ -56,6 +67,16 @@ class UserObserver
      */
     public function forceDeleted(User $user): void
     {
-        //
+        // Limpiar caché de filtros cuando se elimina permanentemente
+        $this->clearFiltersCache();
+    }
+
+    /**
+     * Limpia el caché de los filtros de profesiones y especialidades
+     */
+    private function clearFiltersCache(): void
+    {
+        Cache::forget('user_professions');
+        Cache::forget('user_especialties');
     }
 }

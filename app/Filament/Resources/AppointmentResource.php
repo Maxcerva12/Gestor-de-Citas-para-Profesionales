@@ -854,7 +854,41 @@ class AppointmentResource extends Resource
                                 Infolists\Components\TextEntry::make('notes')
                                     ->label('Notas')
                                     ->markdown()
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->placeholder('Sin notas adicionales'),
+
+                                // Información de cancelación
+                                Infolists\Components\Section::make('Información de Cancelación')
+                                    ->schema([
+                                        Infolists\Components\Grid::make(2)
+                                            ->schema([
+                                                Infolists\Components\TextEntry::make('cancelled_by')
+                                                    ->label('Cancelada por')
+                                                    ->formatStateUsing(fn($state) => match ($state) {
+                                                        'client' => 'Cliente',
+                                                        'professional' => 'Profesional',
+                                                        'system' => 'Sistema (automática)',
+                                                        default => 'No especificado',
+                                                    })
+                                                    ->badge()
+                                                    ->color('warning'),
+
+                                                Infolists\Components\TextEntry::make('cancelled_at')
+                                                    ->label('Fecha de Cancelación')
+                                                    ->dateTime('d/m/Y H:i')
+                                                    ->icon('heroicon-o-calendar'),
+                                            ]),
+
+                                        Infolists\Components\TextEntry::make('cancellation_reason')
+                                            ->label('Motivo de Cancelación')
+                                            ->markdown()
+                                            ->columnSpanFull()
+                                            ->color('danger')
+                                            ->icon('heroicon-o-information-circle'),
+                                    ])
+                                    ->visible(fn($record) => $record->status === 'canceled' && $record->cancellation_reason)
+                                    ->collapsible()
+                                    ->collapsed(false),
                             ]),
 
                         Infolists\Components\Tabs\Tab::make('Google Calendar')

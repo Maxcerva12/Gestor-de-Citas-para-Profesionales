@@ -23,12 +23,16 @@ class Appointment extends Model
         'service_price',
         'payment_method',
         'payment_status',
-        'google_event_id'
+        'google_event_id',
+        'cancellation_reason',
+        'cancelled_by',
+        'cancelled_at'
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'cancelled_at' => 'datetime',
         'status' => 'string',
         'service_price' => 'decimal:2',
         'payment_method' => 'string',

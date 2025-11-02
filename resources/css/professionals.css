@@ -1,0 +1,131 @@
+/* Mejoras visuales para el recurso de profesionales */
+
+/* Animación suave para las tarjetas */
+.fi-ta-row {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fi-ta-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1),
+        0 8px 10px -6px rgba(99, 102, 241, 0.1);
+}
+
+/* Estilo mejorado para badges */
+.fi-badge {
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: all 0.2s ease;
+}
+
+.fi-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Espaciado mejorado para columnas stack */
+.fi-ta-col-stack {
+    gap: 0.75rem;
+}
+
+/* Avatar con efecto hover */
+.fi-ta-image {
+    transition: all 0.3s ease;
+}
+
+.fi-ta-row:hover .fi-ta-image {
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+}
+
+/* Botones de acción con mejor estilo */
+.fi-ta-actions button {
+    transition: all 0.2s ease;
+}
+
+.fi-ta-actions button:hover {
+    transform: translateY(-1px);
+}
+
+/* Filtros con mejor espaciado */
+.fi-ta-filters {
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(
+        to bottom,
+        rgba(249, 250, 251, 0.5),
+        transparent
+    );
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* Mensajes de estado vacío con mejor diseño */
+.fi-ta-empty-state {
+    padding: 4rem 2rem;
+}
+
+.fi-ta-empty-state-icon {
+    width: 6rem;
+    height: 6rem;
+    color: rgba(99, 102, 241, 0.5);
+}
+
+/* Paginación con mejor estilo */
+.fi-pagination {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(229, 231, 235, 0.5);
+}
+
+/* Búsqueda con mejor diseño */
+.fi-ta-search-field {
+    transition: all 0.3s ease;
+}
+
+.fi-ta-search-field:focus-within {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: scale(1.02);
+}
+
+/* Tooltips mejorados */
+.fi-tooltip {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .fi-ta-row:hover {
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3),
+            0 8px 10px -6px rgba(99, 102, 241, 0.3);
+    }
+
+    .fi-ta-filters {
+        background: linear-gradient(
+            to bottom,
+            rgba(17, 24, 39, 0.5),
+            transparent
+        );
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .fi-ta-row:hover {
+        transform: none;
+    }
+
+    .fi-ta-filters {
+        padding: 1rem;
+    }
+}

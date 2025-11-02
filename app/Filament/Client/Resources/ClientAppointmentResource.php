@@ -22,6 +22,8 @@ use Filament\Infolists\Components\Tabs;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconPosition;
 use App\Filament\Client\Resources\ClientAppointmentResource\Pages;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
 
 
 class ClientAppointmentResource extends Resource
@@ -195,6 +197,40 @@ class ClientAppointmentResource extends Resource
                     ->label('Detalles')
                     ->icon('heroicon-o-eye')
                     ->color('primary'),
+
+                Action::make('cancel_appointment')
+                    ->label('Cancelar Cita')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn(Appointment $record): bool => $record->status === 'pending')
+                    ->form([
+                        Forms\Components\Textarea::make('cancellation_reason')
+                            ->label('Motivo de la cancelación')
+                            ->placeholder('Por favor, explica brevemente el motivo de la cancelación...')
+                            ->required()
+                            ->rows(4)
+                            ->maxLength(500)
+                            ->helperText('Máximo 500 caracteres'),
+                    ])
+                    ->action(function (Appointment $record, array $data): void {
+                        $record->update([
+                            'status' => 'canceled',
+                            'cancellation_reason' => $data['cancellation_reason'],
+                            'cancelled_by' => 'client',
+                            'cancelled_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Cita cancelada exitosamente')
+                            ->body('Tu cita ha sido cancelada. El profesional será notificado.')
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Cancelar Cita')
+                    ->modalDescription('¿Estás seguro de que deseas cancelar esta cita? Esta acción no se puede deshacer.')
+                    ->modalSubmitActionLabel('Sí, cancelar cita')
+                    ->modalCancelActionLabel('No, mantener cita'),
             ])
             ->defaultSort('start_time', 'desc')
             ->emptyStateIcon('heroicon-o-calendar')
@@ -315,7 +351,32 @@ class ClientAppointmentResource extends Resource
                                 TextEntry::make('notes')
                                     ->label('Notas')
                                     ->markdown()
-                                    ->hiddenLabel(),
+                                    ->placeholder('Sin notas adicionales'),
+
+                                TextEntry::make('cancellation_reason')
+                                    ->label('Motivo de Cancelación')
+                                    ->markdown()
+                                    ->visible(fn($record) => $record->status === 'canceled' && $record->cancellation_reason)
+                                    ->color('danger')
+                                    ->icon('heroicon-o-information-circle'),
+
+                                TextEntry::make('cancelled_by')
+                                    ->label('Cancelada por')
+                                    ->visible(fn($record) => $record->status === 'canceled' && $record->cancelled_by)
+                                    ->formatStateUsing(fn($state) => match ($state) {
+                                        'client' => 'Cliente',
+                                        'professional' => 'Profesional',
+                                        'system' => 'Sistema (automática)',
+                                        default => 'No especificado',
+                                    })
+                                    ->badge()
+                                    ->color('warning'),
+
+                                TextEntry::make('cancelled_at')
+                                    ->label('Fecha de Cancelación')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->visible(fn($record) => $record->status === 'canceled' && $record->cancelled_at)
+                                    ->icon('heroicon-o-calendar'),
                             ]),
 
                         Tabs\Tab::make('Información de Pago')
