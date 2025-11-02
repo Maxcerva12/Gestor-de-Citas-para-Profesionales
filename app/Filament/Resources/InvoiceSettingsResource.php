@@ -232,6 +232,41 @@ class InvoiceSettingsResource extends Resource
                         Tabs\Tab::make('Configuración Fiscal')
                             ->icon('heroicon-o-calculator')
                             ->schema([
+                                Section::make('Descuentos')
+                                    ->description('Configure descuentos globales para las facturas')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('discount_enabled')
+                                            ->label('Habilitar Descuentos')
+                                            ->helperText('Active esta opción para aplicar un descuento global a todas las facturas')
+                                            ->default(function () {
+                                                $value = InvoiceSettings::get('discount_enabled', 'false');
+                                                return $value === 'true' || $value === true || $value === 1 || $value === '1';
+                                            })
+                                            ->live()
+                                            ->afterStateUpdated(function ($state) {
+                                                InvoiceSettings::set('discount_enabled', $state ? 'true' : 'false');
+                                            }),
+
+                                        TextInput::make('discount_percentage')
+                                            ->label('Porcentaje de Descuento (%)')
+                                            ->numeric()
+                                            ->default(fn() => InvoiceSettings::get('discount_percentage', 0))
+                                            ->minValue(0)
+                                            ->maxValue(100)
+                                            ->step(0.01)
+                                            ->suffix('%')
+                                            ->helperText('Porcentaje de descuento que se aplicará sobre el subtotal (antes de impuestos)')
+                                            ->hidden(function ($get) {
+                                                $enabled = $get('discount_enabled');
+                                                return !$enabled;
+                                            })
+                                            ->required(function ($get) {
+                                                return $get('discount_enabled') == true;
+                                            })
+                                            ->live()
+                                            ->afterStateUpdated(fn($state) => InvoiceSettings::set('discount_percentage', $state ?? 0)),
+                                    ])->columns(2),
+
                                 Section::make('Impuestos y Tasas')
                                     ->native(false)
                                     ->description('Configure los impuestos aplicables en Colombia')

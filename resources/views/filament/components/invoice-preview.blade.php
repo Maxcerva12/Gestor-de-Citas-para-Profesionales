@@ -4,8 +4,8 @@
         <div class="flex justify-between items-start">
             <div class="flex items-center space-x-4">
                 @if($logo)
-                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <img src="{{ Storage::url($logo) }}" alt="Logo" class="w-full h-full object-contain rounded-lg">
+                <div class="bg-gray-200 rounded-lg flex items-center justify-center" style="width: 150px; height: auto; max-height: 100px;">
+                    <img src="{{ Storage::url($logo) }}" alt="Logo" style="max-width: 150px; max-height: 100px; width: auto; height: auto; object-fit: contain;" class="rounded-lg">
                 </div>
                 @else
                 <div class="w-16 h-16 rounded-lg flex items-center justify-center text-white text-xl font-bold" style="background-color: {{ $color }};">

@@ -395,22 +395,89 @@ class InvoiceResource extends Resource
                 // Total con formato mejorado similar a las citas
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Total')
-                    ->formatStateUsing(function ($state): string {
-                        if (!$state)
+                    ->formatStateUsing(function ($state, $record): string {
+                        if (!$state && !$record)
                             return 'Sin monto';
 
-                        // Si es un objeto Money, obtener el valor
-                        if ($state instanceof \Brick\Money\Money) {
-                            $amount = $state->getAmount()->toFloat();
-                        } else {
-                            $amount = (float) $state;
-                        }
+                        try {
+                            // Calcular el total aplicando descuento si existe
+                            $subtotal = \Brick\Money\Money::of(0, 'COP');
 
-                        return '$' . number_format($amount, 2, ',', '.');
+                            // Sumar todos los items
+                            if ($record && $record->items) {
+                                foreach ($record->items as $item) {
+                                    if ($item->unit_price instanceof \Brick\Money\Money) {
+                                        $itemTotal = $item->unit_price->multipliedBy($item->quantity);
+                                        $subtotal = $subtotal->plus($itemTotal);
+                                    }
+                                }
+                            }
+
+                            // Aplicar descuento si está habilitado en esta factura
+                            if ($record && $record->discount_enabled && $record->discount_percentage > 0) {
+                                $subtotal = $subtotal->multipliedBy(100 - $record->discount_percentage)
+                                    ->dividedBy(100, \Brick\Math\RoundingMode::HALF_UP);
+                            }
+
+                            // Calcular impuestos sobre el subtotal con descuento
+                            $totalTax = \Brick\Money\Money::of(0, 'COP');
+                            if ($record && $record->items) {
+                                foreach ($record->items as $item) {
+                                    if ($item->unit_price instanceof \Brick\Money\Money) {
+                                        $itemSubtotal = $item->unit_price->multipliedBy($item->quantity);
+
+                                        // Aplicar descuento al item si está habilitado
+                                        if ($record->discount_enabled && $record->discount_percentage > 0) {
+                                            $itemSubtotal = $itemSubtotal->multipliedBy(100 - $record->discount_percentage)
+                                                ->dividedBy(100, \Brick\Math\RoundingMode::HALF_UP);
+                                        }
+
+                                        $itemTax = $itemSubtotal->multipliedBy($item->tax_percentage ?? 19)
+                                            ->dividedBy(100, \Brick\Math\RoundingMode::HALF_UP);
+                                        $totalTax = $totalTax->plus($itemTax);
+                                    }
+                                }
+                            }
+
+                            $total = $subtotal->plus($totalTax);
+                            $amount = $total->getAmount()->toFloat();
+
+                            return '$' . number_format($amount, 2, ',', '.') . ' COP';
+                                                    } catch (\Exception $e) {
+                                                        // Fallback: intentar usar el método totalAmount del modelo
+                                                        if ($record && method_exists($record, 'totalAmount')) {
+                                                            $money = $record->totalAmount();
+                                                            if ($money instanceof \Brick\Money\Money) {
+                                                                $amount = $money->getAmount()->toFloat();
+                                                                return '$' . number_format($amount, 2, ',', '.') . ' COP';
+                                }
+                            }
+
+                            return 'Error: ' . $e->getMessage();
+                        }
+                    })
+                    ->description(function ($record): ?string {
+                        // Mostrar badge de descuento si está aplicado
+                        if ($record && $record->discount_enabled && $record->discount_percentage > 0) {
+                            return 'Descuento aplicado: ' . number_format($record->discount_percentage, 0) . '%';
+                        }
+                        return null;
                     })
                     ->weight(FontWeight::Bold)
-                    ->color('success')
-                    ->icon('heroicon-m-banknotes')
+                    ->color(function ($record): string {
+                        // Si tiene descuento, mostrar en color info (azul)
+                        if ($record && $record->discount_enabled && $record->discount_percentage > 0) {
+                            return 'info';
+                        }
+                        return 'success';
+                    })
+                    ->icon(function ($record): string {
+                        // Icono diferente si tiene descuento
+                        if ($record && $record->discount_enabled && $record->discount_percentage > 0) {
+                            return 'heroicon-m-tag';
+                        }
+                        return 'heroicon-m-banknotes';
+                    })
                     ->sortable(),
 
                 // Fecha de vencimiento con indicador visual

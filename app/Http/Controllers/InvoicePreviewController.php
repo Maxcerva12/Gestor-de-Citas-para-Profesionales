@@ -113,6 +113,11 @@ class InvoicePreviewController extends Controller
                 'watermark' => 'VISTA PREVIA',
             ];
 
+            // Agregar propiedades de descuento para la vista previa
+            $discountEnabledRaw = InvoiceSettings::get('discount_enabled', 'false');
+            $pdfInvoice->discount_enabled = ($discountEnabledRaw === 'true' || $discountEnabledRaw === true || $discountEnabledRaw === 1 || $discountEnabledRaw === '1');
+            $pdfInvoice->discount_percentage = $pdfInvoice->discount_enabled ? (float) InvoiceSettings::get('discount_percentage', 0) : 0;
+
             // Generar el PDF usando el método correcto
             $pdfOutput = $pdfInvoice->getPdfOutput();
 
