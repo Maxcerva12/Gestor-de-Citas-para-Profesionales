@@ -581,6 +581,70 @@ class AppointmentResource extends Resource
 
                     Tables\Actions\EditAction::make(),
 
+                    // Acción de cancelar cita (profesional)
+                    Action::make('cancel')
+                        ->label('Cancelar Cita')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Select::make('cancellation_reason')
+                                ->label('Motivo de Cancelación')
+                                ->options([
+                                    'profesional_emergencia' => 'Emergencia del profesional',
+                                    'profesional_enfermedad' => 'Enfermedad del profesional',
+                                    'profesional_agenda' => 'Conflicto de agenda',
+                                    'profesional_personal' => 'Motivos personales',
+                                    'instalaciones' => 'Problemas en las instalaciones',
+                                    'otro' => 'Otro motivo',
+                                ])
+                                ->required()
+                                ->native(false)
+                                ->reactive(),
+                            
+                            Forms\Components\Textarea::make('cancellation_notes')
+                                ->label('Detalles adicionales (opcional)')
+                                ->placeholder('Proporciona más información sobre la cancelación...')
+                                ->rows(3)
+                                ->maxLength(500)
+                                ->visible(fn(Forms\Get $get) => $get('cancellation_reason') === 'otro'),
+                        ])
+                        ->action(function (Appointment $record, array $data) {
+                            // Construir el motivo completo
+                            $reason = match($data['cancellation_reason']) {
+                                'profesional_emergencia' => 'Emergencia del profesional',
+                                'profesional_enfermedad' => 'Enfermedad del profesional',
+                                'profesional_agenda' => 'Conflicto de agenda',
+                                'profesional_personal' => 'Motivos personales',
+                                'instalaciones' => 'Problemas en las instalaciones',
+                                'otro' => $data['cancellation_notes'] ?? 'Otro motivo',
+                                default => 'Cancelado por el profesional',
+                            };
+
+                            // Actualizar la cita
+                            $record->update([
+                                'status' => 'canceled',
+                                'cancellation_reason' => $reason,
+                                'cancelled_by' => 'professional', // Identificar que fue el profesional
+                                'cancelled_at' => now(),
+                            ]);
+
+                            // Liberar el horario
+                            if ($record->schedule) {
+                                $record->schedule->update(['is_available' => true]);
+                            }
+
+                            Notification::make()
+                                ->title('Cita cancelada')
+                                ->body('La cita ha sido cancelada exitosamente.')
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Cancelar Cita')
+                        ->modalDescription('¿Estás seguro de que deseas cancelar esta cita? El cliente será notificado.')
+                        ->modalSubmitActionLabel('Sí, cancelar')
+                        ->visible(fn(Appointment $record) => $record->status !== 'canceled' && $record->status !== 'completed'),
+
                     Tables\Actions\DeleteAction::make(),
 
                     Action::make('sync_google')
