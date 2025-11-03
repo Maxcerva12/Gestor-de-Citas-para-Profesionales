@@ -22,7 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Registrar DashboardDataService como singleton para reutilizar instancia
+        $this->app->singleton(\App\Services\DashboardDataService::class);
     }
 
     /**

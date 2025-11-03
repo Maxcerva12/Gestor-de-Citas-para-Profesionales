@@ -2,33 +2,27 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Appointment;
+use App\Services\DashboardDataService;
+use Illuminate\Support\Facades\Auth;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
-
 
 class AppointmentsByStatusChart extends ApexChartWidget
 {
     use HasWidgetShield;
+    
     protected static ?string $chartId = 'appointmentsByStatusChart';
     protected static ?string $heading = 'Citas por Estado';
     protected static ?string $subheading = 'Distribución actual de citas';
 
     protected function getOptions(): array
     {
-        $user = auth()->user();
-        $query = Appointment::select('status', DB::raw('count(*) as total'));
+        $currentUser = Auth::user();
+        $canViewAll = $currentUser->hasRole('super_admin');
 
-        // Aplicar filtros según el rol del usuario
-        if ($user && !$user->hasRole('super_admin')) {
-            $query->where('user_id', $user->id);
-        }
-
-        $statusCounts = $query->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
+        $service = app(DashboardDataService::class);
+        $dashboardData = $service->getDashboardData($currentUser, $canViewAll);
+        $statusCounts = $dashboardData['appointments']['by_status'];
 
         $labels = [
             'pending' => 'Pendiente',

@@ -139,6 +139,8 @@ class AppointmentObserver
                 }
             }
         }
+        
+        $this->invalidateDashboardCache($appointment);
     }
 
     /**
@@ -147,6 +149,7 @@ class AppointmentObserver
     public function deleted(Appointment $appointment): void
     {
         Log::info("Observer: Eliminando cita {$appointment->id}");
+        $this->invalidateDashboardCache($appointment);
 
         // Si se elimina la cita, hacer el horario disponible nuevamente
         // solo si no ha expirado
@@ -263,5 +266,16 @@ class AppointmentObserver
             'invoice_id' => $invoice->id,
             'payment_status' => $appointment->payment_status
         ]);
+        
+        $this->invalidateDashboardCache($appointment);
+    }
+
+    /**
+     * Invalidar caché del dashboard cuando cambian las citas
+     */
+    protected function invalidateDashboardCache(Appointment $appointment): void
+    {
+        $service = app(\App\Services\DashboardDataService::class);
+        $service->invalidateCache($appointment->user_id);
     }
 }

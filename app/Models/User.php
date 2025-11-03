@@ -92,5 +92,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->hasMany(Appointment::class);
     }
 
-
+    /**
+     * Relación con las facturas del profesional.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

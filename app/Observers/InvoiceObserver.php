@@ -34,7 +34,7 @@ class InvoiceObserver
      */
     public function created(Invoice $invoice): void
     {
-        //
+        $this->invalidateDashboardCache($invoice);
     }
 
     /**
@@ -42,7 +42,7 @@ class InvoiceObserver
      */
     public function updated(Invoice $invoice): void
     {
-        //
+        $this->invalidateDashboardCache($invoice);
     }
 
     /**
@@ -50,7 +50,7 @@ class InvoiceObserver
      */
     public function deleted(Invoice $invoice): void
     {
-        //
+        $this->invalidateDashboardCache($invoice);
     }
 
     /**
@@ -58,7 +58,7 @@ class InvoiceObserver
      */
     public function restored(Invoice $invoice): void
     {
-        //
+        $this->invalidateDashboardCache($invoice);
     }
 
     /**
@@ -66,6 +66,15 @@ class InvoiceObserver
      */
     public function forceDeleted(Invoice $invoice): void
     {
-        //
+        $this->invalidateDashboardCache($invoice);
+    }
+
+    /**
+     * Invalidar caché del dashboard cuando cambian las facturas
+     */
+    protected function invalidateDashboardCache(Invoice $invoice): void
+    {
+        $service = app(\App\Services\DashboardDataService::class);
+        $service->invalidateCache($invoice->user_id);
     }
 }
