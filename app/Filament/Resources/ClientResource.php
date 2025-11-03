@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
-use App\Forms\Components\Odontogram;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -178,70 +177,6 @@ class ClientResource extends Resource
                                             ]),
                                     ]),
 
-                                Forms\Components\Section::make('Información Médica Básica')
-                                    ->description('Datos médicos importantes del paciente')
-                                    ->collapsible()
-                                    ->schema([
-                                        Forms\Components\Grid::make(3)
-                                            ->schema([
-                                                Forms\Components\DatePicker::make('fecha_nacimiento')
-                                                    ->label('Fecha de Nacimiento')
-                                                    ->native(false)
-                                                    ->displayFormat('d/m/Y')
-                                                    ->required(),
-                                                Forms\Components\Select::make('tipo_sangre')
-                                                    ->label('Tipo de Sangre')
-                                                    ->native(false)
-                                                    ->options([
-                                                        'A+' => 'A+',
-                                                        'A-' => 'A-',
-                                                        'B+' => 'B+',
-                                                        'B-' => 'B-',
-                                                        'AB+' => 'AB+',
-                                                        'AB-' => 'AB-',
-                                                        'O+' => 'O+',
-                                                        'O-' => 'O-',
-                                                    ]),
-                                                Forms\Components\Select::make('aseguradora')
-                                                    ->label('EPS/Aseguradora')
-                                                    ->options([
-                                                        'SaludCoop' => 'SaludCoop',
-                                                        'Sanitas' => 'Sanitas',
-                                                        'Sura' => 'Sura',
-                                                        'Compensar' => 'Compensar',
-                                                        'Famisanar' => 'Famisanar',
-                                                        'Nueva EPS' => 'Nueva EPS',
-                                                        'Medimás' => 'Medimás',
-                                                        'Coomeva EPS' => 'Coomeva EPS',
-                                                        'Comfamiliar' => 'Comfamiliar',
-                                                        'Cruz Blanca' => 'Cruz Blanca',
-                                                        'Particular' => 'Particular',
-                                                    ])
-                                                    ->searchable()
-                                                    ->createOptionForm([
-                                                        Forms\Components\TextInput::make('name')
-                                                            ->label('Nombre de la EPS/Aseguradora')
-                                                            ->required(),
-                                                    ])
-                                                    ->createOptionUsing(function ($data) {
-                                                        return $data['name'];
-                                                    })
-                                                    ->placeholder('Selecciona o ingresa una EPS'),
-                                            ]),
-
-                                        Forms\Components\Textarea::make('historial_medico')
-                                            ->label('Historial Médico Relevante')
-                                            ->placeholder('Enfermedades previas, cirugías, medicamentos actuales...')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
-
-                                        Forms\Components\Textarea::make('alergias')
-                                            ->label('Alergias Conocidas')
-                                            ->placeholder('Alergias a medicamentos, alimentos, materiales dentales...')
-                                            ->rows(2)
-                                            ->columnSpanFull(),
-                                    ]),
-
                                 Forms\Components\Section::make('Contacto de Emergencia')
                                     ->description('Persona a contactar en caso de emergencia')
                                     ->collapsible()
@@ -344,33 +279,6 @@ class ClientResource extends Resource
                                             ->helperText('Estas notas son solo visibles para los administradores'),
                                     ]),
                             ]),
-                        Forms\Components\Tabs\Tab::make('Odontograma')
-                            ->icon('heroicon-o-face-smile')
-                            ->schema([
-                                Forms\Components\Section::make('Información Dental')
-                                    ->description('Datos odontológicos del paciente')
-                                    ->schema([
-                                        Forms\Components\Grid::make(2)
-                                            ->schema([
-                                                Forms\Components\DatePicker::make('last_dental_visit')
-                                                    ->label('Última Visita Dental')
-                                                    ->displayFormat('d/m/Y')
-                                                    ->native(false),
-                                                Forms\Components\Textarea::make('dental_notes')
-                                                    ->label('Notas Dentales')
-                                                    ->rows(3)
-                                                    ->helperText('Observaciones generales sobre el estado dental'),
-                                            ]),
-                                    ]),
-                                Forms\Components\Section::make('Odontograma Interactivo')
-                                    ->description('Haz clic en los dientes para actualizar su estado')
-                                    ->schema([
-                                        Odontogram::make('odontogram')
-                                            ->label('')
-                                            ->showPermanent(true)
-                                            ->showTemporary(true),
-                                    ]),
-                            ]),
                     ])
                     ->columnSpan('full'),
             ]);
@@ -448,15 +356,6 @@ class ClientResource extends Resource
                     ->label('Estado')
                     ->boolean()
                     ->sortable()
-                    ->toggleable(),
-                Tables\Columns\IconColumn::make('has_odontogram')
-                    ->label('Odontograma')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-face-smile')
-                    ->falseIcon('heroicon-o-face-frown')
-                    ->trueColor('success')
-                    ->falseColor('gray')
-                    ->tooltip(fn($record) => $record->has_odontogram ? 'Tiene odontograma registrado' : 'Sin odontograma')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Registro')

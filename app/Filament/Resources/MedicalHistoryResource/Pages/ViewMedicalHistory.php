@@ -67,48 +67,259 @@ class ViewMedicalHistory extends ViewRecord
                                             ->columnSpanFull(),
                                     ]),
 
-                                Components\Section::make('Antecedentes Médicos')
+                                // Nueva sección de Anamnesis Básica
+                                Components\Section::make('ANAMNESIS - Datos Básicos Sobre Salud')
                                     ->schema([
-                                        Components\TextEntry::make('antecedentes_personales')
-                                            ->label('Antecedentes Personales')
-                                            ->placeholder('No registrado'),
-                                        Components\TextEntry::make('antecedentes_familiares')
-                                            ->label('Antecedentes Familiares')
-                                            ->placeholder('No registrado'),
-                                        Components\TextEntry::make('enfermedades_cronicas')
-                                            ->label('Enfermedades Crónicas')
-                                            ->placeholder('No registrado')
-                                            ->columnSpanFull(),
-                                    ])
-                                    ->columns(2),
+                                        // Datos generales de salud
+                                        $this->createAnamnesisDisplay('tratamiento_medico', 'TRATAMIENTO MÉDICO'),
+                                        $this->createAnamnesisDisplay('ingestion_medicamentos', 'INGESTIÓN DE MEDICAMENTOS'),
+                                        $this->createAnamnesisDisplay('reaccion_alergica', 'REACCIÓN ALÉRGICA'),
+                                        $this->createAnamnesisDisplay('hemorragias', 'HEMORRAGIAS'),
+                                        $this->createAnamnesisDisplay('irradiaciones', 'IRRADIACIONES'),
+                                        $this->createAnamnesisDisplay('sinusitis', 'SINUSITIS'),
+                                        $this->createAnamnesisDisplay('enfermedades_respiratorias', 'ENFERMEDADES RESPIRATORIAS'),
+                                        $this->createAnamnesisDisplay('cardiopatias', 'CARDIOPATÍAS'),
+                                        $this->createAnamnesisDisplay('diabetes', 'DIABETES'),
+                                        $this->createAnamnesisDisplay('fiebre_reumatica', 'FIEBRE REUMÁTICA'),
 
-                                Components\Section::make('Medicamentos y Alergias')
-                                    ->schema([
-                                        Components\TextEntry::make('medicamentos_actuales')
-                                            ->label('Medicamentos Actuales')
-                                            ->placeholder('No registrado'),
-                                        Components\TextEntry::make('alergias_medicamentos')
-                                            ->label('Alergias a Medicamentos')
-                                            ->placeholder('No registrado'),
+                                        // Segunda fila
+                                        $this->createAnamnesisDisplay('hepatitis', 'HEPATITIS'),
+                                        $this->createAnamnesisDisplay('hipertension', 'HIPERTENSIÓN'),
+
+                                        // Subsección de Hábitos de Higiene Oral
+                                        Components\Section::make('HÁBITOS DE HIGIENE ORAL')
+                                            ->schema([
+                                                Components\Grid::make(2)
+                                                    ->schema([
+                                                        $this->createAnamnesisDisplay('higiene_oral_cepillado', 'Cepillado'),
+                                                        $this->createAnamnesisDisplay('higiene_oral_seda_dental', 'Seda Dental'),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+                                            
+                                        // Campo de texto para observaciones
+                                        Components\TextEntry::make('anamnesis_basica.observaciones')
+                                            ->label('OBSERVACIONES')
+                                            ->columnSpanFull()
+                                            ->state(function () {
+                                                $anamnesisData = $this->record->anamnesis_basica ?? [];
+                                                $value = $anamnesisData['observaciones'] ?? '';
+                                                return !empty(trim($value)) ? $value : 'Sin observaciones';
+                                            }),
                                     ])
-                                    ->columns(2),
+                                    ->columns(2)
+                                    ->collapsible(),
+
+                                // Nueva sección de Examen Físico Estomatológico
+                                Components\Section::make('EXAMEN FÍSICO ESTOMATOLÓGICO')
+                                    ->schema([
+                                        // Signos Vitales
+                                        Components\Section::make('Signos vitales')
+                                            ->schema([
+                                                Components\Grid::make(4)
+                                                    ->schema([
+                                                        Components\TextEntry::make('examen_fisico_estomatologico.temperatura')
+                                                            ->label('Temperatura')
+                                                            ->suffix('°C')
+                                                            ->state(function () {
+                                                                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                                                                $value = $examenData['temperatura'] ?? '';
+                                                                return !empty($value) ? $value : 'No registrado';
+                                                            }),
+                                                        
+                                                        Components\TextEntry::make('examen_fisico_estomatologico.pulso')
+                                                            ->label('Pulso')
+                                                            ->suffix('lat/min')
+                                                            ->state(function () {
+                                                                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                                                                $value = $examenData['pulso'] ?? '';
+                                                                return !empty($value) ? $value : 'No registrado';
+                                                            }),
+                                                        
+                                                        Components\TextEntry::make('examen_fisico_estomatologico.presion_arterial')
+                                                            ->label('Presión arterial')
+                                                            ->suffix('mmHg')
+                                                            ->state(function () {
+                                                                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                                                                $value = $examenData['presion_arterial'] ?? '';
+                                                                return !empty($value) ? $value : 'No registrado';
+                                                            }),
+                                                        
+                                                        Components\TextEntry::make('examen_fisico_estomatologico.respiracion')
+                                                            ->label('Respiración')
+                                                            ->suffix('resp/min')
+                                                            ->state(function () {
+                                                                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                                                                $value = $examenData['respiracion'] ?? '';
+                                                                return !empty($value) ? $value : 'No registrado';
+                                                            }),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+                                        
+                                        // Exámenes por área anatómica
+                                        Components\Section::make('Evaluación física')
+                                            ->schema([
+                                                Components\Grid::make(2)
+                                                    ->schema([
+                                                        $this->createExamenFisicoDisplay('art_temporomandibular', 'ART. TEMPOROMANDIBULAR'),
+                                                        $this->createExamenFisicoDisplay('labios', 'LABIOS'),
+                                                        $this->createExamenFisicoDisplay('lengua', 'LENGUA'),
+                                                        $this->createExamenFisicoDisplay('paladar', 'PALADAR'),
+                                                        $this->createExamenFisicoDisplay('piso_boca', 'PISO DE BOCA'),
+                                                        $this->createExamenFisicoDisplay('carrillos', 'CARRILLOS'),
+                                                        $this->createExamenFisicoDisplay('glandulas_salivales', 'GLÁNDULAS SALIVALES'),
+                                                        $this->createExamenFisicoDisplay('maxilares', 'MAXILARES'),
+                                                        $this->createExamenFisicoDisplay('senos_max', 'SENOS MAX.'),
+                                                        $this->createExamenFisicoDisplay('musc_masticatorios', 'MUSC. MASTICATORIOS'),
+                                                        $this->createExamenFisicoDisplay('sistema_nervioso_vascular_linfatico', 'SISTEMAS NERVIOSO VASCULAR LINFÁTICO REGIONAL'),
+                                                        $this->createExamenFisicoDisplay('funcion_oclusion', 'FUNCIÓN DE OCLUSIÓN'),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+
+                                        // Campo de observaciones
+                                        Components\TextEntry::make('examen_fisico_estomatologico.observaciones')
+                                            ->label('Observaciones')
+                                            ->columnSpanFull()
+                                            ->state(function () {
+                                                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                                                $value = $examenData['observaciones'] ?? '';
+                                                return !empty(trim($value)) ? $value : 'Sin observaciones';
+                                            }),
+                                    ])
+                                    ->collapsible(),
+
+                                // Nueva sección de Examen Dental
+                                Components\Section::make('EXAMEN DENTAL')
+                                    ->schema([
+                                        // Hallazgos dentales principales
+                                        Components\Section::make('Hallazgos dentales')
+                                            ->schema([
+                                                Components\Grid::make(2)
+                                                    ->schema([
+                                                        $this->createExamenDentalDisplay('supernumerarios', 'SUPERNUMERARIOS'),
+                                                        $this->createExamenDentalDisplay('placa_blanda', 'PLACA BLANDA'),
+                                                        $this->createExamenDentalDisplay('abrasion', 'ABRASIÓN'),
+                                                        $this->createExamenDentalDisplay('placa_calcificada', 'PLACA CALCIFICADA'),
+                                                        $this->createExamenDentalDisplay('manchas', 'MANCHAS'),
+                                                        $this->createExamenDentalDisplay('patologia_pulpar', 'PATOLOGÍA PULPAR'),
+                                                    ]),
+                                                
+                                                // Campo de texto para otros hallazgos
+                                                Components\TextEntry::make('examen_dental.otros_cual')
+                                                    ->label('OTROS')
+                                                    ->columnSpanFull()
+                                                    ->state(function () {
+                                                        $examenData = $this->record->examen_dental ?? [];
+                                                        $value = $examenData['otros_cual'] ?? '';
+                                                        return !empty(trim($value)) ? $value : 'No especificado';
+                                                    }),
+                                            ])
+                                            ->compact(),
+
+                                        // Campo de observaciones
+                                        Components\TextEntry::make('examen_dental.observaciones')
+                                            ->label('OBSERVACIONES')
+                                            ->columnSpanFull()
+                                            ->state(function () {
+                                                $examenData = $this->record->examen_dental ?? [];
+                                                $value = $examenData['observaciones'] ?? '';
+                                                return !empty(trim($value)) ? $value : 'Sin observaciones';
+                                            }),
+
+                                        // Sección de Estudios Recomendados
+                                        Components\Section::make('Estudios recomendados')
+                                            ->schema([
+                                                Components\Grid::make(2)
+                                                    ->schema([
+                                                        $this->createExamenDentalDisplay('radiograficos', 'RADIOGRÁFICOS'),
+                                                        $this->createExamenDentalDisplay('modelos_estudio', 'MODELOS DE ESTUDIO'),
+                                                        $this->createExamenDentalDisplay('laboratorio_clinico', 'LABORATORIO CLÍNICO'),
+                                                    ]),
+                                                
+                                                // Campo de texto para otros estudios
+                                                Components\TextEntry::make('examen_dental.otros_estudios')
+                                                    ->label('OTROS ESTUDIOS')
+                                                    ->columnSpanFull()
+                                                    ->state(function () {
+                                                        $examenData = $this->record->examen_dental ?? [];
+                                                        $value = $examenData['otros_estudios'] ?? '';
+                                                        return !empty(trim($value)) ? $value : 'No especificado';
+                                                    }),
+                                            ])
+                                            ->compact(),
+                                    ])
+                                    ->collapsible(),
+
+                                // Nueva sección de Evaluación del Estado Periodontal
+                                Components\Section::make('EVALUACIÓN DEL ESTADO PERIODONTAL')
+                                    ->schema([
+                                        // Evaluaciones periodontales
+                                        Components\Section::make('Estado periodontal')
+                                            ->schema([
+                                                Components\Grid::make(2)
+                                                    ->schema([
+                                                        $this->createEvaluacionPeriodontalDisplay('placa_dentobacteriana', 'PLACA DENTOBACTERIANA'),
+                                                        $this->createEvaluacionPeriodontalDisplay('periodontal', 'PERIODONTAL'),
+                                                        $this->createEvaluacionPeriodontalDisplay('calculo_supragingival', 'CÁLCULO SUPRAGINGIVAL'),
+                                                        $this->createEvaluacionPeriodontalDisplay('gingivitis', 'GINGIVITIS'),
+                                                        $this->createEvaluacionPeriodontalDisplay('calculo_infragingival', 'CÁLCULO INFRAGINGIVAL'),
+                                                        $this->createEvaluacionPeriodontalDisplay('sangrado_gingival', 'SANGRADO GINGIVAL'),
+                                                        $this->createEvaluacionPeriodontalDisplay('movilidad', 'MOVILIDAD'),
+                                                    ]),
+                                                
+                                                // Campo de texto para otros hallazgos
+                                                Components\TextEntry::make('evaluacion_periodontal.otro_cual')
+                                                    ->label('OTRO')
+                                                    ->columnSpanFull()
+                                                    ->state(function () {
+                                                        $evaluacionData = $this->record->evaluacion_periodontal ?? [];
+                                                        $value = $evaluacionData['otro_cual'] ?? '';
+                                                        return !empty(trim($value)) ? $value : 'No especificado';
+                                                    }),
+                                            ])
+                                            ->compact(),
+
+                                        // Campo de observaciones
+                                        Components\TextEntry::make('evaluacion_periodontal.observaciones')
+                                            ->label('OBSERVACIONES')
+                                            ->columnSpanFull()
+                                            ->state(function () {
+                                                $evaluacionData = $this->record->evaluacion_periodontal ?? [];
+                                                $value = $evaluacionData['observaciones'] ?? '';
+                                                return !empty(trim($value)) ? $value : 'Sin observaciones';
+                                            }),
+                                    ])
+                                    ->collapsible(),
 
                                 Components\Section::make('Historial Médico')
                                     ->schema([
-                                        Components\TextEntry::make('cirugias_previas')
-                                            ->label('Cirugías Previas')
-                                            ->placeholder('No registrado'),
-                                        Components\TextEntry::make('hospitalizaciones')
-                                            ->label('Hospitalizaciones')
-                                            ->placeholder('No registrado'),
-                                        Components\TextEntry::make('transfusiones')
-                                            ->label('Transfusiones Sanguíneas')
-                                            ->placeholder('No registrado'),
+                                        // Antecedentes médicos con badges organizados
+                                        Components\Section::make('Antecedentes médicos')
+                                            ->schema([
+                                                Components\Grid::make(1)
+                                                    ->schema([
+                                                        $this->createHistorialMedicoDisplay('cirugias_previas', 'CIRUGÍAS PREVIAS'),
+                                                        $this->createHistorialMedicoDisplay('hospitalizaciones', 'HOSPITALIZACIONES'),
+                                                        $this->createHistorialMedicoDisplay('transfusiones', 'TRANSFUSIONES SANGUÍNEAS'),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+                                        
+                                        // Campo de texto para hábitos
                                         Components\TextEntry::make('habitos')
-                                            ->label('Hábitos')
+                                            ->label('HÁBITOS')
+                                            ->columnSpanFull()
                                             ->placeholder('No registrado'),
+
+                                        // Campo de observaciones
+                                        Components\TextEntry::make('historial_observaciones')
+                                            ->label('OBSERVACIONES')
+                                            ->columnSpanFull()
+                                            ->placeholder('Sin observaciones'),
                                     ])
-                                    ->columns(2),
+                                    ->collapsible(),
 
                                 Components\Section::make('Antecedentes Odontológicos')
                                     ->schema([
@@ -226,5 +437,205 @@ class ViewMedicalHistory extends ViewRecord
     protected function getFooterWidgets(): array
     {
         return [];
+    }
+
+    /**
+     * Crear campo de visualización para anamnesis con formato de badge
+     */
+    private function createAnamnesisDisplay(string $key, string $label): Components\TextEntry
+    {
+        return Components\TextEntry::make("anamnesis_basica.{$key}")
+            ->label($label)
+            ->state(function () use ($key) {
+                $anamnesisData = $this->record->anamnesis_basica ?? [];
+                $value = $anamnesisData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'SÍ',
+                    'no' => 'NO',
+                    'no_sabe' => 'NO SABE',
+                    default => 'No registrado'
+                };
+            })
+            ->badge()
+            ->icon(function () use ($key) {
+                $anamnesisData = $this->record->anamnesis_basica ?? [];
+                $value = $anamnesisData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'heroicon-o-check-circle',
+                    'no' => 'heroicon-o-x-circle',
+                    'no_sabe' => 'heroicon-o-question-mark-circle',
+                    default => 'heroicon-o-minus-circle'
+                };
+            })
+            ->color(function () use ($key) {
+                $anamnesisData = $this->record->anamnesis_basica ?? [];
+                $value = $anamnesisData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'success',
+                    'no' => 'danger',
+                    'no_sabe' => 'warning',
+                    default => 'gray'
+                };
+            });
+    }
+
+    /**
+     * Crear campo de visualización para examen físico con formato de badge
+     */
+    private function createExamenFisicoDisplay(string $key, string $label): Components\TextEntry
+    {
+        return Components\TextEntry::make("examen_fisico_estomatologico.{$key}")
+            ->label($label)
+            ->state(function () use ($key) {
+                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'normal' => 'NORMAL',
+                    'anormal' => 'ANORMAL',
+                    default => 'No registrado'
+                };
+            })
+            ->badge()
+            ->icon(function () use ($key) {
+                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'normal' => 'heroicon-o-check-circle',
+                    'anormal' => 'heroicon-o-exclamation-triangle',
+                    default => 'heroicon-o-minus-circle'
+                };
+            })
+            ->color(function () use ($key) {
+                $examenData = $this->record->examen_fisico_estomatologico ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'normal' => 'success',
+                    'anormal' => 'warning',
+                    default => 'gray'
+                };
+            });
+    }
+
+    /**
+     * Crear campo de visualización para examen dental con formato de badge
+     */
+    private function createExamenDentalDisplay(string $key, string $label): Components\TextEntry
+    {
+        return Components\TextEntry::make("examen_dental.{$key}")
+            ->label($label)
+            ->state(function () use ($key) {
+                $examenData = $this->record->examen_dental ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'SÍ',
+                    'no' => 'NO',
+                    default => 'No registrado'
+                };
+            })
+            ->badge()
+            ->icon(function () use ($key) {
+                $examenData = $this->record->examen_dental ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'heroicon-o-exclamation-triangle',
+                    'no' => 'heroicon-o-check-circle',
+                    default => 'heroicon-o-minus-circle'
+                };
+            })
+            ->color(function () use ($key) {
+                $examenData = $this->record->examen_dental ?? [];
+                $value = $examenData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'danger',  // Rojo para presencia de patología
+                    'no' => 'success', // Verde para ausencia de patología (normal)
+                    default => 'gray'
+                };
+            });
+    }
+
+    /**
+     * Crear campo de visualización para historial médico con formato de badge
+     */
+    private function createHistorialMedicoDisplay(string $key, string $label): Components\TextEntry
+    {
+        return Components\TextEntry::make($key)
+            ->label($label)
+            ->state(function () use ($key) {
+                $value = $this->record->{$key} ?? null;
+
+                return match($value) {
+                    'si' => 'SÍ',
+                    'no' => 'NO',
+                    default => 'No registrado'
+                };
+            })
+            ->badge()
+            ->icon(function () use ($key) {
+                $value = $this->record->{$key} ?? null;
+
+                return match($value) {
+                    'si' => 'heroicon-o-exclamation-triangle',
+                    'no' => 'heroicon-o-check-circle',
+                    default => 'heroicon-o-minus-circle'
+                };
+            })
+            ->color(function () use ($key) {
+                $value = $this->record->{$key} ?? null;
+
+                return match($value) {
+                    'si' => 'warning',  // Amarillo para antecedentes positivos
+                    'no' => 'success',  // Verde para antecedentes negativos (normal)
+                    default => 'gray'
+                };
+            });
+    }
+
+    /**
+     * Crear campo de visualización para evaluación periodontal con formato de badge
+     */
+    private function createEvaluacionPeriodontalDisplay(string $key, string $label): Components\TextEntry
+    {
+        return Components\TextEntry::make("evaluacion_periodontal.{$key}")
+            ->label($label)
+            ->state(function () use ($key) {
+                $evaluacionData = $this->record->evaluacion_periodontal ?? [];
+                $value = $evaluacionData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'SÍ',
+                    'no' => 'NO',
+                    default => 'No registrado'
+                };
+            })
+            ->badge()
+            ->icon(function () use ($key) {
+                $evaluacionData = $this->record->evaluacion_periodontal ?? [];
+                $value = $evaluacionData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'heroicon-o-exclamation-triangle',
+                    'no' => 'heroicon-o-check-circle',
+                    default => 'heroicon-o-minus-circle'
+                };
+            })
+            ->color(function () use ($key) {
+                $evaluacionData = $this->record->evaluacion_periodontal ?? [];
+                $value = $evaluacionData[$key] ?? null;
+
+                return match($value) {
+                    'si' => 'danger',  // Rojo para presencia de problemas periodontales
+                    'no' => 'success', // Verde para ausencia de problemas (normal)
+                    default => 'gray'
+                };
+            });
     }
 }

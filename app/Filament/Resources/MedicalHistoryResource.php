@@ -144,64 +144,474 @@ class MedicalHistoryResource extends Resource
                                     ])
                                     ->columns(1),
 
-                                Forms\Components\Section::make('Antecedentes Médicos')
+                                // Nueva sección de Anamnesis Básica
+                                Forms\Components\Section::make('ANAMNESIS - Datos Básicos Sobre Salud')
+                                    ->description('Seleccione SÍ, NO o NO SABE para cada pregunta')
                                     ->schema([
-                                        Forms\Components\Textarea::make('antecedentes_personales')
-                                            ->label('Antecedentes Personales')
-                                            ->helperText('Enfermedades previas, condiciones crónicas, etc.')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
+                                        // Preguntas organizadas en 2 columnas para mejor legibilidad
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.tratamiento_medico')
+                                                    ->label('TRATAMIENTO MÉDICO')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.ingestion_medicamentos')
+                                                    ->label('INGESTIÓN DE MEDICAMENTOS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
 
-                                        Forms\Components\Textarea::make('antecedentes_familiares')
-                                            ->label('Antecedentes Familiares')
-                                            ->helperText('Enfermedades hereditarias en la familia')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.reaccion_alergica')
+                                                    ->label('REACCIÓN ALÉRGICA')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.hemorragias')
+                                                    ->label('HEMORRAGIAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
 
-                                        Forms\Components\Textarea::make('enfermedades_cronicas')
-                                            ->label('Enfermedades Crónicas')
-                                            ->helperText('Diabetes, hipertensión, cardiopatías, etc.')
-                                            ->rows(2)
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.irradiaciones')
+                                                    ->label('IRRADIACIONES')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.sinusitis')
+                                                    ->label('SINUSITIS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.enfermedades_respiratorias')
+                                                    ->label('ENFERMEDADES RESPIRATORIAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.cardiopatias')
+                                                    ->label('CARDIOPATÍAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.diabetes')
+                                                    ->label('DIABETES')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.fiebre_reumatica')
+                                                    ->label('FIEBRE REUMÁTICA')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.hepatitis')
+                                                    ->label('HEPATITIS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('anamnesis_basica.hipertension')
+                                                    ->label('HIPERTENSIÓN')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        // Sección de Hábitos de Higiene Oral
+                                        Forms\Components\Section::make('HÁBITOS DE HIGIENE ORAL')
+                                            ->schema([
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\Radio::make('anamnesis_basica.higiene_oral_cepillado')
+                                                            ->label('Cepillado')
+                                                            ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                            ->inline()
+                                                            ->columnSpan(1),
+                                                        
+                                                        Forms\Components\Radio::make('anamnesis_basica.higiene_oral_seda_dental')
+                                                            ->label('Seda Dental')
+                                                            ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                            ->inline()
+                                                            ->columnSpan(1),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+
+                                        Forms\Components\Textarea::make('anamnesis_basica.observaciones')
+                                            ->label('OBSERVACIONES:')
+                                            ->rows(3)
                                             ->columnSpanFull(),
                                     ])
-                                    ->columns(1),
+                                    ->collapsible(),
 
-                                Forms\Components\Section::make('Medicamentos y Alergias')
+                                // Nueva sección de Examen Físico Estomatológico
+                                Forms\Components\Section::make('EXAMEN FÍSICO ESTOMATOLÓGICO')
+                                    ->description('Evaluación física del paciente')
                                     ->schema([
-                                        Forms\Components\Textarea::make('medicamentos_actuales')
-                                            ->label('Medicamentos Actuales')
-                                            ->helperText('Lista de medicamentos que está tomando actualmente')
+                                        // Signos Vitales
+                                        Forms\Components\Grid::make(4)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('examen_fisico_estomatologico.temperatura')
+                                                    ->label('Temperatura (°C)')
+                                                    ->numeric()
+                                                    ->placeholder('36.5')
+                                                    ->suffix('°C')
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\TextInput::make('examen_fisico_estomatologico.pulso')
+                                                    ->label('Pulso (lat/min)')
+                                                    ->numeric()
+                                                    ->placeholder('72')
+                                                    ->suffix('lat/min')
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\TextInput::make('examen_fisico_estomatologico.presion_arterial')
+                                                    ->label('Presión arterial (mmHg)')
+                                                    ->placeholder('120/80')
+                                                    ->suffix('mmHg')
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\TextInput::make('examen_fisico_estomatologico.respiracion')
+                                                    ->label('Respiración (resp/min)')
+                                                    ->numeric()
+                                                    ->placeholder('16')
+                                                    ->suffix('resp/min')
+                                                    ->columnSpan(1),
+                                            ]),
+                                        
+                                        // Examenes por área anatómica
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.art_temporomandibular')
+                                                    ->label('ART. TEMPOROMANDIBULAR')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.labios')
+                                                    ->label('LABIOS')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.lengua')
+                                                    ->label('LENGUA')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.paladar')
+                                                    ->label('PALADAR')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.piso_boca')
+                                                    ->label('PISO DE BOCA')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.carrillos')
+                                                    ->label('CARRILLOS')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.glandulas_salivales')
+                                                    ->label('GLÁNDULAS SALIVALES')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.maxilares')
+                                                    ->label('MAXILARES')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.senos_max')
+                                                    ->label('SENOS MAX.')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.musc_masticatorios')
+                                                    ->label('MUSC. MASTICATORIOS')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.sistema_nervioso_vascular_linfatico')
+                                                    ->label('SISTEMAS NERVIOSO VASCULAR LINFÁTICO REGIONAL')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_fisico_estomatologico.funcion_oclusion')
+                                                    ->label('FUNCIÓN DE OCLUSIÓN')
+                                                    ->options(['normal' => 'NORMAL', 'anormal' => 'ANORMAL'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Textarea::make('examen_fisico_estomatologico.observaciones')
+                                            ->label('Observaciones:')
+                                            ->placeholder('Describa cualquier hallazgo anormal o relevante...')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->collapsible(),
+
+                                // Nueva sección de Examen Dental
+                                Forms\Components\Section::make('EXAMEN DENTAL')
+                                    ->description('Evaluación del estado dental del paciente')
+                                    ->schema([
+                                        // Primera subsección de hallazgos dentales
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_dental.supernumerarios')
+                                                    ->label('SUPERNUMERARIOS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_dental.placa_blanda')
+                                                    ->label('PLACA BLANDA')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_dental.abrasion')
+                                                    ->label('ABRASIÓN')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('examen_dental.placa_calcificada')
+                                                    ->label('PLACA CALCIFICADA')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_dental.manchas')
+                                                    ->label('MANCHAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\TextInput::make('examen_dental.otros_cual')
+                                                    ->label('OTROS (CUÁL)')
+                                                    ->placeholder('Especificar otros hallazgos...')
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(1)
+                                            ->schema([
+                                                Forms\Components\Radio::make('examen_dental.patologia_pulpar')
+                                                    ->label('PATOLOGÍA PULPAR')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        // Campo de observaciones para el examen dental
+                                        Forms\Components\Textarea::make('examen_dental.observaciones')
+                                            ->label('OBSERVACIONES:')
+                                            ->placeholder('Describa hallazgos específicos del examen dental...')
                                             ->rows(3)
                                             ->columnSpanFull(),
 
-                                        Forms\Components\Textarea::make('alergias_medicamentos')
-                                            ->label('Alergias a Medicamentos')
-                                            ->helperText('Especificar cualquier alergia conocida')
-                                            ->rows(2)
+                                        // Sección de Estudios Recomendados
+                                        Forms\Components\Section::make('ESTUDIOS RECOMENDADOS')
+                                            ->schema([
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\Radio::make('examen_dental.radiograficos')
+                                                            ->label('RADIOGRÁFICOS')
+                                                            ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                            ->inline()
+                                                            ->columnSpan(1),
+                                                        
+                                                        Forms\Components\Radio::make('examen_dental.modelos_estudio')
+                                                            ->label('MODELOS DE ESTUDIO')
+                                                            ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                            ->inline()
+                                                            ->columnSpan(1),
+                                                    ]),
+
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\Radio::make('examen_dental.laboratorio_clinico')
+                                                            ->label('LABORATORIO CLÍNICO')
+                                                            ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                            ->inline()
+                                                            ->columnSpan(1),
+                                                        
+                                                        Forms\Components\TextInput::make('examen_dental.otros_estudios')
+                                                            ->label('OTROS')
+                                                            ->placeholder('Especificar otros estudios...')
+                                                            ->columnSpan(1),
+                                                    ]),
+                                            ])
+                                            ->compact(),
+                                    ])
+                                    ->collapsible(),
+
+                                // Nueva sección de Evaluación del Estado Periodontal
+                                Forms\Components\Section::make('EVALUACIÓN DEL ESTADO PERIODONTAL')
+                                    ->description('Evaluación del estado de las encías y estructuras de soporte')
+                                    ->schema([
+                                        // Primera fila de evaluaciones periodontales
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('evaluacion_periodontal.placa_dentobacteriana')
+                                                    ->label('PLACA DENTOBACTERIANA')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('evaluacion_periodontal.periodontal')
+                                                    ->label('PERIODONTAL')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('evaluacion_periodontal.calculo_supragingival')
+                                                    ->label('CÁLCULO SUPRAGINGIVAL')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('evaluacion_periodontal.gingivitis')
+                                                    ->label('GINGIVITIS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('evaluacion_periodontal.calculo_infragingival')
+                                                    ->label('CÁLCULO INFRAGINGIVAL')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\Radio::make('evaluacion_periodontal.sangrado_gingival')
+                                                    ->label('SANGRADO GINGIVAL')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('evaluacion_periodontal.movilidad')
+                                                    ->label('MOVILIDAD')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                Forms\Components\TextInput::make('evaluacion_periodontal.otro_cual')
+                                                    ->label('OTRO')
+                                                    ->placeholder('Especificar otros hallazgos periodontales...')
+                                                    ->columnSpan(1),
+                                            ]),
+
+                                        // Campo de observaciones para la evaluación periodontal
+                                        Forms\Components\Textarea::make('evaluacion_periodontal.observaciones')
+                                            ->label('OBSERVACIONES:')
+                                            ->placeholder('Describa hallazgos específicos de la evaluación periodontal...')
+                                            ->rows(3)
                                             ->columnSpanFull(),
                                     ])
-                                    ->columns(1),
+                                    ->collapsible(),
 
                                 Forms\Components\Section::make('Historial Médico')
                                     ->schema([
-                                        Forms\Components\Textarea::make('cirugias_previas')
-                                            ->label('Cirugías Previas')
-                                            ->rows(2),
+                                        Forms\Components\Grid::make(1)
+                                            ->schema([
+                                                Forms\Components\Radio::make('cirugias_previas')
+                                                    ->label('CIRUGÍAS PREVIAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
 
-                                        Forms\Components\Textarea::make('hospitalizaciones')
-                                            ->label('Hospitalizaciones')
-                                            ->rows(2),
+                                                Forms\Components\Radio::make('hospitalizaciones')
+                                                    ->label('HOSPITALIZACIONES')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
 
-                                        Forms\Components\Textarea::make('transfusiones')
-                                            ->label('Transfusiones Sanguíneas')
-                                            ->rows(2),
+                                                Forms\Components\Radio::make('transfusiones')
+                                                    ->label('TRANSFUSIONES SANGUÍNEAS')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
 
                                         Forms\Components\Textarea::make('habitos')
-                                            ->label('Hábitos')
+                                            ->label('HÁBITOS:')
                                             ->helperText('Tabaco, alcohol, drogas, ejercicio, etc.')
-                                            ->rows(2),
+                                            ->placeholder('Describa los hábitos del paciente...')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
+
+                                        Forms\Components\Textarea::make('historial_observaciones')
+                                            ->label('OBSERVACIONES:')
+                                            ->placeholder('Observaciones adicionales sobre el historial médico...')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
                                     ])
-                                    ->columns(2),
+                                    ->columns(1)
+                                    ->collapsible(),
 
                                 Forms\Components\Section::make('Antecedentes Odontológicos')
                                     ->schema([

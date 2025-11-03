@@ -25,6 +25,7 @@ class MedicalHistory extends Model
         'hospitalizaciones',
         'transfusiones',
         'enfermedades_cronicas',
+        'historial_observaciones',
 
         // Antecedentes Odontológicos
         'ultima_visita_odontologo',
@@ -48,6 +49,18 @@ class MedicalHistory extends Model
         'diagnostico_principal',
         'pronostico',
         'consentimiento_informado',
+        
+        // Datos de Anamnesis
+        'anamnesis_basica',
+        
+        // Examen Físico Estomatológico
+        'examen_fisico_estomatologico',
+        
+        // Examen Dental
+        'examen_dental',
+        
+        // Evaluación del Estado Periodontal
+        'evaluacion_periodontal',
 
         // Metadatos
         'created_by',
@@ -56,6 +69,10 @@ class MedicalHistory extends Model
 
     protected $casts = [
         'odontogram' => 'array',
+        'anamnesis_basica' => 'array',
+        'examen_fisico_estomatologico' => 'array',
+        'examen_dental' => 'array',
+        'evaluacion_periodontal' => 'array',
         'ultima_visita_odontologo' => 'date',
         'odontogram_last_update' => 'datetime',
         'created_at' => 'datetime',
@@ -76,6 +93,20 @@ class MedicalHistory extends Model
     public function evolutionNotes(): HasMany
     {
         return $this->hasMany(EvolutionNote::class)->orderBy('fecha_nota', 'desc');
+    }
+
+    /**
+     * Obtener datos de anamnesis básica
+     */
+    public function getAnamnesisData(?string $key = null)
+    {
+        $data = $this->anamnesis_basica ?? [];
+        
+        if ($key !== null) {
+            return $data[$key] ?? null;
+        }
+        
+        return $data;
     }
 
     /**

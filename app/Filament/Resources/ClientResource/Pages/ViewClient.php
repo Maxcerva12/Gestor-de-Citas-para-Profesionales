@@ -7,7 +7,6 @@ use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components;
-use App\Forms\Components\Odontogram;
 
 class ViewClient extends ViewRecord
 {
@@ -101,52 +100,6 @@ class ViewClient extends ViewRecord
                                             ]),
                                     ]),
 
-                                Components\Section::make('Información Médica Básica')
-                                    ->description('Datos médicos importantes del paciente')
-                                    ->schema([
-                                        Components\Grid::make(3)
-                                            ->schema([
-                                                Components\TextEntry::make('fecha_nacimiento')
-                                                    ->label('Fecha de Nacimiento')
-                                                    ->date('d/m/Y')
-                                                    ->placeholder('No especificada')
-                                                    ->helperText(
-                                                        fn($record) =>
-                                                        $record->fecha_nacimiento ?
-                                                        'Edad: ' . $record->fecha_nacimiento->diffInYears(now()) . ' años' :
-                                                        ''
-                                                    ),
-                                                Components\TextEntry::make('tipo_sangre')
-                                                    ->label('Tipo de Sangre')
-                                                    ->badge()
-                                                    ->color('danger')
-                                                    ->icon('heroicon-m-heart')
-                                                    ->placeholder('No especificado'),
-                                                Components\TextEntry::make('aseguradora')
-                                                    ->label('EPS/Aseguradora')
-                                                    ->badge()
-                                                    ->color('success')
-                                                    ->icon('heroicon-m-shield-check')
-                                                    ->placeholder('No especificada'),
-                                            ]),
-                                    ]),
-
-                                Components\Section::make('Historial Médico')
-                                    ->description('Información médica relevante del paciente')
-                                    ->schema([
-                                        Components\TextEntry::make('historial_medico')
-                                            ->label('Historial Médico Relevante')
-                                            ->placeholder('Sin historial médico registrado')
-                                            ->columnSpanFull()
-                                            ->prose(),
-                                        Components\TextEntry::make('alergias')
-                                            ->label('Alergias Conocidas')
-                                            ->placeholder('Sin alergias registradas')
-                                            ->columnSpanFull()
-                                            ->prose()
-                                            ->color('warning'),
-                                    ]),
-
                                 Components\Section::make('Contacto de Emergencia')
                                     ->description('Persona a contactar en caso de emergencia')
                                     ->schema([
@@ -225,32 +178,6 @@ class ViewClient extends ViewRecord
                                             ->view('infolists.components.rich-text-display')
                                             ->state(fn($record) => $record->notes)
                                             ->placeholder('Sin notas registradas'),
-                                    ]),
-                            ]),
-                        Components\Tabs\Tab::make('Odontograma')
-                            ->icon('heroicon-o-face-smile')
-                            ->schema([
-                                Components\Section::make('Información Dental')
-                                    ->description('Datos odontológicos del paciente')
-                                    ->schema([
-                                        Components\Grid::make(2)
-                                            ->schema([
-                                                Components\TextEntry::make('last_dental_visit')
-                                                    ->label('Última Visita Dental')
-                                                    ->date('d/m/Y')
-                                                    ->placeholder('No registrada'),
-                                                Components\TextEntry::make('dental_notes')
-                                                    ->label('Notas Dentales')
-                                                    ->placeholder('Sin observaciones registradas'),
-                                            ]),
-                                    ]),
-                                Components\Section::make('Odontograma Interactivo')
-                                    ->description('Estado actual de los dientes del paciente')
-                                    ->schema([
-                                        Components\ViewEntry::make('odontogram_display')
-                                            ->label('')
-                                            ->view('infolists.components.odontogram-readonly')
-                                            ->state(fn($record) => $record),
                                     ]),
                             ]),
                     ])
