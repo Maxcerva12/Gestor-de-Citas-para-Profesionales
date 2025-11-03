@@ -73,15 +73,15 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         if ($this->avatar_url) {
-            // Normalizar la ruta para Windows
+            // Si es una URL externa, devolverla tal cual
+            if (str_starts_with($this->avatar_url, 'http')) {
+                return $this->avatar_url;
+            }
+            // Si es una ruta local, normalizarla
             $path = str_replace('\\', '/', $this->avatar_url);
-
-            // Asegurarse de que la ruta comience correctamente
             if (!str_starts_with($path, 'avatars/')) {
                 $path = 'avatars/' . basename($path);
             }
-
-            // Usar asset() para generar la URL completa
             return asset('storage/' . $path);
         }
         return null;

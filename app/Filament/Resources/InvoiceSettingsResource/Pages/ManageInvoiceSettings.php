@@ -51,6 +51,8 @@ class ManageInvoiceSettings extends Page implements HasForms
             'tax_rate' => InvoiceSettings::get('tax_rate', 19),
             'currency' => InvoiceSettings::get('currency', 'COP'),
             'invoice_template' => InvoiceSettings::get('invoice_template', 'colombia.layout'),
+            'discount_enabled' => InvoiceSettings::get('discount_enabled', 'false') === 'true',
+            'discount_percentage' => (float) InvoiceSettings::get('discount_percentage', 0),
         ];
 
         $this->settingsForm->fill($this->data);
@@ -191,6 +193,28 @@ class ManageInvoiceSettings extends Page implements HasForms
                     Tabs\Tab::make('Configuración Fiscal')
                         ->icon('heroicon-o-calculator')
                         ->schema([
+                            Section::make('Descuentos')
+                                ->description('Configure descuentos globales para las facturas')
+                                ->schema([
+                                    \Filament\Forms\Components\Toggle::make('discount_enabled')
+                                        ->label('Habilitar Descuentos')
+                                        ->helperText('Active esta opción para aplicar un descuento global a todas las facturas')
+                                        ->default(false)
+                                        ->live(),
+
+                                    TextInput::make('discount_percentage')
+                                        ->label('Porcentaje de Descuento (%)')
+                                        ->numeric()
+                                        ->default(0)
+                                        ->minValue(0)
+                                        ->maxValue(100)
+                                        ->step(0.01)
+                                        ->suffix('%')
+                                        ->helperText('Porcentaje de descuento que se aplicará sobre el subtotal (antes de impuestos)')
+                                        ->hidden(fn($get) => !$get('discount_enabled'))
+                                        ->required(fn($get) => $get('discount_enabled')),
+                                ])->columns(2),
+
                             Section::make('Impuestos y Tasas')
                                 ->description('Configure los impuestos aplicables en Colombia')
                                 ->schema([
@@ -226,24 +250,33 @@ class ManageInvoiceSettings extends Page implements HasForms
                                     \Filament\Forms\Components\Placeholder::make('preview')
                                         ->label('')
                                         ->content(function ($get) {
-                                            $selectedTemplate = $get('invoice_template') ?: InvoiceSettings::get('invoice_template', 'colombia.layout');
-                                            $color = $get('pdf_template_color') ?: InvoiceSettings::get('pdf_template_color', '#1e40af');
-                                            $font = $get('pdf_font') ?: InvoiceSettings::get('pdf_font', 'Helvetica');
+                                            try {
+                                                $selectedTemplate = $get('invoice_template') ?: InvoiceSettings::get('invoice_template', 'colombia.layout');
+                                                $color = $get('pdf_template_color') ?: InvoiceSettings::get('pdf_template_color', '#1e40af');
+                                                $font = $get('pdf_font') ?: InvoiceSettings::get('pdf_font', 'Helvetica');
 
-                                            // Determinar qué template usar basado en la selección
-                                            $templateName = str_replace('.layout', '', $selectedTemplate);
+                                                // Determinar qué template usar basado en la selección
+                                                $templateName = str_replace('.layout', '', $selectedTemplate);
 
-                                            return new \Illuminate\Support\HtmlString(
-                                                view("filament.components.invoice-template-preview", [
-                                                    'templateName' => $templateName,
-                                                    'companyName' => $get('company_name') ?: InvoiceSettings::get('company_name', 'Mi Empresa'),
-                                                    'companyEmail' => $get('company_email') ?: InvoiceSettings::get('company_email', 'email@empresa.com'),
-                                                    'companyPhone' => $get('company_phone') ?: InvoiceSettings::get('company_phone', '+57 123 456 7890'),
-                                                    'color' => $color,
-                                                    'font' => $font,
-                                                    'logo' => $this->getLogoForPreview($get),
-                                                ])->render()
-                                            );
+                                                return new \Illuminate\Support\HtmlString(
+                                                    view("filament.components.invoice-template-preview", [
+                                                        'templateName' => $templateName,
+                                                        'companyName' => $get('company_name') ?: InvoiceSettings::get('company_name', 'Mi Empresa'),
+                                                        'companyEmail' => $get('company_email') ?: InvoiceSettings::get('company_email', 'email@empresa.com'),
+                                                        'companyPhone' => $get('company_phone') ?: InvoiceSettings::get('company_phone', '+57 123 456 7890'),
+                                                        'color' => $color,
+                                                        'font' => $font,
+                                                        'logo' => $this->getLogoForPreview($get),
+                                                    ])->render()
+                                                );
+                                            } catch (\Exception $e) {
+                                                return new \Illuminate\Support\HtmlString(
+                                                    '<div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                                        <p class="text-red-800 font-semibold">Error al cargar la vista previa:</p>
+                                                        <p class="text-red-600 text-sm mt-2">' . $e->getMessage() . '</p>
+                                                    </div>'
+                                                );
+                                            }
                                         })
                                         ->live(),
 
@@ -279,7 +312,7 @@ class ManageInvoiceSettings extends Page implements HasForms
             Actions\Action::make('save')
                 ->label('Guardar Configuración')
                 ->icon('heroicon-o-check')
-                ->color('success')
+                ->color('info')
                 ->action('save'),
         ];
     }
@@ -301,7 +334,16 @@ class ManageInvoiceSettings extends Page implements HasForms
         $data = $this->settingsForm->getState();
 
         foreach ($data as $key => $value) {
-            if ($value !== null && $value !== '') {
+            // Para discount_enabled, convertir booleano a string
+            if ($key === 'discount_enabled') {
+                InvoiceSettings::set($key, $value ? 'true' : 'false');
+            }
+            // Para discount_percentage, permitir 0
+            elseif ($key === 'discount_percentage') {
+                InvoiceSettings::set($key, $value ?? 0);
+            }
+            // Para otros valores, mantener la lógica existente
+            elseif ($value !== null && $value !== '') {
                 InvoiceSettings::set($key, $value);
             }
         }
@@ -337,10 +379,16 @@ class ManageInvoiceSettings extends Page implements HasForms
             'tax_rate' => 19,
             'currency' => 'COP',
             'invoice_template' => 'colombia.layout',
+            'discount_enabled' => false,
+            'discount_percentage' => 0,
         ];
 
         foreach ($defaults as $key => $value) {
-            InvoiceSettings::set($key, $value);
+            if ($key === 'discount_enabled') {
+                InvoiceSettings::set($key, 'false');
+            } else {
+                InvoiceSettings::set($key, $value);
+            }
         }
 
         $this->data = $defaults;

@@ -18,8 +18,15 @@ class AppointmentsByStatusChart extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $statusCounts = Appointment::select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
+        $user = auth()->user();
+        $query = Appointment::select('status', DB::raw('count(*) as total'));
+
+        // Aplicar filtros según el rol del usuario
+        if ($user && !$user->hasRole('super_admin')) {
+            $query->where('user_id', $user->id);
+        }
+
+        $statusCounts = $query->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
 

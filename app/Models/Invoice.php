@@ -19,6 +19,8 @@ class Invoice extends BaseInvoice
         'type' => 'invoice',
         'state' => 'draft',
         'currency' => 'COP',
+        'discount_enabled' => false,
+        'discount_percentage' => 0,
     ];
 
     /**
@@ -31,6 +33,17 @@ class Invoice extends BaseInvoice
         static::creating(function ($model) {
             // Forzar COP como moneda
             $model->currency = 'COP';
+
+            // Guardar el estado actual del descuento en el momento de creación
+            // Siempre obtener los valores actuales de configuración
+            $discountEnabled = InvoiceSettings::get('discount_enabled', 'false');
+            $model->discount_enabled = ($discountEnabled === 'true' || $discountEnabled === true || $discountEnabled === 1);
+
+            if ($model->discount_enabled) {
+                $model->discount_percentage = (float) InvoiceSettings::get('discount_percentage', 0);
+            } else {
+                $model->discount_percentage = 0;
+            }
         });
 
         static::updating(function ($model) {
@@ -106,6 +119,8 @@ class Invoice extends BaseInvoice
             ...parent::casts(),
             'type' => InvoiceType::class,
             'state' => InvoiceState::class,
+            'discount_enabled' => 'boolean',
+            'discount_percentage' => 'decimal:2',
         ];
     }
 

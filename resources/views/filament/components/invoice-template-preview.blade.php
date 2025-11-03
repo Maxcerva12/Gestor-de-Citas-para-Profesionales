@@ -18,7 +18,7 @@
         }
         
         // Si es un array (nuevo archivo subido), tomar el primer elemento
-        if (is_array($logo)) {
+        if (is_array($logo) && count($logo) > 0) {
             $logoPath = $logo[0] ?? null;
         } else {
             $logoPath = $logo;
@@ -68,6 +68,11 @@
         }
     }
     
+    // Obtener configuración de descuento
+    $discountEnabledRaw = \App\Models\InvoiceSettings::get('discount_enabled', 'false');
+    $discountEnabled = ($discountEnabledRaw === 'true' || $discountEnabledRaw === true || $discountEnabledRaw === 1 || $discountEnabledRaw === '1');
+    $discountPercentage = $discountEnabled ? (float) \App\Models\InvoiceSettings::get('discount_percentage', 0) : 0;
+    
     // Crear un mock invoice object para la vista previa
     $mockInvoice = new class {
         public $serial_number = 'AC250001';
@@ -84,9 +89,15 @@
         public $paymentInstructions;
         public $tax_label = 'IVA';
         public $discounts;
+        public $discount_enabled = false;
+        public $discount_percentage = 0;
         
         public function __construct() {
-            global $color, $font, $logoUrl, $companyName, $companyEmail, $companyPhone;
+            global $color, $font, $logoUrl, $companyName, $companyEmail, $companyPhone, $discountEnabled, $discountPercentage;
+            
+            // Asignar valores de descuento
+            $this->discount_enabled = $discountEnabled;
+            $this->discount_percentage = $discountPercentage;
             
             // Asegurar que templateData sea compatible con data_get()
             $this->templateData = collect([
@@ -99,10 +110,10 @@
             
             $this->created_at = now();
             $this->due_at = now()->addDays(30);
-            $this->fields = [
+            $this->fields = collect([
                 'Régimen Fiscal' => 'Común',
                 'Medio de Pago' => 'Contado',
-            ];
+            ]);
             
             $this->seller = (object) [
                 'name' => $companyName ?: 'Fundación Odontológica Zoila Padilla',
@@ -136,7 +147,8 @@
                 'phone' => '+57 987 654 3210',
                 'tax_number' => '12345678',
                 'fields' => [
-                    'Documento' => '12345678',
+                    'Tipo de Documento' => 'CC',
+                    'Número de Documento' => '12345678',
                     'Tipo de Cliente' => 'Jurídica',
                     'Régimen Fiscal' => 'Común'
                 ],
@@ -149,7 +161,8 @@
                     'postal_code' => '050001',
                     'country' => 'Colombia',
                     'fields' => [
-                        'Documento' => '12345678',
+                        'Tipo de Documento' => 'CC',
+                        'Número de Documento' => '12345678',
                         'Tipo de Cliente' => 'Jurídica',
                         'Régimen Fiscal' => 'Común'
                     ],
@@ -267,7 +280,7 @@
                 },
             ]);
             
-            $this->paymentInstructions = [
+            $this->paymentInstructions = collect([
                 (object) [
                     'name' => 'Transferencia Bancaria',
                     'description' => 'Realice su pago mediante transferencia bancaria',
@@ -278,7 +291,7 @@
                     ],
                     'qrcode' => null
                 ]
-            ];
+            ]);
         }
         
         public function getTypeLabel() { 
@@ -308,6 +321,33 @@
                 private $amount = 100000;
                 public function getAmount() { return $this->amount; }
                 public function isPositive() { return $this->amount > 0; }
+                public function getCurrency() {
+                    return new class {
+                        public function getCurrencyCode() { return 'COP'; }
+                    };
+                }
+                public function multipliedBy($factor) {
+                    return new class($this->amount * $factor) {
+                        private $amount;
+                        public function __construct($amount) { $this->amount = $amount; }
+                        public function getAmount() { return $this->amount; }
+                        public function dividedBy($divisor, $mode = null) {
+                            return new class($this->amount / $divisor) {
+                                private $amount;
+                                public function __construct($amount) { $this->amount = $amount; }
+                                public function getAmount() { return $this->amount; }
+                            };
+                        }
+                    };
+                }
+                public function plus($other) {
+                    $otherAmount = is_object($other) && method_exists($other, 'getAmount') ? $other->getAmount() : $other;
+                    return new class($this->amount + $otherAmount) {
+                        private $amount;
+                        public function __construct($amount) { $this->amount = $amount; }
+                        public function getAmount() { return $this->amount; }
+                    };
+                }
             };
         }
         
@@ -394,14 +434,15 @@
             @if($logoUrl)
             .invoice-preview img[alt*="Logo"],
             .invoice-preview img[src*="logo"],
-            .invoice-preview img[height="120"],
             .invoice-preview td[width="25%"] img {
-                content: url('{{ $logoUrl }}') !important;
-                max-width: 150px !important;
-                height: 120px !important;
+                max-width: 200px !important;
+                width: auto !important;
+                height: auto !important;
+                max-height: 120px !important;
                 display: block !important;
                 visibility: visible !important;
                 margin: 0 auto 8px !important;
+                object-fit: contain !important;
             }
             
             /* Asegurar que el contenedor del logo sea visible */
@@ -423,11 +464,14 @@
                         // Solo cambiar si no tiene ya el logo correcto
                         if (img.src !== `{{ $logoUrl }}`) {
                             img.src = `{{ $logoUrl }}`;
-                            img.style.maxWidth = '150px';
-                            img.style.height = '120px';
+                            img.style.maxWidth = '200px';
+                            img.style.width = 'auto';
+                            img.style.height = 'auto';
+                            img.style.maxHeight = '120px';
                             img.style.display = 'block';
                             img.style.visibility = 'visible';
                             img.style.margin = '0 auto 8px';
+                            img.style.objectFit = 'contain';
                         }
                     });
                 }

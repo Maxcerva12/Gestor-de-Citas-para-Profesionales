@@ -807,6 +807,7 @@ class MedicalHistoryResource extends Resource
 
                 Tables\Filters\TernaryFilter::make('has_odontogram')
                     ->label('Tiene Odontograma')
+                    ->native(false)
                     ->placeholder('Todos')
                     ->trueLabel('Con Odontograma')
                     ->falseLabel('Sin Odontograma')
@@ -817,6 +818,7 @@ class MedicalHistoryResource extends Resource
 
                 Tables\Filters\TernaryFilter::make('consentimiento_informado')
                     ->label('Consentimiento Firmado')
+                    ->native(false)
                     ->placeholder('Todos')
                     ->trueLabel('Con Consentimiento')
                     ->falseLabel('Sin Consentimiento'),

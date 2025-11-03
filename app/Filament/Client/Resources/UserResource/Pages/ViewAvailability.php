@@ -16,6 +16,8 @@ class ViewAvailability extends Page
 
     protected static string $view = 'filament.client.resources.user-resource.pages.view-availability';
 
+    protected static ?string $title = 'Ver disponibilidad';
+
     // El profesional seleccionado
     public User $record;
 

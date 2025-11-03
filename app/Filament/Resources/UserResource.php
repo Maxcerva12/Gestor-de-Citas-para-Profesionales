@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 use App\Services\RoleManagerService;
+use Illuminate\Support\Facades\Cache;
 
 class UserResource extends Resource implements HasShieldPermissions
 {
@@ -381,37 +382,80 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->native(false)
-                    ->preload(),
+                    ->preload(fn() => \Spatie\Permission\Models\Role::count() < 20)
+                    ->placeholder('Todos los roles'),
 
                 Tables\Filters\SelectFilter::make('profession')
-                    ->options(fn() => User::whereNotNull('profession')->distinct()->pluck('profession', 'profession')->toArray())
                     ->native(false)
-                    ->label('Profesión'),
+                    ->label('Profesión')
+                    ->placeholder('Todas las profesiones')
+                    ->options(function () {
+                        return Cache::remember('user_professions_filter', 3600, function () {
+                            return User::query()
+                                ->whereNotNull('profession')
+                                ->where('profession', '!=', '')
+                                ->distinct()
+                                ->orderBy('profession')
+                                ->pluck('profession', 'profession')
+                                ->toArray();
+                        });
+                    }),
+                // ❌ QUITAR ->query() - El filtro automático funciona bien
 
                 Tables\Filters\SelectFilter::make('especialty')
-                    ->options(fn() => User::whereNotNull('especialty')->distinct()->pluck('especialty', 'especialty')->toArray())
                     ->native(false)
-                    ->label('Especialidad'),
+                    ->label('Especialidad')
+                    ->placeholder('Todas las especialidades')
+                    ->options(function () {
+                        return Cache::remember('user_especialties_filter', 3600, function () {
+                            return User::query()
+                                ->whereNotNull('especialty')
+                                ->where('especialty', '!=', '')
+                                ->distinct()
+                                ->orderBy('especialty')
+                                ->pluck('especialty', 'especialty')
+                                ->toArray();
+                        });
+                    }),
+                // ❌ QUITAR ->query() - El filtro automático funciona bien
+
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
                             ->native(false)
-                            ->label('Creado desde'),
+                            ->label('Creado desde')
+                            ->placeholder('dd/mm/yyyy')
+                            ->maxDate(fn(callable $get) => $get('created_until')),
                         Forms\Components\DatePicker::make('created_until')
                             ->native(false)
-                            ->label('Creado hasta'),
+                            ->label('Creado hasta')
+                            ->placeholder('dd/mm/yyyy')
+                            ->minDate(fn(callable $get) => $get('created_from')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn($q, $date) => $q->where('created_at', '>=', $date . ' 00:00:00')
                             )
                             ->when(
                                 $data['created_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn($q, $date) => $q->where('created_at', '<=', $date . ' 23:59:59')
                             );
-                    }),
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = 'Creado desde: ' . \Carbon\Carbon::parse($data['created_from'])->format('d/m/Y');
+                        }
+
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = 'Creado hasta: ' . \Carbon\Carbon::parse($data['created_until'])->format('d/m/Y');
+                        }
+
+                        return $indicators;
+                    })
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
