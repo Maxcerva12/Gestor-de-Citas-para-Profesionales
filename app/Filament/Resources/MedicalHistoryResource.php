@@ -104,6 +104,7 @@ class MedicalHistoryResource extends Resource
                             ->searchable(['name', 'apellido', 'numero_documento'])
                             ->required()
                             ->preload()
+                            ->reactive()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nombre')
@@ -126,7 +127,179 @@ class MedicalHistoryResource extends Resource
 
                 Forms\Components\Tabs::make('Información Clínica')
                     ->tabs([
-                        // TAB 1: Datos Generales de Salud
+                        // TAB 1: Información Personal del Cliente
+                        Forms\Components\Tabs\Tab::make('Información Personal')
+                            ->icon('heroicon-o-user-circle')
+                            ->schema([
+                                Forms\Components\Section::make('Datos Básicos')
+                                    ->schema([
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\Placeholder::make('client_full_name')
+                                                    ->label('Nombre Completo')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? "{$client->name} {$client->apellido}" : 'No disponible';
+                                                        }
+                                                        return 'Seleccione un paciente';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_document_info')
+                                                    ->label('Documento')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? "{$client->tipo_documento}: {$client->numero_documento}" : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_gender')
+                                                    ->label('Género')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? $client->genero : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                            ]),
+                                        
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\Placeholder::make('client_birth_date')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client && $client->fecha_nacimiento ? $client->fecha_nacimiento->format('d/m/Y') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_age')
+                                                    ->label('Edad')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            if ($client && $client->fecha_nacimiento) {
+                                                                return $client->fecha_nacimiento->age . ' años';
+                                                            }
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->aseguradora ?: 'No especificada') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                            ]),
+                                        
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Placeholder::make('client_ocupacion')
+                                                    ->label('Ocupación')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->ocupacion ?: 'No especificada') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('spacer')
+                                                    ->label('')
+                                                    ->content('')
+                                                    ->hiddenLabel(),
+                                            ]),
+                                    ])
+                                    ->columns(1),
+                                
+                                Forms\Components\Section::make('Información de Contacto')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Placeholder::make('client_email')
+                                                    ->label('Correo Electrónico')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->email ?: 'No especificado') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_phone')
+                                                    ->label('Teléfono')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->phone ?: 'No especificado') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                            ]),
+                                        
+                                        Forms\Components\Placeholder::make('client_address')
+                                            ->label('Dirección')
+                                            ->content(function ($get) {
+                                                $clientId = $get('client_id');
+                                                if ($clientId) {
+                                                    $client = \App\Models\Client::find($clientId);
+                                                    return $client ? ($client->address ?: 'No especificada') : 'No disponible';
+                                                }
+                                                return 'No disponible';
+                                            })
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
+                                
+                                Forms\Components\Section::make('Contacto de Emergencia')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Placeholder::make('client_emergency_contact')
+                                                    ->label('Contacto de Emergencia')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->nombre_contacto_emergencia ?: 'No especificado') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                                
+                                                Forms\Components\Placeholder::make('client_emergency_phone')
+                                                    ->label('Teléfono de Emergencia')
+                                                    ->content(function ($get) {
+                                                        $clientId = $get('client_id');
+                                                        if ($clientId) {
+                                                            $client = \App\Models\Client::find($clientId);
+                                                            return $client ? ($client->telefono_contacto_emergencia ?: 'No especificado') : 'No disponible';
+                                                        }
+                                                        return 'No disponible';
+                                                    }),
+                                            ]),
+                                    ])
+                                    ->columns(2),
+                            ]),
+                        
+                        // TAB 2: Datos Generales de Salud
                         Forms\Components\Tabs\Tab::make('Datos Generales de Salud')
                             ->icon('heroicon-o-clipboard-document-list')
                             ->schema([
@@ -443,18 +616,18 @@ class MedicalHistoryResource extends Resource
                                                     ->inline()
                                                     ->columnSpan(1),
                                                 
-                                                Forms\Components\TextInput::make('examen_dental.otros_cual')
-                                                    ->label('OTROS (CUÁL)')
-                                                    ->placeholder('Especificar otros hallazgos...')
+                                                Forms\Components\Radio::make('examen_dental.patologia_pulpar')
+                                                    ->label('PATOLOGÍA PULPAR')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
+                                                    ->inline()
                                                     ->columnSpan(1),
                                             ]),
 
                                         Forms\Components\Grid::make(1)
                                             ->schema([
-                                                Forms\Components\Radio::make('examen_dental.patologia_pulpar')
-                                                    ->label('PATOLOGÍA PULPAR')
-                                                    ->options(['si' => 'SÍ', 'no' => 'NO'])
-                                                    ->inline()
+                                                Forms\Components\TextInput::make('examen_dental.otros_cual')
+                                                    ->label('OTROS (CUÁL)')
+                                                    ->placeholder('Especificar otros hallazgos...')
                                                     ->columnSpan(1),
                                             ]),
 
@@ -711,11 +884,6 @@ class MedicalHistoryResource extends Resource
                                             ->label('Observaciones Generales')
                                             ->rows(4)
                                             ->columnSpanFull(),
-
-                                        Forms\Components\Toggle::make('consentimiento_informado')
-                                            ->label('Consentimiento Informado Firmado')
-                                            ->helperText('Indica si el paciente ha firmado el consentimiento informado')
-                                            ->inline(false),
                                     ])
                                     ->columns(1),
                             ]),

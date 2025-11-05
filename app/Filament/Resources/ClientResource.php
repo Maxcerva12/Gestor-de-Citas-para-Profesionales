@@ -91,7 +91,7 @@ class ClientResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'apellido', 'email', 'phone', 'numero_documento', 'city', 'aseguradora'];
+        return ['name', 'apellido', 'email', 'phone', 'numero_documento', 'city', 'aseguradora', 'ocupacion'];
     }
 
     public static function form(Form $form): Form
@@ -175,6 +175,24 @@ class ClientResource extends Resource
                                                         'Otro' => 'Otro',
                                                     ])
                                                     ->required(),
+                                            ]),
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\DatePicker::make('fecha_nacimiento')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->native(false)
+                                                    ->displayFormat('d/m/Y')
+                                                    ->required()
+                                                    ->maxDate(now())
+                                                    ->helperText('La edad se calculará automáticamente'),
+                                                Forms\Components\TextInput::make('ocupacion')
+                                                    ->label('Ocupación')
+                                                    ->maxLength(255)
+                                                    ->placeholder('Ej: Estudiante, Profesor, Ingeniero...'),
+                                                Forms\Components\TextInput::make('aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->maxLength(255)
+                                                    ->placeholder('Ej: Sura, Nueva EPS, Sanitas...'),
                                             ]),
                                     ]),
 
@@ -330,6 +348,15 @@ class ClientResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color('info')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('ocupacion')
+                    ->label('Ocupación')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('success')
+                    ->placeholder('No especificada')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('fecha_nacimiento')

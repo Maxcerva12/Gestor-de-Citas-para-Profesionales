@@ -38,6 +38,7 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar
         'tipo_documento',
         'numero_documento',
         'genero',
+        'ocupacion',
         'fecha_nacimiento',
         'tipo_sangre',
         'historial_medico',

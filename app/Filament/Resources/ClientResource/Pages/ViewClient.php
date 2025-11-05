@@ -98,6 +98,37 @@ class ViewClient extends ViewRecord
                                                     })
                                                     ->placeholder('No especificado'),
                                             ]),
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\TextEntry::make('fecha_nacimiento')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->date('d/m/Y')
+                                                    ->icon('heroicon-m-calendar-days')
+                                                    ->badge()
+                                                    ->color('info')
+                                                    ->placeholder('No especificada'),
+                                                Components\TextEntry::make('fecha_nacimiento')
+                                                    ->label('Edad')
+                                                    ->formatStateUsing(fn($state) => $state ? $state->age . ' años' : 'No disponible')
+                                                    ->icon('heroicon-m-clock')
+                                                    ->badge()
+                                                    ->color('success'),
+                                                Components\TextEntry::make('ocupacion')
+                                                    ->label('Ocupación')
+                                                    ->icon('heroicon-m-briefcase')
+                                                    ->badge()
+                                                    ->color('emerald')
+                                                    ->placeholder('No especificada'),
+                                            ]),
+                                        Components\Grid::make(1)
+                                            ->schema([
+                                                Components\TextEntry::make('aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->icon('heroicon-m-shield-check')
+                                                    ->badge()
+                                                    ->color('blue')
+                                                    ->placeholder('No especificada'),
+                                            ]),
                                     ]),
 
                                 Components\Section::make('Contacto de Emergencia')

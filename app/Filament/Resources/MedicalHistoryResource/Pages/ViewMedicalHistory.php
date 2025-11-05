@@ -51,7 +51,137 @@ class ViewMedicalHistory extends ViewRecord
 
                 Components\Tabs::make('Información Clínica')
                     ->tabs([
-                        // TAB 1: Datos Generales de Salud
+                        // TAB 1: Información Personal del Cliente
+                        Components\Tabs\Tab::make('Información Personal')
+                            ->icon('heroicon-o-user-circle')
+                            ->schema([
+                                Components\Section::make('Datos Básicos')
+                                    ->schema([
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\TextEntry::make('client.name')
+                                                    ->label('Nombre Completo')
+                                                    ->formatStateUsing(fn($record) => $record->client->name . ' ' . $record->client->apellido)
+                                                    ->icon('heroicon-o-user')
+                                                    ->badge()
+                                                    ->color('primary'),
+                                                
+                                                Components\TextEntry::make('client.numero_documento')
+                                                    ->label('Documento')
+                                                    ->formatStateUsing(fn($record) => ($record->client->tipo_documento ?? 'CC') . ': ' . $record->client->numero_documento)
+                                                    ->icon('heroicon-o-identification')
+                                                    ->badge()
+                                                    ->color('gray'),
+                                                
+                                                Components\TextEntry::make('client.genero')
+                                                    ->label('Género')
+                                                    ->icon('heroicon-o-user-group')
+                                                    ->badge()
+                                                    ->color(function ($state) {
+                                                        return match ($state) {
+                                                            'Masculino' => 'blue',
+                                                            'Femenino' => 'pink',
+                                                            default => 'gray',
+                                                        };
+                                                    }),
+                                            ]),
+                                        
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\TextEntry::make('client.fecha_nacimiento')
+                                                    ->label('Fecha de Nacimiento')
+                                                    ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : 'No disponible')
+                                                    ->icon('heroicon-o-calendar-days')
+                                                    ->badge()
+                                                    ->color('info'),
+                                                
+                                                Components\TextEntry::make('client.fecha_nacimiento')
+                                                    ->label('Edad')
+                                                    ->formatStateUsing(fn($state) => $state ? $state->age . ' años' : 'No disponible')
+                                                    ->icon('heroicon-o-clock')
+                                                    ->badge()
+                                                    ->color('success'),
+                                                
+                                                Components\TextEntry::make('client.aseguradora')
+                                                    ->label('EPS/Aseguradora')
+                                                    ->icon('heroicon-o-shield-check')
+                                                    ->placeholder('No especificada')
+                                                    ->badge()
+                                                    ->color('blue'),
+                                            ]),
+                                        
+                                        Components\Grid::make(2)
+                                            ->schema([
+                                                Components\TextEntry::make('client.ocupacion')
+                                                    ->label('Ocupación')
+                                                    ->icon('heroicon-o-briefcase')
+                                                    ->placeholder('No especificada')
+                                                    ->badge()
+                                                    ->color('emerald'),
+                                                
+                                                Components\TextEntry::make('spacer')
+                                                    ->label('')
+                                                    ->state('')
+                                                    ->hiddenLabel(),
+                                            ]),
+                                    ])
+                                    ->columns(1),
+                                
+                                Components\Section::make('Información de Contacto')
+                                    ->schema([
+                                        Components\Grid::make(2)
+                                            ->schema([
+                                                Components\TextEntry::make('client.email')
+                                                    ->label('Correo Electrónico')
+                                                    ->icon('heroicon-o-envelope')
+                                                    ->placeholder('No especificado')
+                                                    ->badge()
+                                                    ->color('success')
+                                                    ->copyable(),
+                                                
+                                                Components\TextEntry::make('client.phone')
+                                                    ->label('Teléfono')
+                                                    ->icon('heroicon-o-phone')
+                                                    ->placeholder('No especificado')
+                                                    ->badge()
+                                                    ->color('warning')
+                                                    ->copyable(),
+                                            ]),
+                                        
+                                        Components\TextEntry::make('client.address')
+                                            ->label('Dirección')
+                                            ->icon('heroicon-o-map-pin')
+                                            ->placeholder('No especificada')
+                                            ->badge()
+                                            ->color('gray')
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
+                                
+                                Components\Section::make('Contacto de Emergencia')
+                                    ->schema([
+                                        Components\Grid::make(2)
+                                            ->schema([
+                                                Components\TextEntry::make('client.nombre_contacto_emergencia')
+                                                    ->label('Contacto de Emergencia')
+                                                    ->icon('heroicon-o-user')
+                                                    ->placeholder('No especificado')
+                                                    ->badge()
+                                                    ->color('orange'),
+                                                
+                                                Components\TextEntry::make('client.telefono_contacto_emergencia')
+                                                    ->label('Teléfono de Emergencia')
+                                                    ->icon('heroicon-o-phone')
+                                                    ->placeholder('No especificado')
+                                                    ->badge()
+                                                    ->color('red')
+                                                    ->copyable(),
+                                            ]),
+                                    ])
+                                    ->columns(2),
+                            ]),
+                        
+                        // TAB 2: Datos Generales de Salud
                         Components\Tabs\Tab::make('Datos Generales de Salud')
                             ->icon('heroicon-o-clipboard-document-list')
                             ->schema([
@@ -400,9 +530,6 @@ class ViewMedicalHistory extends ViewRecord
                                             ->label('Observaciones Generales')
                                             ->placeholder('No registrado')
                                             ->columnSpanFull(),
-                                        Components\IconEntry::make('consentimiento_informado')
-                                            ->label('Consentimiento Informado Firmado')
-                                            ->boolean(),
                                     ]),
                             ]),
                     ])
