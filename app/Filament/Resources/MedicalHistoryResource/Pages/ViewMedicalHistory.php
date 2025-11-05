@@ -215,6 +215,9 @@ class ViewMedicalHistory extends ViewRecord
                                         // Segunda fila
                                         $this->createAnamnesisDisplay('hepatitis', 'HEPATITIS'),
                                         $this->createAnamnesisDisplay('hipertension', 'HIPERTENSIÓN'),
+                                        
+                                        // Campo de embarazo
+                                        $this->createAnamnesisDisplay('embarazo', 'EMBARAZO'),
 
                                         // Subsección de Hábitos de Higiene Oral
                                         Components\Section::make('HÁBITOS DE HIGIENE ORAL')

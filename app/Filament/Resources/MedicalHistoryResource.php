@@ -412,6 +412,22 @@ class MedicalHistoryResource extends Resource
                                                     ->columnSpan(1),
                                             ]),
 
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Radio::make('anamnesis_basica.embarazo')
+                                                    ->label('EMBARAZO')
+                                                    ->options(['si' => 'SÍ', 'no' => 'NO', 'no_sabe' => 'NO SABE'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                
+                                                // Campo vacío para mantener la alineación
+                                                Forms\Components\Placeholder::make('spacer_embarazo')
+                                                    ->label('')
+                                                    ->content('')
+                                                    ->hiddenLabel()
+                                                    ->columnSpan(1),
+                                            ]),
+
                                         // Sección de Hábitos de Higiene Oral
                                         Forms\Components\Section::make('HÁBITOS DE HIGIENE ORAL')
                                             ->schema([
