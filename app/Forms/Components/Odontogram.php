@@ -23,6 +23,7 @@ class Odontogram extends Field
         'root_canal' => ['label' => 'Endodoncia', 'color' => '#EC4899', 'icon' => '◊'],
         'fracture' => ['label' => 'Fractura', 'color' => '#DC2626', 'icon' => '⚡'],
         'bridge' => ['label' => 'Puente', 'color' => '#059669', 'icon' => '⌒'],
+        'extraction_indicated' => ['label' => 'Extracción', 'color' => '#F97316', 'icon' => '⚠'],
     ];
 
     protected array $toothFaces = [
