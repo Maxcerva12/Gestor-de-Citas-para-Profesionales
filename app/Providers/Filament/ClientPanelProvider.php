@@ -33,12 +33,17 @@ class ClientPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('9rem')
             ->id('client')
             ->path('client')
-            ->colors([
-                'primary' => Color::Indigo,
+             ->colors([
+                'primary' => '#ebb619',
+                'secondary' => Color::Indigo,
+                'success' => Color::Green,
+                'danger' => Color::Red,
+                'warning' => Color::Amber,
+                'info' => Color::Sky,
             ])
             ->login()
             ->brandName('Fundacion Odontológica Zoila Padilla')
-            ->brandLogo(asset('storage/imagen/LOGO FUNDAZION ZOILA.svg'))
+            ->brandLogo(asset('storage\img\lg_zoila_padilla.svg'))
             ->brandLogoHeight('2.5rem')
             ->registration()
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
@@ -99,6 +104,9 @@ class ClientPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->authGuard('client')// Usar el guardia 'client'
+            ->authPasswordBroker('clients')// Usar el broker 'clients' para password reset
+            ->passwordReset()
+            ->emailVerification()
             ->databaseNotifications();
     }
 }

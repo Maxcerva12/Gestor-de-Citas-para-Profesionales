@@ -13,8 +13,10 @@ use Filament\Panel;
 use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class Client extends Authenticatable implements FilamentUser, HasAvatar
+class Client extends Authenticatable implements FilamentUser, HasAvatar, CanResetPassword, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, Authorizable;
 

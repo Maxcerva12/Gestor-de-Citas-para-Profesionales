@@ -43,12 +43,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('Fundacion Odontológica Zoila Padilla')
-            ->brandLogo(asset('storage/imagen/LOGO FUNDAZION ZOILA.svg'))
+            ->brandLogo(asset('storage\img\lg_zoila_padilla.svg'))
             ->brandLogoHeight('2.5rem')
             ->login(CustomLogin::class)
             ->databaseNotifications()
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => '#ebb619',
                 'secondary' => Color::Indigo,
                 'success' => Color::Green,
                 'danger' => Color::Red,
@@ -90,6 +90,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->passwordReset()
+            ->emailVerification()
             ->plugins([
                 FilamentShieldPlugin::make(),
                 FilamentFullCalendarPlugin::make()
