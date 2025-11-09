@@ -29,6 +29,8 @@ use App\Filament\Widgets\AppointmentsByStatusChart;
 use App\Filament\Widgets\RevenueOverviewWidget;
 use App\Filament\Widgets\MonthlyRevenueChart;
 use App\Filament\Widgets\TopProfessionalsChart;
+use Awcodes\LightSwitch\LightSwitchPlugin;
+use Awcodes\LightSwitch\Enums\Alignment;
 use App\Filament\Pages\Auth\CustomLogin;
 
 
@@ -93,6 +95,8 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->plugins([
+                LightSwitchPlugin::make()
+                    ->position(Alignment::TopRight),
                 FilamentShieldPlugin::make(),
                 FilamentFullCalendarPlugin::make()
                     ->selectable(true)
@@ -116,15 +120,13 @@ class AdminPanelProvider extends PanelProvider
                     ->customProfileComponents([
                         \App\Livewire\CustomProfileComponent::class,
                     ]),
+                FilamentApexChartsPlugin::make(),
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label(fn() => Auth::user()->name)
                     ->url(fn(): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle')
-            ])
-            ->plugins([
-                FilamentApexChartsPlugin::make(),
-            ]);
+            ]);;
     }
 }

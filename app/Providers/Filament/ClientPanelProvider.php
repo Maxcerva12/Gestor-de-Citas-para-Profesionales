@@ -23,6 +23,8 @@ use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\MenuItem;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use Awcodes\LightSwitch\LightSwitchPlugin;
+use Awcodes\LightSwitch\Enums\Alignment;
 
 class ClientPanelProvider extends PanelProvider
 {
@@ -52,6 +54,8 @@ class ClientPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->plugins([
+                LightSwitchPlugin::make()
+                    ->position(Alignment::TopRight),
                 FilamentFullCalendarPlugin::make()
                     ->selectable(false) // Cambiado a false para evitar selección
                     ->editable(false)   // Cambiado a false para evitar edición
