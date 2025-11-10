@@ -31,7 +31,8 @@ use App\Filament\Widgets\MonthlyRevenueChart;
 use App\Filament\Widgets\TopProfessionalsChart;
 use Awcodes\LightSwitch\LightSwitchPlugin;
 use Awcodes\LightSwitch\Enums\Alignment;
-use App\Filament\Pages\Auth\CustomLogin;
+use Cmsmaxinc\FilamentErrorPages\FilamentErrorPagesPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -47,8 +48,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Fundacion Odontológica Zoila Padilla')
             ->brandLogo(asset('storage\img\lg_zoila_padilla.svg'))
             ->brandLogoHeight('2.5rem')
-            ->login(CustomLogin::class)
+            ->login()
             ->databaseNotifications()
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => '#ebb619',
                 'secondary' => Color::Indigo,
@@ -95,6 +97,16 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->plugins([
+                AuthUIEnhancerPlugin::make()
+                ->showEmptyPanelOnMobile(false)
+                ->formPanelPosition('right')
+                ->formPanelWidth('40%')
+                ->emptyPanelBackgroundImageOpacity('70%')
+                ->emptyPanelBackgroundImageUrl(asset('storage/img/img-principal.jpg')),
+                FilamentErrorPagesPlugin::make()
+                ->routes([
+                    'admin/*',
+                ]),
                 LightSwitchPlugin::make()
                     ->position(Alignment::TopRight),
                 FilamentShieldPlugin::make(),

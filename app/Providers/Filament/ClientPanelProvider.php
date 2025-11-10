@@ -25,6 +25,8 @@ use Filament\Navigation\MenuItem;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Awcodes\LightSwitch\LightSwitchPlugin;
 use Awcodes\LightSwitch\Enums\Alignment;
+use Cmsmaxinc\FilamentErrorPages\FilamentErrorPagesPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 
 class ClientPanelProvider extends PanelProvider
 {
@@ -35,7 +37,8 @@ class ClientPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('9rem')
             ->id('client')
             ->path('client')
-             ->colors([
+            ->viteTheme('resources/css/filament/client/theme.css')
+            ->colors([
                 'primary' => '#ebb619',
                 'secondary' => Color::Indigo,
                 'success' => Color::Green,
@@ -54,6 +57,16 @@ class ClientPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->plugins([
+                AuthUIEnhancerPlugin::make()
+                ->showEmptyPanelOnMobile(true)
+                ->formPanelPosition('right')
+                ->formPanelWidth('40%')
+                ->emptyPanelBackgroundImageOpacity('70%')
+                ->emptyPanelBackgroundImageUrl(asset('storage/img/img-principal.jpg')),
+                FilamentErrorPagesPlugin::make()
+                    ->routes([
+                        'client/*',
+                    ]),
                 LightSwitchPlugin::make()
                     ->position(Alignment::TopRight),
                 FilamentFullCalendarPlugin::make()

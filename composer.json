@@ -11,6 +11,8 @@
         "aymanalhattami/filament-page-with-sidebar": "^2.6",
         "bezhansalleh/filament-shield": "^3.3",
         "blade-ui-kit/blade-heroicons": "^2.6",
+        "cmsmaxinc/filament-error-pages": "^1.0",
+        "diogogpinto/filament-auth-ui-enhancer": "^1.0",
         "elegantly/laravel-invoices": "^4.4",
         "elegantly/laravel-money": "^2.2",
         "filament/filament": "^3.3",

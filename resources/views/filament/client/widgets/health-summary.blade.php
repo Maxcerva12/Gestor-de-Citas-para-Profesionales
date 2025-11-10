@@ -90,17 +90,17 @@
 
             <!-- Acción para completar perfil si está incompleto -->
             @if($profileComplete['percentage'] < 100)
-                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div class="bg-[#fff8e1] dark:bg-[#3a2f0b]/20 border border-[#ebb619] dark:border-[#b38f13] rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            <h4 class="text-sm font-medium text-[#b38f13] dark:text-[#ebb619]">
                                 Completa tu perfil médico
                             </h4>
-                            <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                            <p class="text-xs text-[#a68e1a] dark:text-[#ebb619] mt-1">
                                 Una información médica completa nos ayuda a brindarte un mejor servicio.
                             </p>
                         </div>
-                        <x-heroicon-o-arrow-right class="w-4 h-4 text-blue-500" />
+                        <x-heroicon-o-arrow-right class="w-4 h-4 text-[#ebb619]" />
                     </div>
                 </div>
             @endif

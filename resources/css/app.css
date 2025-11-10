@@ -1,3 +1,6 @@
+/* Importar estilos del odontograma profesional */
+@import "./odontogram-professional.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,6 +16,3 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
-
-/* Importar estilos del odontograma profesional */
-@import "./odontogram-professional.css";
