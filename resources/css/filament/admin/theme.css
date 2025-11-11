@@ -1,3 +1,25 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
 
 @config 'tailwind.config.js';
+
+/* Aumentar el tamaño del logo solo en la página de login - Múltiples selectores */
+/* .fi-simple-page .fi-logo img,
+.fi-simple-page img[alt*="Logo"],
+.fi-simple-page img[src*="lg_zoila_padilla"],
+body:has(.fi-simple-page) .fi-logo img,
+.fi-simple-layout .fi-simple-header img,
+.fi-simple-layout img,
+.auth-ui-enhancer-panel .fi-logo img,
+.fi-simple-page .fi-simple-header img,
+.fi-simple-main img[src*="lg_zoila_padilla"] {
+    height: 8rem !important;
+    max-height: 8rem !important;
+    min-height: 8rem !important;
+    width: auto !important;
+} */
+
+/* Asegurar que el contenedor no limite el tamaño */
+.fi-simple-page .fi-logo,
+.fi-simple-layout .fi-simple-header {
+    height: 8rem !important;
+}

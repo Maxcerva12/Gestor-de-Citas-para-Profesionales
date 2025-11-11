@@ -16,8 +16,7 @@ class FilamentAssetsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         FilamentAsset::register([
-            Css::make('custom-login', resource_path('css/custom-login.css'))
-                ->loadedOnRequest(),
+            // Registra aquí los assets personalizados de Filament si los necesitas
         ]);
     }
 }

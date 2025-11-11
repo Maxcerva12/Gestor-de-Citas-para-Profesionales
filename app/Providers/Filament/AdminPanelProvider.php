@@ -46,8 +46,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('Fundacion Odontológica Zoila Padilla')
-            ->brandLogo(asset('storage\img\lg_zoila_padilla.svg'))
-            ->brandLogoHeight('2.5rem')
+            ->brandLogo(asset('storage\img\lg_zoila_padilla2.svg'))
+            ->brandLogoHeight('3rem')
             ->login()
             ->databaseNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css')
@@ -100,9 +100,10 @@ class AdminPanelProvider extends PanelProvider
                 AuthUIEnhancerPlugin::make()
                 ->showEmptyPanelOnMobile(false)
                 ->formPanelPosition('right')
-                ->formPanelWidth('40%')
+                ->formPanelWidth('50%')
                 ->emptyPanelBackgroundImageOpacity('70%')
-                ->emptyPanelBackgroundImageUrl(asset('storage/img/img-principal.jpg')),
+                ->emptyPanelBackgroundColor(Color::hex("#d0b4ca"))
+                ->emptyPanelBackgroundImageUrl(asset('storage/img/dentista-examinando-los-dientes-del-paciente-femenino.jpg')),
                 FilamentErrorPagesPlugin::make()
                 ->routes([
                     'admin/*',
