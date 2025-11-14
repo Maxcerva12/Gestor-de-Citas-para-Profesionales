@@ -197,6 +197,28 @@ class ViewMedicalHistory extends ViewRecord
                                             ->columnSpanFull(),
                                     ]),
 
+                                Components\Section::make('Información Médica Básica')
+                                    ->schema([
+                                        Components\TextEntry::make('tipo_sangre')
+                                            ->label('Tipo de Sangre')
+                                            ->badge()
+                                            ->color(fn (?string $state): string => match ($state) {
+                                                'O-' => 'danger',
+                                                'O+' => 'warning', 
+                                                'A+', 'B+' => 'info',
+                                                'A-', 'B-' => 'primary',
+                                                'AB+', 'AB-' => 'success',
+                                                default => 'gray',
+                                            })
+                                            ->placeholder('No especificado'),
+                                            
+                                        Components\TextEntry::make('alergias')
+                                            ->label('Alergias Conocidas')
+                                            ->placeholder('Ninguna registrada')
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
+
                                 // Nueva sección de Anamnesis Básica
                                 Components\Section::make('ANAMNESIS - Datos Básicos Sobre Salud')
                                     ->schema([

@@ -16,6 +16,8 @@ class MedicalHistory extends Model
         // Datos Generales de Salud
         'motivo_consulta',
         'enfermedad_actual',
+        'tipo_sangre',
+        'alergias',
         'antecedentes_personales',
         'antecedentes_familiares',
         'habitos',

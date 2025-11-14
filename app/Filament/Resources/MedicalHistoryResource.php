@@ -299,6 +299,28 @@ class MedicalHistoryResource extends Resource
                                             ->label('Enfermedad Actual')
                                             ->rows(3)
                                             ->columnSpanFull(),
+                                            
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Select::make('tipo_sangre')
+                                                    ->label('Tipo de Sangre')
+                                                    ->options([
+                                                        'A+' => 'A+',
+                                                        'A-' => 'A-',
+                                                        'B+' => 'B+',
+                                                        'B-' => 'B-',
+                                                        'AB+' => 'AB+',
+                                                        'AB-' => 'AB-',
+                                                        'O+' => 'O+',
+                                                        'O-' => 'O-',
+                                                    ])
+                                                    ->placeholder('Seleccionar tipo de sangre'),
+                                                    
+                                                Forms\Components\Textarea::make('alergias')
+                                                    ->label('Alergias Conocidas')
+                                                    ->placeholder('Especificar alergias alimentarias, ambientales, etc.')
+                                                    ->rows(3),
+                                            ]),
                                     ])
                                     ->columns(1),
 
@@ -910,6 +932,29 @@ class MedicalHistoryResource extends Resource
                     ->label('Diagnóstico')
                     ->limit(50)
                     ->searchable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('tipo_sangre')
+                    ->label('Tipo Sangre')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'O-' => 'danger',
+                        'O+' => 'warning', 
+                        'A+', 'B+' => 'info',
+                        'A-', 'B-' => 'primary',
+                        'AB+', 'AB-' => 'success',
+                        default => 'gray',
+                    })
+                    ->toggleable()
+                    ->placeholder('No especificado'),
+
+                Tables\Columns\TextColumn::make('alergias')
+                    ->label('Alergias')
+                    ->limit(40)
+                    ->tooltip(function (MedicalHistory $record): ?string {
+                        return $record->alergias ? $record->alergias : null;
+                    })
+                    ->placeholder('Ninguna conocida')
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('has_odontogram')

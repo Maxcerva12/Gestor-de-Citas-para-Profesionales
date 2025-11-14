@@ -17,6 +17,7 @@ use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Filament\Forms\Components\Actions\Action;
 
 class ClientResource extends Resource
 {
@@ -189,10 +190,52 @@ class ClientResource extends Resource
                                                     ->label('Ocupación')
                                                     ->maxLength(255)
                                                     ->placeholder('Ej: Estudiante, Profesor, Ingeniero...'),
-                                                Forms\Components\TextInput::make('aseguradora')
+                                                Forms\Components\Select::make('aseguradora')
                                                     ->label('EPS/Aseguradora')
-                                                    ->maxLength(255)
-                                                    ->placeholder('Ej: Sura, Nueva EPS, Sanitas...'),
+                                                    ->options([
+                                                        'Sura EPS' => 'Sura EPS',
+                                                        'Nueva EPS' => 'Nueva EPS',
+                                                        'Sanitas EPS' => 'Sanitas EPS',
+                                                        'Compensar EPS' => 'Compensar EPS',
+                                                        'Famisanar EPS' => 'Famisanar EPS',
+                                                        'EPS Coomeva' => 'EPS Coomeva',
+                                                        'Salud Total EPS' => 'Salud Total EPS',
+                                                        'Medimás EPS' => 'Medimás EPS',
+                                                        'Aliansalud EPS' => 'Aliansalud EPS',
+                                                        'EPS SOS' => 'EPS SOS',
+                                                        'Coosalud EPS' => 'Coosalud EPS',
+                                                        'Mutual SER EPS' => 'Mutual SER EPS',
+                                                        'Capital Salud EPS' => 'Capital Salud EPS',
+                                                        'Saludvida EPS' => 'Saludvida EPS',
+                                                        'Emdisalud ESI' => 'Emdisalud ESI',
+                                                        'Emssanar ESI' => 'Emssanar ESI',
+                                                        'Cajacopi Atlantico' => 'Cajacopi Atlantico',
+                                                        'Capresoca EPS' => 'Capresoca EPS',
+                                                        'Comfachocó EPS' => 'Comfachocó EPS',
+                                                        'EPS Régimen Especial' => 'EPS Régimen Especial',
+                                                        'Particular/Prepagada' => 'Particular/Prepagada',
+                                                    ])
+                                                    ->searchable()
+                                                    ->allowHtml(false)
+                                                    ->placeholder('Seleccione una EPS')
+                                                    ->native(false)
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre de la EPS/Aseguradora')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->placeholder('Ingrese el nombre completo de la EPS')
+                                                    ])
+                                                    ->createOptionUsing(function (array $data): string {
+                                                        return $data['name'];
+                                                    })
+                                                    ->createOptionAction(function (Action $action) {
+                                                        return $action
+                                                            ->modalHeading('Crear nueva EPS/Aseguradora')
+                                                            ->modalSubmitActionLabel('Crear')
+                                                            ->modalWidth('lg');
+                                                    })
+                                                    ->helperText('Si no encuentra la EPS en la lista, puede crearla haciendo clic en "+"'),
                                             ]),
                                     ]),
 
