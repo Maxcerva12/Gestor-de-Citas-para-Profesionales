@@ -541,12 +541,14 @@ class AppointmentResource extends Resource
                         Forms\Components\DatePicker::make('from')
                             ->label('Desde')
                             ->native(false)
-                            ->placeholder('dd/mm/yyyy')
+                            ->default(now())
+                            ->displayFormat('d/m/Y')
                             ->maxDate(fn(callable $get) => $get('until')), // No permitir fecha mayor a "hasta"
                         Forms\Components\DatePicker::make('until')
                             ->label('Hasta')
                             ->native(false)
-                            ->placeholder('dd/mm/yyyy')
+                            ->default(now()->addMonth())
+                            ->displayFormat('d/m/Y')
                             ->minDate(fn(callable $get) => $get('from')), // No permitir fecha menor a "desde"
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -573,7 +575,6 @@ class AppointmentResource extends Resource
 
                         return $indicators;
                     })
-                // Ocupa 2 columnas para mejor visualización
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

@@ -59,7 +59,6 @@ return [
     ],
 
     'custom_permissions' => [
-        'edit_profile', // ✅ Nuestro permiso personalizado para el componente Livewire
         'view_all_revenue', // ✅ Permiso para ver todos los ingresos (Solo super_admin y roles autorizados)
     ],
 

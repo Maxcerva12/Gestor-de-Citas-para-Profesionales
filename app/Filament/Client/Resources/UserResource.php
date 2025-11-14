@@ -319,15 +319,41 @@ class UserResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                // OPTIMIZADO: Usa la subconsulta precalculada en lugar de whereHas
+                // OPTIMIZADO: Filtra correctamente usando subconsulta
                 Tables\Filters\TernaryFilter::make('has_availability')
                     ->label('Con disponibilidad')
                     ->placeholder('Todos los profesionales')
                     ->trueLabel('Solo con disponibilidad')
                     ->falseLabel('Solo sin disponibilidad')
                     ->queries(
-                        true: fn(Builder $query) => $query->havingRaw('available_slots_count > 0'),
-                        false: fn(Builder $query) => $query->havingRaw('available_slots_count = 0'),
+                        true: function (Builder $query) {
+                            $today = Carbon::today()->toDateString();
+                            $query->whereRaw('EXISTS (
+                                SELECT 1 FROM schedules 
+                                WHERE schedules.user_id = users.id 
+                                AND schedules.is_available = true 
+                                AND schedules.date >= \'' . $today . '\'
+                                AND NOT EXISTS (
+                                    SELECT 1 FROM appointments 
+                                    WHERE appointments.schedule_id = schedules.id 
+                                    AND appointments.status IN (\'pending\', \'confirmed\')
+                                )
+                            )');
+                        },
+                        false: function (Builder $query) {
+                            $today = Carbon::today()->toDateString();
+                            $query->whereRaw('NOT EXISTS (
+                                SELECT 1 FROM schedules 
+                                WHERE schedules.user_id = users.id 
+                                AND schedules.is_available = true 
+                                AND schedules.date >= \'' . $today . '\'
+                                AND NOT EXISTS (
+                                    SELECT 1 FROM appointments 
+                                    WHERE appointments.schedule_id = schedules.id 
+                                    AND appointments.status IN (\'pending\', \'confirmed\')
+                                )
+                            )');
+                        },
                     )
                     ->native(false),
             ])
@@ -366,9 +392,9 @@ class UserResource extends Resource
                 ->color('primary')
                 ->button(),
             ])
-            ->emptyStateIcon('heroicon-o-users')
-            ->emptyStateHeading('No hay profesionales disponibles')
-            ->emptyStateDescription('Actualmente no hay profesionales registrados en el sistema.')
+            ->emptyStateIcon('heroicon-o-magnifying-glass')
+            ->emptyStateHeading('No se encontraron profesionales')
+            ->emptyStateDescription('No hay profesionales que cumplan con los filtros seleccionados. Intenta ajustar o eliminar algunos filtros para ver más resultados.')
             ->defaultSort('name', 'asc')
             ->poll('120s') // OPTIMIZADO: Auto-actualizar cada 2 minutos (antes 30s)
             ->deferLoading()

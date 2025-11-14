@@ -50,6 +50,7 @@ class ClientPanelProvider extends PanelProvider
             ->brandName('Fundacion Odontológica Zoila Padilla')
             ->brandLogo(asset('storage\img\lg_zoila_padilla2.svg'))
             ->brandLogoHeight('3rem')
+            ->favicon(asset('storage\img\favicon.ico'))
             ->registration()
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
             ->discoverPages(in: app_path('Filament/Client/Pages'), for: 'App\\Filament\\Client\\Pages')
@@ -63,7 +64,7 @@ class ClientPanelProvider extends PanelProvider
                 ->formPanelWidth('50%')
                 ->emptyPanelBackgroundImageOpacity('70%')
                 ->emptyPanelBackgroundColor(Color::hex("#d0b4ca"))
-                ->emptyPanelBackgroundImageUrl(asset('storage/img/dentista-examinando-los-dientes-del-paciente-femenino.jpg')),
+                ->emptyPanelBackgroundImageUrl(asset('storage/img/dentista-examinando-los-dientes-del-paciente-femenino2 (1).jpg')),
                 FilamentErrorPagesPlugin::make()
                     ->routes([
                         'client/*',

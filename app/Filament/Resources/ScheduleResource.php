@@ -319,12 +319,12 @@ class ScheduleResource extends Resource
                         Forms\Components\DatePicker::make('date_from')
                             ->label('Desde')
                             ->native(false)
-                            ->default(now()->subMonth())
+                            ->default(now())
                             ->displayFormat('d/m/Y'),
                         Forms\Components\DatePicker::make('date_until')
                             ->label('Hasta')
                             ->native(false)
-                            ->default(now()->addMonths(2))
+                            ->default(now()->addMonths())
                             ->displayFormat('d/m/Y'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

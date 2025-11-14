@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
                 // Primero crear usuarios y permisos básicos
             UserSeeder::class,
             SchedulePermissionsSeeder::class,
+            CustomPermissionsSeeder::class,
+                // Luego los datos maestros necesarios
             ServiceSeeder::class,
 
                 // Luego generar datos realistas distribuidos en el tiempo

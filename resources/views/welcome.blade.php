@@ -16,6 +16,9 @@
     <meta property="og:description" content="Atención dental especializada con compromiso social">
     <meta property="og:url" content="{{ url('/') }}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/img/favicon.ico') }}">
+
     <title>Fundación Odontológica Zoila Padilla - Atención Dental Especializada</title>
 
     <!-- Tailwind CSS -->
