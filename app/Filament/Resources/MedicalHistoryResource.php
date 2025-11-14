@@ -105,22 +105,7 @@ class MedicalHistoryResource extends Resource
                             ->required()
                             ->preload()
                             ->reactive()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nombre')
-                                    ->required(),
-                                Forms\Components\TextInput::make('apellido')
-                                    ->label('Apellido')
-                                    ->required(),
-                                Forms\Components\TextInput::make('numero_documento')
-                                    ->label('Número de Documento')
-                                    ->required(),
-                                Forms\Components\TextInput::make('email')
-                                    ->label('Email')
-                                    ->email(),
-                                Forms\Components\TextInput::make('phone')
-                                    ->label('Teléfono'),
-                            ])
+                            ->placeholder('Seleccione un paciente existente')
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
