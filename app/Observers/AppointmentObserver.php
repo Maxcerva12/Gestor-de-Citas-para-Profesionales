@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Services\GoogleCalendarService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Client;
@@ -27,6 +28,9 @@ class AppointmentObserver
     public function created(Appointment $appointment): void
     {
         Log::info("AppointmentObserver: Cita creada {$appointment->id} para cliente {$appointment->client_id}");
+
+        // Invalidar caché del dashboard del cliente
+        $this->clearClientCache($appointment->client_id);
 
         // Marcar el horario como no disponible cuando se crea una cita
         if ($appointment->schedule) {
@@ -96,6 +100,9 @@ class AppointmentObserver
      */
     public function updated(Appointment $appointment): void
     {
+        // Invalidar caché del dashboard del cliente
+        $this->clearClientCache($appointment->client_id);
+
         // Si la cita fue cancelada, hacer el horario disponible nuevamente
         // solo si no ha expirado
         if ($appointment->isDirty('status') && $appointment->status === 'canceled') {
@@ -184,6 +191,9 @@ class AppointmentObserver
     {
         Log::info("Observer: Eliminando cita {$appointment->id}");
         $this->invalidateDashboardCache($appointment);
+        
+        // Invalidar caché del cliente
+        $this->clearClientCache($appointment->client_id);
 
         // Si se elimina la cita, hacer el horario disponible nuevamente
         // solo si no ha expirado
@@ -311,5 +321,14 @@ class AppointmentObserver
     {
         $service = app(\App\Services\DashboardDataService::class);
         $service->invalidateCache($appointment->user_id);
+    }
+
+    /**
+     * Limpiar caché del cliente cuando cambian sus citas
+     */
+    protected function clearClientCache(int $clientId): void
+    {
+        Cache::forget("client_stats_{$clientId}");
+        Log::info("AppointmentObserver: Caché del cliente {$clientId} invalidado");
     }
 }

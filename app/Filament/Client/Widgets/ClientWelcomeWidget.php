@@ -20,10 +20,12 @@ class ClientWelcomeWidget extends Widget
         $client = Auth::guard('client')->user();
         $now = Carbon::now();
 
-        // Próxima cita
+        // Próxima cita con eager loading
         $nextAppointment = Appointment::where('client_id', $client->id)
             ->where('start_time', '>=', $now)
-            ->where('status', '!=', 'cancelled')
+            ->where('status', '!=', 'canceled')
+            ->select('id', 'client_id', 'service_id', 'start_time')
+            ->with('service:id,name')
             ->orderBy('start_time', 'asc')
             ->first();
 

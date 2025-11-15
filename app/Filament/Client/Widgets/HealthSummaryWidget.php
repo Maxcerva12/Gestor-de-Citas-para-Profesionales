@@ -4,6 +4,7 @@ namespace App\Filament\Client\Widgets;
 
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HealthSummaryWidget extends Widget
 {
@@ -17,46 +18,63 @@ class HealthSummaryWidget extends Widget
 
     protected function getViewData(): array
     {
-        $client = Auth::guard('client')->user();
+        $clientId = Auth::guard('client')->id();
+        
+        // Cache por 10 minutos (datos médicos no cambian frecuentemente)
+        return Cache::remember("health_summary_{$clientId}", 600, function () {
+            $client = Auth::guard('client')->user();
+            
+            // Eager load solo campos necesarios de medicalHistory
+            $client->load(['medicalHistory' => function ($query) {
+                $query->select('id', 'client_id', 'tipo_sangre', 'alergias');
+            }]);
+            
+            $medicalHistory = $client->medicalHistory;
 
-        // Verificar completitud del perfil médico
-        $profileComplete = $this->calculateProfileCompleteness($client);
+            // Verificar completitud del perfil médico
+            $profileComplete = $this->calculateProfileCompleteness($client, $medicalHistory);
 
-        return [
-            'client' => $client,
-            'profileComplete' => $profileComplete,
-            'healthData' => [
-                'tipo_sangre' => $client->tipo_sangre,
-                'alergias' => $client->alergias,
-                'aseguradora' => $client->aseguradora,
-                'contacto_emergencia' => $client->nombre_contacto_emergencia,
-                'telefono_emergencia' => $client->telefono_contacto_emergencia,
-            ]
-        ];
+            return [
+                'client' => $client,
+                'medicalHistory' => $medicalHistory,
+                'profileComplete' => $profileComplete,
+                'healthData' => [
+                    'tipo_sangre' => $medicalHistory?->tipo_sangre,
+                    'alergias' => $medicalHistory?->alergias,
+                    'aseguradora' => $client->aseguradora,
+                    'contacto_emergencia' => $client->nombre_contacto_emergencia,
+                    'telefono_emergencia' => $client->telefono_contacto_emergencia,
+                ]
+            ];
+        });
     }
 
-    private function calculateProfileCompleteness($client): array
+    private function calculateProfileCompleteness($client, $medicalHistory): array
     {
-        $fields = [
-            'tipo_sangre' => 'Tipo de sangre',
-            'aseguradora' => 'Aseguradora',
-            'alergias' => 'Alergias',
-            'nombre_contacto_emergencia' => 'Contacto de emergencia',
-            'telefono_contacto_emergencia' => 'Teléfono de emergencia',
+        $fieldsToCheck = [
+            ['source' => 'medicalHistory', 'field' => 'tipo_sangre', 'label' => 'Tipo de sangre'],
+            ['source' => 'client', 'field' => 'aseguradora', 'label' => 'Aseguradora'],
+            ['source' => 'medicalHistory', 'field' => 'alergias', 'label' => 'Alergias'],
+            ['source' => 'client', 'field' => 'nombre_contacto_emergencia', 'label' => 'Contacto de emergencia'],
+            ['source' => 'client', 'field' => 'telefono_contacto_emergencia', 'label' => 'Teléfono de emergencia'],
         ];
 
         $completed = [];
         $missing = [];
 
-        foreach ($fields as $field => $label) {
-            if (!empty($client->$field)) {
+        foreach ($fieldsToCheck as $item) {
+            $source = $item['source'] === 'medicalHistory' ? $medicalHistory : $client;
+            $field = $item['field'];
+            $label = $item['label'];
+
+            if ($source && !empty($source->$field)) {
                 $completed[] = $label;
             } else {
                 $missing[] = $label;
             }
         }
 
-        $percentage = count($completed) / count($fields) * 100;
+        $percentage = count($fieldsToCheck) > 0 ? count($completed) / count($fieldsToCheck) * 100 : 0;
 
         return [
             'percentage' => round($percentage),

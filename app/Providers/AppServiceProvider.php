@@ -12,6 +12,8 @@ use App\Models\InvoiceItem; // Añadir esta importación
 use App\Observers\InvoiceItemObserver; // Añadir esta importación
 use App\Models\Invoice; // Añadir para Invoice
 use App\Observers\InvoiceObserver; // Añadir para Invoice
+use App\Models\MedicalHistory;
+use App\Observers\MedicalHistoryObserver;
 use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Appointment::observe(AppointmentObserver::class);
         InvoiceItem::observe(InvoiceItemObserver::class);
         Invoice::observe(InvoiceObserver::class); // Registrar el nuevo observer
+        MedicalHistory::observe(MedicalHistoryObserver::class); // Observer para caché de salud
     }
 
     /**
