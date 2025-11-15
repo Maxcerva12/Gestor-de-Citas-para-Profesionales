@@ -20,6 +20,6 @@ body:has(.fi-simple-page) .fi-logo img,
 
 /* Asegurar que el contenedor no limite el tamaño */
 .fi-simple-page .fi-logo,
-.fi-simple-layout .fi-simple-header {
+.fi-simple-layout {
     height: 8rem !important;
 }

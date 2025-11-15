@@ -38,6 +38,19 @@ class AppointmentObserver
             }
         }
 
+        // Enviar notificación al profesional sobre la nueva cita
+        if ($appointment->user) {
+            try {
+                $appointment->load('client', 'user');
+                $appointment->user->notify(new \App\Notifications\AppointmentCreatedForProfessional($appointment));
+                Log::info("AppointmentObserver: Notificación enviada al profesional {$appointment->user->name} (ID: {$appointment->user->id}) por cita {$appointment->id}");
+            } catch (\Exception $e) {
+                Log::error("AppointmentObserver: Error al enviar notificación al profesional para cita {$appointment->id}: " . $e->getMessage());
+            }
+        } else {
+            Log::warning("AppointmentObserver: Cita {$appointment->id} sin profesional asociado para enviar notificación");
+        }
+
         // Verificar configuración de Google Calendar
         if (!$appointment->user) {
             Log::warning("AppointmentObserver: Cita {$appointment->id} sin profesional asociado");
@@ -87,6 +100,27 @@ class AppointmentObserver
         // solo si no ha expirado
         if ($appointment->isDirty('status') && $appointment->status === 'canceled') {
             Log::info("Observer: Cita {$appointment->id} cancelada");
+
+            // Enviar notificación según quién canceló
+            try {
+                $appointment->load('client', 'user');
+                
+                if ($appointment->cancelled_by === 'client') {
+                    // Notificar al profesional
+                    if ($appointment->user) {
+                        $appointment->user->notify(new \App\Notifications\AppointmentCancelledByClient($appointment));
+                        Log::info("Observer: Notificación de cancelación enviada al profesional {$appointment->user->name} (ID: {$appointment->user->id})");
+                    }
+                } elseif ($appointment->cancelled_by === 'professional') {
+                    // Notificar al cliente
+                    if ($appointment->client) {
+                        $appointment->client->notify(new \App\Notifications\AppointmentCancelledByProfessional($appointment));
+                        Log::info("Observer: Notificación de cancelación enviada al cliente {$appointment->client->name} (ID: {$appointment->client->id})");
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Observer: Error al enviar notificación de cancelación para cita {$appointment->id}: " . $e->getMessage());
+            }
 
             if ($appointment->schedule) {
                 try {

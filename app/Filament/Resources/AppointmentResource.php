@@ -346,7 +346,6 @@ class AppointmentResource extends Resource
                                             ->options([
                                                 'pending' => 'Pendiente',
                                                 'confirmed' => 'Confirmada',
-                                                'canceled' => 'Cancelada',
                                                 'completed' => 'Completada',
                                             ])
                                             ->default('pending')
