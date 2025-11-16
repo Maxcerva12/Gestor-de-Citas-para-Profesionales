@@ -142,14 +142,15 @@ class InvoiceSettingsResource extends Resource
 
                                         TextInput::make('company_address_city')
                                             ->label('Ciudad')
-                                            ->default(fn() => InvoiceSettings::get('company_address_city', ''))
+                                            ->default(fn() => InvoiceSettings::get('company_address_city', 'Cienaga'))
                                             ->required()
                                             ->live()
                                             ->afterStateUpdated(fn($state) => InvoiceSettings::set('company_address_city', $state)),
 
                                         TextInput::make('company_address_state')
                                             ->label('Departamento/Estado')
-                                            ->default(fn() => InvoiceSettings::get('company_address_state', ''))
+                                            ->default(fn() => InvoiceSettings::get('company_address_state', 'Magdalena'))
+                                            ->required()
                                             ->live()
                                             ->afterStateUpdated(fn($state) => InvoiceSettings::set('company_address_state', $state)),
 

@@ -124,10 +124,13 @@ class ManageInvoiceSettings extends Page implements HasForms
 
                                     TextInput::make('company_address_city')
                                         ->label('Ciudad')
+                                        ->default('Cienaga')
                                         ->required(),
 
                                     TextInput::make('company_address_state')
-                                        ->label('Departamento/Estado'),
+                                        ->label('Departamento/Estado')
+                                        ->default('Magdalena')
+                                        ->required(),
 
                                     TextInput::make('company_address_postal_code')
                                         ->label('Código Postal'),

@@ -5,6 +5,7 @@ namespace App\Filament\Client\Resources\UserResource\Widgets;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use App\Models\Schedule;
 use App\Models\Appointment;
+use App\Models\InvoiceSettings;
 use Carbon\Carbon;
 use Filament\Forms;
 use Illuminate\Support\Facades\Log;
@@ -299,12 +300,42 @@ class CalendarWidget extends FullCalendarWidget
                                     if ($state) {
                                         $service = \App\Models\Service::find($state);
                                         if ($service) {
-                                            $set('service_price', $service->price);
+                                            $basePrice = (float) $service->price;
+                                            
+                                            // Obtener configuración de IVA y descuentos
+                                            $taxRate = (float) InvoiceSettings::get('tax_rate', 19);
+                                            $discountEnabled = InvoiceSettings::get('discount_enabled', 'false') === 'true';
+                                            $discountPercentage = $discountEnabled ? (float) InvoiceSettings::get('discount_percentage', 0) : 0;
+                                            
+                                            // Calcular descuento
+                                            $discountAmount = 0;
+                                            if ($discountEnabled && $discountPercentage > 0) {
+                                                $discountAmount = ($basePrice * $discountPercentage) / 100;
+                                            }
+                                            $priceAfterDiscount = $basePrice - $discountAmount;
+                                            
+                                            // Calcular IVA
+                                            $taxAmount = ($priceAfterDiscount * $taxRate) / 100;
+                                            $finalPrice = $priceAfterDiscount + $taxAmount;
+                                            
+                                            // Establecer valores
+                                            $set('service_price', $finalPrice);
+                                            $set('base_price', $basePrice);
+                                            $set('discount_amount', $discountAmount);
+                                            $set('tax_amount', $taxAmount);
+                                            $set('tax_rate', $taxRate);
+                                            $set('discount_percentage', $discountPercentage);
+                                            
                                             $this->selectedServiceId = $state;
-                                            $this->selectedServicePrice = $service->price;
+                                            $this->selectedServicePrice = $finalPrice;
                                         }
                                     } else {
                                         $set('service_price', null);
+                                        $set('base_price', null);
+                                        $set('discount_amount', null);
+                                        $set('tax_amount', null);
+                                        $set('tax_rate', null);
+                                        $set('discount_percentage', null);
                                         $this->selectedServiceId = null;
                                         $this->selectedServicePrice = null;
                                     }
@@ -313,22 +344,63 @@ class CalendarWidget extends FullCalendarWidget
                                 ->required(),
 
                             Forms\Components\TextInput::make('service_price')
-                                ->label('Precio del Servicio (COP)')
+                                ->label('Precio Total a Pagar (COP)')
                                 ->prefix('$')
                                 ->numeric()
                                 ->readOnly()
                                 ->placeholder('Selecciona un servicio')
-                                ->helperText('El precio se actualiza automáticamente'),
+                                ->helperText('Precio final con IVA y descuentos aplicados'),
                         ]),
+
+                    // Campos ocultos para almacenar información del cálculo
+                    Forms\Components\Hidden::make('base_price'),
+                    Forms\Components\Hidden::make('discount_amount'),
+                    Forms\Components\Hidden::make('tax_amount'),
+                    Forms\Components\Hidden::make('tax_rate'),
+                    Forms\Components\Hidden::make('discount_percentage'),
+
+                    // Desglose de precios
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\Placeholder::make('base_price_display')
+                                ->label('Precio Base')
+                                ->content(function (callable $get) {
+                                    $basePrice = $get('base_price');
+                                    return $basePrice ? '$' . number_format($basePrice, 0, ',', '.') : 'N/A';
+                                })
+                                ->visible(fn (callable $get) => $get('service_id') !== null),
+
+                            Forms\Components\Placeholder::make('discount_display')
+                                ->label('Descuento Aplicado')
+                                ->content(function (callable $get) {
+                                    $discountAmount = $get('discount_amount');
+                                    $discountPercentage = $get('discount_percentage');
+                                    if ($discountAmount > 0) {
+                                        return '-$' . number_format($discountAmount, 0, ',', '.') . ' (' . $discountPercentage . '%)';
+                                    }
+                                    return 'Sin descuento';
+                                })
+                                ->visible(fn (callable $get) => $get('service_id') !== null),
+
+                            Forms\Components\Placeholder::make('tax_display')
+                                ->label('IVA')
+                                ->content(function (callable $get) {
+                                    $taxAmount = $get('tax_amount');
+                                    $taxRate = $get('tax_rate');
+                                    return $taxAmount ? '+$' . number_format($taxAmount, 0, ',', '.') . ' (' . $taxRate . '%)' : 'N/A';
+                                })
+                                ->visible(fn (callable $get) => $get('service_id') !== null),
+                        ])
+                        ->visible(fn (callable $get) => $get('service_id') !== null),
 
                     Forms\Components\Grid::make(1)
                         ->schema([
                             Forms\Components\Select::make('payment_method')
                                 ->label('Método de Pago Preferido')
                                 ->options([
-                                    'efectivo' => 'Efectivo (pagar en clínica)',
+                                    'efectivo' => 'Efectivo',
                                     'transferencia' => 'Transferencia bancaria',
-                                    'tarjeta_debito' => 'Tarjeta de débito (pago en línea)',
+                                    'tarjeta_debito' => 'Tarjeta de débito',
                                 ])
                                 ->native(false)
                                 ->reactive()
