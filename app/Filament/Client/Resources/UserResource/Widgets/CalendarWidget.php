@@ -318,8 +318,10 @@ class CalendarWidget extends FullCalendarWidget
                                             $taxAmount = ($priceAfterDiscount * $taxRate) / 100;
                                             $finalPrice = $priceAfterDiscount + $taxAmount;
                                             
-                                            // Establecer valores
-                                            $set('service_price', $finalPrice);
+                                            // IMPORTANTE: service_price guarda el precio BASE original
+                                            // final_price_display es solo para mostrar al cliente
+                                            $set('service_price', $basePrice); // Precio base SIN IVA
+                                            $set('final_price_display', $finalPrice); // Precio con IVA (solo visual)
                                             $set('base_price', $basePrice);
                                             $set('discount_amount', $discountAmount);
                                             $set('tax_amount', $taxAmount);
@@ -327,10 +329,11 @@ class CalendarWidget extends FullCalendarWidget
                                             $set('discount_percentage', $discountPercentage);
                                             
                                             $this->selectedServiceId = $state;
-                                            $this->selectedServicePrice = $finalPrice;
+                                            $this->selectedServicePrice = $basePrice; // Guardar precio base
                                         }
                                     } else {
                                         $set('service_price', null);
+                                        $set('final_price_display', null);
                                         $set('base_price', null);
                                         $set('discount_amount', null);
                                         $set('tax_amount', null);
@@ -343,16 +346,18 @@ class CalendarWidget extends FullCalendarWidget
                                 ->helperText('Selecciona el servicio que necesitas')
                                 ->required(),
 
-                            Forms\Components\TextInput::make('service_price')
+                            Forms\Components\TextInput::make('final_price_display')
                                 ->label('Precio Total a Pagar (COP)')
                                 ->prefix('$')
                                 ->numeric()
                                 ->readOnly()
                                 ->placeholder('Selecciona un servicio')
-                                ->helperText('Precio final con IVA y descuentos aplicados'),
+                                ->helperText('Precio estimado con IVA y descuentos aplicados')
+                                ->dehydrated(false), // No se guarda en la base de datos
                         ]),
 
                     // Campos ocultos para almacenar información del cálculo
+                    Forms\Components\Hidden::make('service_price'), // Precio BASE que se guardará
                     Forms\Components\Hidden::make('base_price'),
                     Forms\Components\Hidden::make('discount_amount'),
                     Forms\Components\Hidden::make('tax_amount'),

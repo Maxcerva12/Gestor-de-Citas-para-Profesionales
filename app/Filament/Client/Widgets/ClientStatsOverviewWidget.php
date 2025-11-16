@@ -31,7 +31,7 @@ class ClientStatsOverviewWidget extends BaseWidget
                 ->select(
                     DB::raw('COUNT(*) as total'),
                     DB::raw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed"),
-                    DB::raw("SUM(CASE WHEN start_time >= NOW() AND status != 'canceled' THEN 1 ELSE 0 END) as upcoming")
+                    DB::raw("SUM(CASE WHEN start_time >= NOW() AND status IN ('pending', 'confirmed') THEN 1 ELSE 0 END) as upcoming")
                 )
                 ->first();
 

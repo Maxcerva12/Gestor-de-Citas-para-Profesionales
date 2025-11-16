@@ -23,7 +23,7 @@ class NextAppointmentWidget extends BaseWidget
                 Appointment::query()
                     ->where('client_id', Auth::guard('client')->id())
                     ->where('start_time', '>=', now())
-                    ->where('status', '!=', 'canceled')
+                    ->whereIn('status', ['pending', 'confirmed'])
                     ->with(['service:id,name', 'user:id,name'])
                     ->orderBy('start_time', 'asc')
                     ->limit(5)

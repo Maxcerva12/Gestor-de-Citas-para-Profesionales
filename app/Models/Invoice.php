@@ -71,7 +71,6 @@ class Invoice extends BaseInvoice
 
             // Calcular totales denormalizados
             $subtotalAmount = 0;
-            $taxAmount = 0;
 
             foreach ($this->items as $item) {
                 // Manejar unit_price como objeto Money
@@ -79,19 +78,23 @@ class Invoice extends BaseInvoice
                     // Usar los métodos del objeto Money para hacer los cálculos
                     $itemSubtotal = $item->unit_price->multipliedBy($item->quantity);
                     $subtotalAmount += $itemSubtotal->getAmount()->toFloat();
-
-                    $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
-                    $taxAmount += $itemSubtotal->getAmount()->toFloat() * ($taxPercentage / 100);
                 } else {
                     // Fallback para valores numéricos simples
                     $unitAmount = (float) $item->unit_price;
                     $itemSubtotal = $unitAmount * $item->quantity;
                     $subtotalAmount += $itemSubtotal;
-
-                    $taxPercentage = $item->tax_percentage ?? $defaultTaxRate;
-                    $taxAmount += $itemSubtotal * ($taxPercentage / 100);
                 }
             }
+
+            // Aplicar descuento al subtotal si está habilitado
+            $discountAmount = 0;
+            if ($this->discount_enabled && $this->discount_percentage > 0) {
+                $discountAmount = $subtotalAmount * ($this->discount_percentage / 100);
+                $subtotalAmount = $subtotalAmount - $discountAmount;
+            }
+
+            // Calcular el IVA sobre el subtotal después del descuento
+            $taxAmount = $subtotalAmount * ($defaultTaxRate / 100);
 
             // Actualizar campos denormalizados sin disparar eventos
             $this->updateQuietly([

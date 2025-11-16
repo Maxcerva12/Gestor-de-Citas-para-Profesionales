@@ -24,6 +24,7 @@ use Filament\Support\Enums\IconPosition;
 use App\Filament\Client\Resources\ClientAppointmentResource\Pages;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
+use App\Models\Invoice;
 
 
 class ClientAppointmentResource extends Resource
@@ -120,7 +121,60 @@ class ClientAppointmentResource extends Resource
 
                 TextColumn::make('service_price')
                     ->label('Precio')
-                    ->money('COP')
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->service_price) {
+                            return 'Sin precio';
+                        }
+                        
+                        // Si el pago está completado, buscar el precio total en la factura
+                        if ($record->payment_status === 'paid') {
+                            $invoice = Invoice::where('appointment_id', $record->id)
+                                ->where('state', 'paid')
+                                ->first();
+                            
+                            if ($invoice && $invoice->total_amount) {
+                                // Convertir Brick\Money\Money a número
+                                if (is_object($invoice->total_amount)) {
+                                    $amount = (float) $invoice->total_amount->getAmount()->toFloat();
+                                } else {
+                                    $amount = (float) $invoice->total_amount;
+                                }
+                                // Formato: $29.750,00 COP (con punto para miles, coma para decimales)
+                                return '$' . number_format($amount, 2, ',', '.') . ' COP';
+                            }
+                        }
+                        
+                        // Si no está pagado, mostrar precio base del servicio
+                        return '$' . number_format((float) $record->service_price, 2, ',', '.') . ' COP';
+                    })
+                    ->description(function ($record) {
+                        if (!$record->service_price) {
+                            return null;
+                        }
+                        
+                        // Si está pagado, buscar información de la factura
+                        if ($record->payment_status === 'paid') {
+                            $invoice = Invoice::where('appointment_id', $record->id)
+                                ->where('state', 'paid')
+                                ->first();
+                            
+                            if ($invoice) {
+                                $parts = ['Precio total con IVA incluido'];
+                                
+                                // Si tiene descuento, agregarlo a la descripción
+                                if ($invoice->discount_enabled && $invoice->discount_percentage > 0) {
+                                    $parts[] = 'Descuento aplicado: ' . $invoice->discount_percentage . '%';
+                                }
+                                
+                                return implode(' | ', $parts);
+                            }
+                            
+                            return 'Precio total con IVA incluido';
+                        }
+                        
+                        // Si no está pagado, mostrar mensaje informativo
+                        return 'Una vez pagado se incluirá el IVA correspondiente';
+                    })
                     ->sortable()
                     ->icon('heroicon-o-currency-dollar')
                     ->iconPosition(IconPosition::Before)

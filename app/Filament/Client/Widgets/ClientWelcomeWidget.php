@@ -23,7 +23,7 @@ class ClientWelcomeWidget extends Widget
         // Próxima cita con eager loading
         $nextAppointment = Appointment::where('client_id', $client->id)
             ->where('start_time', '>=', $now)
-            ->where('status', '!=', 'canceled')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->select('id', 'client_id', 'service_id', 'start_time')
             ->with('service:id,name')
             ->orderBy('start_time', 'asc')

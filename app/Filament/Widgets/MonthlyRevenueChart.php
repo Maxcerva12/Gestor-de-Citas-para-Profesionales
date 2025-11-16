@@ -243,7 +243,7 @@ class MonthlyRevenueChart extends ApexChartWidget
         return [
             'chart' => [
                 'type' => 'line',
-                'height' => 250,
+                'height' => 350,
                 'toolbar' => [
                     'show' => true,
                     'tools' => [
