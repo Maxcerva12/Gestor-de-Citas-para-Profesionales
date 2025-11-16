@@ -15,6 +15,44 @@ class TopProfessionalsChart extends ApexChartWidget
     protected static ?int $height = 400;
     protected static ?int $sort = 4;
 
+    /**
+     * Determinar unidad (K, M, B) basada en el valor máximo
+     */
+    private function determineUnit(array $values): string
+    {
+        if (empty($values)) return '';
+        
+        $maxValue = max($values);
+        
+        if ($maxValue >= 1000000000) {
+            return 'B';
+        } elseif ($maxValue >= 1000000) {
+            return 'M';
+        } elseif ($maxValue >= 1000) {
+            return 'K';
+        }
+        return '';
+    }
+    
+    /**
+     * Formatear valores para display manteniendo como números
+     */
+    private function formatForDisplay(array $values, string $unit): array
+    {
+        return array_map(function($value) use ($unit) {
+            switch ($unit) {
+                case 'B':
+                    return (float) round($value / 1000000000, 1);
+                case 'M':
+                    return (float) round($value / 1000000, 1);
+                case 'K':
+                    return (float) round($value / 1000, 1);
+                default:
+                    return (float) $value;
+            }
+        }, $values);
+    }
+
     protected function getHeading(): string
     {
         $currentUser = Auth::user();
@@ -48,7 +86,11 @@ class TopProfessionalsChart extends ApexChartWidget
         $rankingData = $dashboardData['top_ranking'];
 
         $labels = array_column($rankingData, 'label');
-        $data = array_column($rankingData, 'value');
+        $rawData = array_column($rankingData, 'value');
+        
+        // Determinar unidad y formatear valores
+        $unit = $this->determineUnit($rawData);
+        $formattedData = $this->formatForDisplay($rawData, $unit);
 
         return [
             'chart' => [
@@ -60,8 +102,8 @@ class TopProfessionalsChart extends ApexChartWidget
             ],
             'series' => [
                 [
-                    'name' => 'Ingresos',
-                    'data' => $data,
+                    'name' => 'Ingresos' . ($unit ? ' (' . $unit . ')' : ''),
+                    'data' => $formattedData,
                 ],
             ],
             'xaxis' => [
@@ -75,6 +117,12 @@ class TopProfessionalsChart extends ApexChartWidget
             ],
             'yaxis' => [
                 'labels' => [
+                    'style' => [
+                        'fontFamily' => 'inherit',
+                    ],
+                ],
+                'title' => [
+                    'text' => 'Ingresos' . ($unit ? ' (' . $unit . ')' : ' (COP)'),
                     'style' => [
                         'fontFamily' => 'inherit',
                     ],
@@ -94,9 +142,8 @@ class TopProfessionalsChart extends ApexChartWidget
                 'show' => true,
             ],
             'tooltip' => [
-                'y' => [
-                    'formatter' => null,
-                ],
+                'shared' => true,
+                'intersect' => false,
             ],
         ];
     }

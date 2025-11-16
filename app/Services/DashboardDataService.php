@@ -509,7 +509,11 @@ class DashboardDataService
 
         return [
             'by_date' => collect($appointmentsByDate)->map(function($item) {
-                return ['date' => $item->date, 'total' => (int)$item->total];
+                $date = Carbon::parse($item->date);
+                return [
+                    'date' => $date->locale('es')->isoFormat('DD MMM YYYY'),
+                    'total' => (int)$item->total
+                ];
             })->toArray(),
             'by_status' => collect($appointmentsByStatus)->pluck('total', 'status')->map(fn($v) => (int)$v)->toArray(),
         ];
@@ -672,5 +676,595 @@ class DashboardDataService
         });
 
         return array_slice($servicesRevenue, 0, 10);
+    }
+
+    /**
+     * Obtener datos de ingresos filtrados por período
+     */
+    public function getFilteredRevenueData(User $user, bool $canViewAll, string $period): array
+    {
+        $result = [];
+
+        switch ($period) {
+            case 'last_6_months':
+                $startDate = Carbon::now()->subMonths(6);
+                $result = $this->getMonthlyRevenueForPeriod($user, $canViewAll, $startDate, 6);
+                break;
+            case 'last_12_months':
+                $startDate = Carbon::now()->subMonths(12);
+                $result = $this->getMonthlyRevenueForPeriod($user, $canViewAll, $startDate, 12);
+                break;
+            case 'this_year':
+                $startDate = Carbon::now()->startOfYear();
+                $monthsInYear = Carbon::now()->month;
+                $result = $this->getMonthlyRevenueForPeriod($user, $canViewAll, $startDate, $monthsInYear);
+                break;
+            default:
+                $result = $this->getMonthlyRevenueData($user, $canViewAll);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de ingresos semanales
+     */
+    public function getWeeklyRevenueData(User $user, bool $canViewAll, string $period): array
+    {
+        $weeks = match($period) {
+            'last_4_weeks' => 4,
+            'last_12_weeks' => 12,
+            default => 4,
+        };
+
+        $startDate = Carbon::now()->subWeeks($weeks);
+
+        // Obtener facturas pagadas del período especificado
+        $invoiceQuery = Invoice::with('items')
+            ->where('state', 'paid')
+            ->where('created_at', '>=', $startDate);
+        
+        if (!$canViewAll) {
+            $invoiceQuery->where('user_id', $user->id);
+        }
+
+        $invoices = $invoiceQuery->get();
+
+        // Calcular ingresos por semana de facturas
+        $invoicesByWeek = [];
+        foreach ($invoices as $invoice) {
+            $weekStart = $invoice->created_at->startOfWeek();
+            $weekKey = $weekStart->format('Y-m-d');
+            $total = $this->calculateInvoiceTotal($invoice);
+            
+            if (!isset($invoicesByWeek[$weekKey])) {
+                $invoicesByWeek[$weekKey] = 0;
+            }
+            $invoicesByWeek[$weekKey] += $total;
+        }
+
+        // Obtener citas pagadas (sin factura asociada)
+        $appointmentQuery = Appointment::select(
+                DB::raw('DATE_TRUNC(\'week\', created_at) as week_start'),
+                DB::raw('SUM(service_price) as total')
+            )
+            ->where('payment_status', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->whereNotExists(function($query) {
+                $query->select(DB::raw(1))
+                    ->from('invoices')
+                    ->whereColumn('invoices.appointment_id', 'appointments.id')
+                    ->where('invoices.state', 'paid');
+            });
+        
+        if (!$canViewAll) {
+            $appointmentQuery->where('user_id', $user->id);
+        }
+
+        $appointments = $appointmentQuery->groupBy('week_start')->get();
+
+        // Generar array con todas las semanas
+        $result = [];
+        for ($i = $weeks - 1; $i >= 0; $i--) {
+            $weekStart = Carbon::now()->startOfWeek()->subWeeks($i);
+            $weekKey = $weekStart->format('Y-m-d');
+            
+            // Buscar ingresos de facturas
+            $invoiceTotal = $invoicesByWeek[$weekKey] ?? 0;
+            
+            // Buscar ingresos de citas
+            $appointmentTotal = 0;
+            $found = $appointments->first(function($item) use ($weekKey) {
+                return $item->week_start === $weekKey;
+            });
+            if ($found) {
+                $appointmentTotal = $found->total;
+            }
+            
+            $weekEnd = $weekStart->copy()->endOfWeek();
+            $label = $weekStart->locale('es')->isoFormat('DD MMM') . ' - ' . $weekEnd->locale('es')->isoFormat('DD MMM');
+            
+            $result[] = [
+                'label' => $label,
+                'value' => (int)($invoiceTotal + $appointmentTotal),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener ingresos mensuales para un período específico
+     */
+    private function getMonthlyRevenueForPeriod(User $user, bool $canViewAll, Carbon $startDate, int $months): array
+    {
+        // Obtener facturas pagadas del período especificado
+        $invoiceQuery = Invoice::with('items')
+            ->where('state', 'paid')
+            ->where('created_at', '>=', $startDate);
+        
+        if (!$canViewAll) {
+            $invoiceQuery->where('user_id', $user->id);
+        }
+
+        $invoices = $invoiceQuery->get();
+
+        // Calcular ingresos por mes de facturas
+        $invoicesByMonth = [];
+        foreach ($invoices as $invoice) {
+            $yearMonth = $invoice->created_at->format('Y-m');
+            $total = $this->calculateInvoiceTotal($invoice);
+            
+            if (!isset($invoicesByMonth[$yearMonth])) {
+                $invoicesByMonth[$yearMonth] = 0;
+            }
+            $invoicesByMonth[$yearMonth] += $total;
+        }
+
+        // Obtener citas pagadas (sin factura asociada)
+        $appointmentQuery = Appointment::select(
+                DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+                DB::raw('EXTRACT(MONTH FROM created_at) as month'),
+                DB::raw('SUM(service_price) as total')
+            )
+            ->where('payment_status', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->whereNotExists(function($query) {
+                $query->select(DB::raw(1))
+                    ->from('invoices')
+                    ->whereColumn('invoices.appointment_id', 'appointments.id')
+                    ->where('invoices.state', 'paid');
+            });
+        
+        if (!$canViewAll) {
+            $appointmentQuery->where('user_id', $user->id);
+        }
+
+        $appointments = $appointmentQuery->groupBy('year', 'month')->get();
+
+        // Generar array con todos los meses del período
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date = Carbon::now()->startOfMonth()->subMonths($i);
+            $yearMonth = $date->format('Y-m');
+            
+            // Buscar ingresos de facturas
+            $invoiceTotal = $invoicesByMonth[$yearMonth] ?? 0;
+            
+            // Buscar ingresos de citas
+            $appointmentTotal = 0;
+            $found = $appointments->first(function($item) use ($date) {
+                return $item->year == $date->year && $item->month == $date->month;
+            });
+            if ($found) {
+                $appointmentTotal = $found->total;
+            }
+            
+            $result[] = [
+                'label' => $date->locale('es')->isoFormat('MMM YYYY'),
+                'value' => (int)($invoiceTotal + $appointmentTotal),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de citas filtrados por período
+     */
+    public function getFilteredAppointmentsData(User $user, bool $canViewAll, string $period): array
+    {
+        $startDate = $this->getStartDateForPeriod($period);
+        $endDate = Carbon::now()->endOfDay();
+        
+        $userFilter = $canViewAll ? "" : "AND user_id = {$user->id}";
+
+        // Total de citas por fecha en el período especificado
+        $appointmentsByDate = DB::select("
+            SELECT 
+                DATE(start_time) as date,
+                COUNT(*) as total
+            FROM appointments
+            WHERE start_time >= '{$startDate->format('Y-m-d 00:00:00')}'
+            AND start_time <= '{$endDate->format('Y-m-d 23:59:59')}'
+            {$userFilter}
+            GROUP BY DATE(start_time)
+            ORDER BY date
+        ");
+
+        // Crear un array completo con todas las fechas del período, incluso si no hay citas
+        $result = [];
+        $currentDate = $startDate->copy();
+        
+        // Convertir datos de BD a un array asociativo para fácil búsqueda
+        $appointmentsMap = [];
+        foreach ($appointmentsByDate as $item) {
+            $appointmentsMap[$item->date] = (int)$item->total;
+        }
+
+        // Generar todas las fechas del período
+        while ($currentDate <= $endDate) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $total = $appointmentsMap[$dateKey] ?? 0;
+            
+            $result[] = [
+                'date' => $currentDate->locale('es')->isoFormat('DD MMM'),
+                'total' => $total
+            ];
+            
+            $currentDate->addDay();
+        }
+
+        // Limitar a exactamente el número de días solicitado según el filtro
+        $limit = match($period) {
+            'last_7_days' => 7,
+            'last_30_days' => 30,
+            'last_90_days' => 90,
+            default => count($result)
+        };
+
+        return array_slice($result, max(0, count($result) - $limit));
+    }
+
+    /**
+     * Obtener datos de citas semanales
+     */
+    public function getWeeklyAppointmentsData(User $user, bool $canViewAll, string $period): array
+    {
+        $weeks = match($period) {
+            'last_4_weeks' => 4,
+            'last_12_weeks' => 12,
+            default => 4,
+        };
+
+        $startDate = Carbon::now()->subWeeks($weeks - 1)->startOfWeek();
+        $endDate = Carbon::now()->endOfDay();
+        $userFilter = $canViewAll ? "" : "AND user_id = {$user->id}";
+
+        // Total de citas por semana
+        $appointmentsByWeek = DB::select("
+            SELECT 
+                DATE_TRUNC('week', start_time) as week_start,
+                COUNT(*) as total
+            FROM appointments
+            WHERE start_time >= '{$startDate->format('Y-m-d 00:00:00')}'
+            AND start_time <= '{$endDate->format('Y-m-d 23:59:59')}'
+            {$userFilter}
+            GROUP BY week_start
+            ORDER BY week_start
+        ");
+
+        // Convertir datos de BD a un array asociativo para fácil búsqueda
+        $appointmentsMap = [];
+        foreach ($appointmentsByWeek as $item) {
+            $weekStartKey = Carbon::parse($item->week_start)->startOfWeek()->format('Y-m-d');
+            $appointmentsMap[$weekStartKey] = (int)$item->total;
+        }
+
+        // Generar array con todas las semanas del período
+        $result = [];
+        for ($i = $weeks - 1; $i >= 0; $i--) {
+            $weekStart = Carbon::now()->startOfWeek()->subWeeks($i);
+            $weekKey = $weekStart->format('Y-m-d');
+            
+            // Buscar total de citas para esta semana
+            $total = $appointmentsMap[$weekKey] ?? 0;
+            
+            $weekEnd = $weekStart->copy()->endOfWeek();
+            $label = $weekStart->locale('es')->isoFormat('DD MMM') . ' - ' . $weekEnd->locale('es')->isoFormat('DD MMM');
+            
+            $result[] = [
+                'date' => $label,
+                'total' => $total,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de citas mensuales
+     */
+    public function getMonthlyAppointmentsData(User $user, bool $canViewAll, string $period): array
+    {
+        $months = match($period) {
+            'last_6_months' => 6,
+            default => 6,
+        };
+
+        $startDate = Carbon::now()->subMonths($months - 1)->startOfMonth();
+        $endDate = Carbon::now()->endOfDay();
+        $userFilter = $canViewAll ? "" : "AND user_id = {$user->id}";
+
+        // Total de citas por mes
+        $appointmentsByMonth = DB::select("
+            SELECT 
+                EXTRACT(YEAR FROM start_time) as year,
+                EXTRACT(MONTH FROM start_time) as month,
+                COUNT(*) as total
+            FROM appointments
+            WHERE start_time >= '{$startDate->format('Y-m-d 00:00:00')}'
+            AND start_time <= '{$endDate->format('Y-m-d 23:59:59')}'
+            {$userFilter}
+            GROUP BY year, month
+            ORDER BY year, month
+        ");
+
+        // Convertir datos de BD a un array asociativo para fácil búsqueda
+        $appointmentsMap = [];
+        foreach ($appointmentsByMonth as $item) {
+            $yearMonthKey = $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            $appointmentsMap[$yearMonthKey] = (int)$item->total;
+        }
+
+        // Generar array con todos los meses del período
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $monthStart = Carbon::now()->startOfMonth()->subMonths($i);
+            $yearMonthKey = $monthStart->format('Y-m');
+            
+            // Buscar total de citas para este mes
+            $total = $appointmentsMap[$yearMonthKey] ?? 0;
+            
+            $result[] = [
+                'date' => $monthStart->locale('es')->isoFormat('MMM YYYY'),
+                'total' => $total,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de ingresos diarios
+     */
+    public function getDailyRevenueData(User $user, bool $canViewAll, string $period): array
+    {
+        $days = match($period) {
+            'last_7_days' => 7,
+            default => 7,
+        };
+
+        $startDate = Carbon::now()->subDays($days - 1)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        // Obtener facturas pagadas del período especificado
+        $invoiceQuery = Invoice::with('items')
+            ->where('state', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate);
+        
+        if (!$canViewAll) {
+            $invoiceQuery->where('user_id', $user->id);
+        }
+
+        $invoices = $invoiceQuery->get();
+
+        // Calcular ingresos por día de facturas
+        $invoicesByDay = [];
+        foreach ($invoices as $invoice) {
+            $dayKey = $invoice->created_at->format('Y-m-d');
+            $total = $this->calculateInvoiceTotal($invoice);
+            
+            if (!isset($invoicesByDay[$dayKey])) {
+                $invoicesByDay[$dayKey] = 0;
+            }
+            $invoicesByDay[$dayKey] += $total;
+        }
+
+        // Obtener citas pagadas (sin factura asociada)
+        $appointmentQuery = Appointment::select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(service_price) as total')
+            )
+            ->where('payment_status', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate)
+            ->whereNotExists(function($query) {
+                $query->select(DB::raw(1))
+                    ->from('invoices')
+                    ->whereColumn('invoices.appointment_id', 'appointments.id')
+                    ->where('invoices.state', 'paid');
+            });
+        
+        if (!$canViewAll) {
+            $appointmentQuery->where('user_id', $user->id);
+        }
+
+        $appointments = $appointmentQuery->groupBy('date')->get();
+
+        // Convertir datos de citas a array asociativo
+        $appointmentsMap = [];
+        foreach ($appointments as $appointment) {
+            $appointmentsMap[$appointment->date] = $appointment->total;
+        }
+
+        // Generar array con todos los días del período
+        $result = [];
+        $currentDate = $startDate->copy();
+        
+        while ($currentDate <= $endDate) {
+            $dayKey = $currentDate->format('Y-m-d');
+            
+            // Buscar ingresos de facturas y citas
+            $invoiceTotal = $invoicesByDay[$dayKey] ?? 0;
+            $appointmentTotal = $appointmentsMap[$dayKey] ?? 0;
+            
+            $result[] = [
+                'label' => $currentDate->locale('es')->isoFormat('DD MMM'),
+                'value' => (int)($invoiceTotal + $appointmentTotal),
+            ];
+            
+            $currentDate->addDay();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de ingresos anuales
+     */
+    public function getYearlyRevenueData(User $user, bool $canViewAll, string $period): array
+    {
+        $years = match($period) {
+            'last_5_years' => 5,
+            default => 5,
+        };
+
+        $startDate = Carbon::now()->subYears($years - 1)->startOfYear();
+        $endDate = Carbon::now()->endOfDay();
+
+        // Obtener facturas pagadas del período especificado
+        $invoiceQuery = Invoice::with('items')
+            ->where('state', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate);
+        
+        if (!$canViewAll) {
+            $invoiceQuery->where('user_id', $user->id);
+        }
+
+        $invoices = $invoiceQuery->get();
+
+        // Calcular ingresos por año de facturas
+        $invoicesByYear = [];
+        foreach ($invoices as $invoice) {
+            $year = $invoice->created_at->year;
+            $total = $this->calculateInvoiceTotal($invoice);
+            
+            if (!isset($invoicesByYear[$year])) {
+                $invoicesByYear[$year] = 0;
+            }
+            $invoicesByYear[$year] += $total;
+        }
+
+        // Obtener citas pagadas (sin factura asociada)
+        $appointmentQuery = Appointment::select(
+                DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+                DB::raw('SUM(service_price) as total')
+            )
+            ->where('payment_status', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate)
+            ->whereNotExists(function($query) {
+                $query->select(DB::raw(1))
+                    ->from('invoices')
+                    ->whereColumn('invoices.appointment_id', 'appointments.id')
+                    ->where('invoices.state', 'paid');
+            });
+        
+        if (!$canViewAll) {
+            $appointmentQuery->where('user_id', $user->id);
+        }
+
+        $appointments = $appointmentQuery->groupBy('year')->get();
+
+        // Convertir datos de citas a array asociativo
+        $appointmentsMap = [];
+        foreach ($appointments as $appointment) {
+            $appointmentsMap[$appointment->year] = $appointment->total;
+        }
+
+        // Generar array con todos los años del período
+        $result = [];
+        for ($i = $years - 1; $i >= 0; $i--) {
+            $year = Carbon::now()->subYears($i)->year;
+            
+            // Buscar ingresos de facturas y citas
+            $invoiceTotal = $invoicesByYear[$year] ?? 0;
+            $appointmentTotal = $appointmentsMap[$year] ?? 0;
+            
+            $result[] = [
+                'label' => (string)$year,
+                'value' => (int)($invoiceTotal + $appointmentTotal),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener datos de citas anuales
+     */
+    public function getYearlyAppointmentsData(User $user, bool $canViewAll, string $period): array
+    {
+        $years = match($period) {
+            'last_5_years' => 5,
+            default => 5,
+        };
+
+        $startDate = Carbon::now()->subYears($years - 1)->startOfYear();
+        $endDate = Carbon::now()->endOfDay();
+        $userFilter = $canViewAll ? "" : "AND user_id = {$user->id}";
+
+        // Total de citas por año
+        $appointmentsByYear = DB::select("
+            SELECT 
+                EXTRACT(YEAR FROM start_time) as year,
+                COUNT(*) as total
+            FROM appointments
+            WHERE start_time >= '{$startDate->format('Y-m-d 00:00:00')}'
+            AND start_time <= '{$endDate->format('Y-m-d 23:59:59')}'
+            {$userFilter}
+            GROUP BY year
+            ORDER BY year
+        ");
+
+        // Convertir datos de BD a un array asociativo para fácil búsqueda
+        $appointmentsMap = [];
+        foreach ($appointmentsByYear as $item) {
+            $appointmentsMap[$item->year] = (int)$item->total;
+        }
+
+        // Generar array con todos los años del período
+        $result = [];
+        for ($i = $years - 1; $i >= 0; $i--) {
+            $year = Carbon::now()->subYears($i)->year;
+            
+            // Buscar total de citas para este año
+            $total = $appointmentsMap[$year] ?? 0;
+            
+            $result[] = [
+                'date' => (string)$year,
+                'total' => $total,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtener fecha de inicio según el período seleccionado
+     */
+    private function getStartDateForPeriod(string $period): Carbon
+    {
+        return match($period) {
+            'last_7_days' => Carbon::now()->subDays(6)->startOfDay(), // Últimos 7 días incluyendo hoy
+            'last_30_days' => Carbon::now()->subDays(29)->startOfDay(), // Últimos 30 días incluyendo hoy
+            'last_90_days' => Carbon::now()->subDays(89)->startOfDay(), // Últimos 90 días incluyendo hoy
+            'this_month' => Carbon::now()->startOfMonth()->startOfDay(),
+            'this_year' => Carbon::now()->startOfYear()->startOfDay(),
+            default => Carbon::now()->subDays(29)->startOfDay(),
+        };
     }
 }
