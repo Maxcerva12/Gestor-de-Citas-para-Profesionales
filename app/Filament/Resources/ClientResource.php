@@ -328,6 +328,72 @@ class ClientResource extends Resource
                                             ->helperText('Campos adicionales específicos para este cliente'),
                                     ]),
                             ]),
+                        Forms\Components\Tabs\Tab::make('Tratamiento de Datos')
+                            ->icon('heroicon-o-shield-check')
+                            ->schema([
+                                Forms\Components\Section::make('Consentimiento para el Tratamiento de Datos Personales')
+                                    ->description('De conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('data_treatment_info')
+                                            ->label('')
+                                            ->content('
+                                                <div class="space-y-4 text-sm">
+                                                    <p><strong>¿Para qué utilizamos sus datos?</strong></p>
+                                                    <ul class="list-disc pl-5 space-y-1">
+                                                        <li>Gestión de citas médicas y servicios profesionales</li>
+                                                        <li>Creación y mantenimiento de historia clínica</li>
+                                                        <li>Facturación y gestión administrativa</li>
+                                                        <li>Comunicación sobre servicios y recordatorios</li>
+                                                        <li>Cumplimiento de obligaciones legales</li>
+                                                    </ul>
+                                                    
+                                                    <p><strong>Sus derechos como titular de los datos:</strong></p>
+                                                    <ul class="list-disc pl-5 space-y-1">
+                                                        <li>Conocer, actualizar y rectificar sus datos</li>
+                                                        <li>Solicitar prueba de la autorización otorgada</li>
+                                                        <li>Revocar la autorización y/o solicitar la supresión del dato</li>
+                                                        <li>Acceder de forma gratuita a sus datos</li>
+                                                        <li>Presentar quejas ante la Superintendencia de Industria y Comercio</li>
+                                                    </ul>
+                                                </div>
+                                            '),
+                                        
+                                        Forms\Components\Grid::make(1)
+                                            ->schema([
+                                                Forms\Components\Checkbox::make('accepts_data_treatment')
+                                                    ->label('Autorizo el tratamiento de mis datos personales')
+                                                    ->helperText('Acepto que mis datos personales sean tratados de acuerdo con las finalidades mencionadas anteriormente')
+                                                    ->required()
+                                                    ->accepted(),
+                                                
+                                                Forms\Components\Checkbox::make('accepts_privacy_policy')
+                                                    ->label('Acepto la política de privacidad')
+                                                    ->helperText('He leído y acepto la política de privacidad y términos de servicio')
+                                                    ->required()
+                                                    ->accepted(),
+                                                
+                                                Forms\Components\Checkbox::make('accepts_commercial_communications')
+                                                    ->label('Acepto recibir comunicaciones comerciales (Opcional)')
+                                                    ->helperText('Autorizo el envío de información promocional, recordatorios y comunicaciones relacionadas con los servicios')
+                                                    ->default(false),
+                                                
+                                                Forms\Components\DateTimePicker::make('data_treatment_date')
+                                                    ->label('Fecha y hora de aceptación')
+                                                    ->default(now())
+                                                    ->disabled()
+                                                    ->native(false)
+                                                    ->displayFormat('d/m/Y H:i')
+                                                    ->helperText('Fecha automática de registro del consentimiento'),
+                                            ]),
+                                        
+                                        Forms\Components\Textarea::make('additional_observations')
+                                            ->label('Observaciones adicionales (Opcional)')
+                                            ->placeholder('Si tiene alguna observación especial respecto al tratamiento de sus datos, puede indicarla aquí...')
+                                            ->rows(3)
+                                            ->maxLength(500),
+                                    ]),
+                            ]),
+                        
                         Forms\Components\Tabs\Tab::make('Notas')
                             ->icon('heroicon-o-document-text')
                             ->schema([

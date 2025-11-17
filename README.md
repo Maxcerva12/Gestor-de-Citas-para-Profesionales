@@ -94,3 +94,8 @@ php artisan filament:cache-components
 php artisan config:cache
 
 php artisan route:cache
+
+## este es el orden de los permisos:
+php artisan shield:generate --all
+
+php artisan shield:super-admin

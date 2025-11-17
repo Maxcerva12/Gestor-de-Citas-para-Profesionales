@@ -51,7 +51,7 @@ class ClientPanelProvider extends PanelProvider
             ->brandLogo(asset('storage\img\lg_zoila_padilla2.svg'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('storage\img\favicon.ico'))
-            ->registration()
+            ->registration(\App\Filament\Client\Pages\Auth\Register::class)
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
             ->discoverPages(in: app_path('Filament/Client/Pages'), for: 'App\\Filament\\Client\\Pages')
             ->pages([

@@ -43,6 +43,12 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar, CanRese
         'aseguradora',
         'nombre_contacto_emergencia',
         'telefono_contacto_emergencia',
+        // Campos de tratamiento de datos
+        'accepts_data_treatment',
+        'accepts_privacy_policy',
+        'accepts_commercial_communications',
+        'data_treatment_date',
+        'additional_observations',
     ];
 
     protected $hidden = [
@@ -56,6 +62,10 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar, CanRese
         'active' => 'boolean',
         'custom_fields' => 'array',
         'fecha_nacimiento' => 'datetime',
+        'accepts_data_treatment' => 'boolean',
+        'accepts_privacy_policy' => 'boolean',
+        'accepts_commercial_communications' => 'boolean',
+        'data_treatment_date' => 'datetime',
     ];
 
     public function canAccessPanel(Panel $panel): bool
