@@ -198,6 +198,50 @@ class ViewClient extends ViewRecord
                                             ->placeholder('No hay campos personalizados registrados'),
                                     ]),
                             ]),
+                        Components\Tabs\Tab::make('Tratamiento de Datos')
+                            ->icon('heroicon-o-shield-check')
+                            ->schema([
+                                Components\Section::make('Autorización para el Tratamiento de Datos Personales')
+                                    ->description('Estado del consentimiento del paciente para el tratamiento de datos')
+                                    ->schema([
+                                        Components\ViewEntry::make('data_treatment_legal_text')
+                                            ->label('Información Legal')
+                                            ->view('infolists.components.rich-text-display')
+                                            ->state(function () {
+                                                return 'De conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013, la Fundación Odontológica Zoila Padilla requiere su autorización previa, expresa e informada para realizar el tratamiento de sus datos personales.
+
+Sus datos serán utilizados para la gestión y programación de citas médicas, creación y mantenimiento de su historia clínica, procesos de facturación y gestión administrativa. También podremos comunicarnos con usted sobre servicios, recordatorios de citas y promociones, siempre cumpliendo con las obligaciones legales del sector salud y mejorando continuamente nuestros servicios profesionales.
+
+Como titular de sus datos personales, usted tiene derecho a conocer, actualizar, rectificar y solicitar la supresión de sus datos, así como revocar la autorización otorgada para su tratamiento. Para ejercer estos derechos, puede contactarnos a través de nuestros canales de atención establecidos.';
+                                            }),
+                                        
+                                        Components\Grid::make(3)
+                                            ->schema([
+                                                Components\IconEntry::make('accepts_data_treatment')
+                                                    ->label('Autorización de Tratamiento')
+                                                    ->boolean()
+                                                    ->trueIcon('heroicon-o-check-circle')
+                                                    ->falseIcon('heroicon-o-x-circle')
+                                                    ->trueColor('success')
+                                                    ->falseColor('danger'),
+                                                Components\IconEntry::make('accepts_privacy_policy')
+                                                    ->label('Acepta Políticas de Privacidad')
+                                                    ->boolean()
+                                                    ->trueIcon('heroicon-o-check-circle')
+                                                    ->falseIcon('heroicon-o-x-circle')
+                                                    ->trueColor('success')
+                                                    ->falseColor('danger'),
+                                                Components\TextEntry::make('data_treatment_date')
+                                                    ->label('Fecha de Aceptación')
+                                                    ->dateTime('d/m/Y H:i')
+                                                    ->placeholder('No registrada')
+                                                    ->icon('heroicon-o-calendar-days')
+                                                    ->badge()
+                                                    ->color('success')
+                                                    ->weight('bold'),
+                                            ]),
+                                    ]),
+                            ]),
                         Components\Tabs\Tab::make('Notas Médicas')
                             ->icon('heroicon-o-document-text')
                             ->schema([

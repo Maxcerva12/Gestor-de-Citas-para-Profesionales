@@ -112,11 +112,7 @@ Es importante que tenga en cuenta que la información médica será tratada con 
                                 'accepted' => 'Debe aceptar las políticas de tratamiento de datos para continuar.',
                             ]),
                         
-                        // Checkbox::make('accepts_commercial_communications')
-                        //     ->label('📧 Acepto recibir comunicaciones comerciales (OPCIONAL)')
-                        //     ->helperText('Autorizo el envío de información promocional, newsletter, recordatorios y comunicaciones relacionadas con los servicios odontológicos')
-                        //     ->default(false)
-                        //     ->extraAttributes(['class' => 'text-base']),
+                        
                     ]),
             ])
             ->collapsible()

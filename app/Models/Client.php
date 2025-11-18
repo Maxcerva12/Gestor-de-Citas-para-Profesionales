@@ -48,7 +48,6 @@ class Client extends Authenticatable implements FilamentUser, HasAvatar, CanRese
         'accepts_privacy_policy',
         'accepts_commercial_communications',
         'data_treatment_date',
-        'additional_observations',
     ];
 
     protected $hidden = [
