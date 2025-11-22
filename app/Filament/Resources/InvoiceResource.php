@@ -47,7 +47,7 @@ class InvoiceResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('type')
                             ->label('Tipo de Factura')
-                            ->options(InvoiceType::class)
+                            ->options(fn() => collect(InvoiceType::cases())->mapWithKeys(fn($type) => [$type->value => $type->getLabel()]))
                             ->native(false)
                             ->default('invoice')
                             ->required()
@@ -55,7 +55,7 @@ class InvoiceResource extends Resource
 
                         Forms\Components\Select::make('state')
                             ->label('Estado')
-                            ->options(InvoiceState::class)
+                            ->options(fn() => collect(InvoiceState::cases())->mapWithKeys(fn($state) => [$state->value => $state->getLabel()]))
                             ->native(false)
                             ->default('draft')
                             ->required(),

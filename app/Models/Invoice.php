@@ -211,9 +211,19 @@ class Invoice extends BaseInvoice
             'watermark' => null, // Para facturas reales no mostrar watermark
         ];
 
+        // Traducir el estado al español
+        $stateLabel = match($this->state->value) {
+            'draft' => 'Borrador',
+            'sent' => 'Enviada',
+            'paid' => 'Pagada',
+            'overdue' => 'Vencida',
+            'cancelled' => 'Cancelada',
+            default => $this->state->value
+        };
+
         $pdfInvoice = new PdfInvoice(
             serial_number: $this->serial_number,
-            state: $this->state->value,
+            state: $stateLabel,
             seller: new Seller(
                 company: $sellerInfo['company'] ?? null,
                 name: $sellerInfo['name'] ?? null,

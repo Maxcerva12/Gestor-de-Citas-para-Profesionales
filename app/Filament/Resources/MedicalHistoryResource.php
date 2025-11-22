@@ -304,6 +304,8 @@ class MedicalHistoryResource extends Resource
                                             ->schema([
                                                 Forms\Components\Select::make('tipo_sangre')
                                                     ->label('Tipo de Sangre')
+                                                    ->native(false)
+                                                    
                                                     ->options([
                                                         'A+' => 'A+',
                                                         'A-' => 'A-',
@@ -813,6 +815,7 @@ class MedicalHistoryResource extends Resource
                                     ->schema([
                                         Forms\Components\DatePicker::make('ultima_visita_odontologo')
                                             ->label('Última Visita al Odontólogo')
+                                            ->native(false)
                                             ->maxDate(now()),
 
                                         Forms\Components\TextInput::make('higiene_oral_frecuencia')

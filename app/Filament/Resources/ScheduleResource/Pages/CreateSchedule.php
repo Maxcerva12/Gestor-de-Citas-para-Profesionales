@@ -25,7 +25,7 @@ class CreateSchedule extends CreateRecord
         }
 
         // Validar horarios superpuestos antes de crear
-        if (!$this->validateOverlngSchedules($data)) {
+        if (!$this->validateOverlappingSchedules($data)) {
             $this->halt();
         }
     }

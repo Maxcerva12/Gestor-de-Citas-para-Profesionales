@@ -64,7 +64,7 @@ class ClientPanelProvider extends PanelProvider
                 ->formPanelWidth('50%')
                 ->emptyPanelBackgroundImageOpacity('70%')
                 ->emptyPanelBackgroundColor(Color::hex("#d0b4ca"))
-                ->emptyPanelBackgroundImageUrl(asset('storage/img/dentista-examinando-los-dientes-del-paciente-femenino2 (1).jpg')),
+                ->emptyPanelBackgroundImageUrl(asset('storage/img/operacion.jpg')),
                 FilamentErrorPagesPlugin::make()
                     ->routes([
                         'client/*',

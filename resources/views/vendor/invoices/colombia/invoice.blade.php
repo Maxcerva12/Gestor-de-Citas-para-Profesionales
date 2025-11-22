@@ -27,55 +27,55 @@
     <table class="mb-6 w-full border border-gray-300">
         <tbody class="bg-gray-50">
             <tr class="text-xs border-b">
-                <td class="whitespace-nowrap pr-2 py-2 px-3 font-bold">
+                <td class="whitespace-nowrap pr-2 py-2 px-3 font-bold text-gray-900">
                     Número de Factura:
                 </td>
-                <td class="py-2 px-3 font-bold" width="100%">
+                <td class="py-2 px-3 font-bold text-gray-900" width="100%">
                     {{ $invoice->serial_number }}
                 </td>
             </tr>
             <tr class="text-xs border-b">
-                <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold">
+                <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold text-gray-900">
                     Fecha de Emisión:
                 </td>
-                <td class="py-2 px-3" width="100%">
+                <td class="py-2 px-3 text-gray-900" width="100%">
                     {{ $invoice->created_at?->format('d/m/Y') }}
                 </td>
             </tr>
             @if ($invoice->due_at)
                 <tr class="text-xs border-b">
-                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold">
+                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold text-gray-900">
                         Fecha de Vencimiento:
                     </td>
-                    <td class="py-2 px-3" width="100%">
+                    <td class="py-2 px-3 text-gray-900" width="100%">
                         {{ $invoice->due_at->format('d/m/Y') }}
                     </td>
                 </tr>
             @endif
             @if ($invoice->paid_at)
                 <tr class="text-xs border-b">
-                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold">
+                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold text-gray-900">
                         Fecha de Pago:
                     </td>
-                    <td class="py-2 px-3" width="100%">
+                    <td class="py-2 px-3 text-gray-900" width="100%">
                         {{ $invoice->paid_at->format('d/m/Y H:i') }}
                     </td>
                 </tr>
             @endif
             <tr class="text-xs border-b">
-                <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold">
+                <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold text-gray-900">
                     Moneda:
                 </td>
-                <td class="py-2 px-3" width="100%">
+                <td class="py-2 px-3 text-gray-900" width="100%">
                     Peso Colombiano (COP)
                 </td>
             </tr>
             @foreach ($invoice->fields as $key => $value)
                 <tr class="text-xs border-b">
-                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold">
+                    <td class="whitespace-nowrap pr-2 py-2 px-3 font-semibold text-gray-900">
                         {{ $key }}:
                     </td>
-                    <td class="py-2 px-3" width="100%">
+                    <td class="py-2 px-3 text-gray-900" width="100%">
                         {{ $value }}
                     </td>
                 </tr>
@@ -86,7 +86,7 @@
     <table class="mb-6 w-full">
         <tbody>
             <tr>
-                <td class="align-top border border-gray-300 p-4" width="50%">
+                <td class="align-top border border-gray-300 p-4 text-gray-900" width="50%">
                     <p class="mb-3 text-sm font-bold text-white px-3 py-2" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                         INFORMACIÓN DEL EMISOR
                     </p>
@@ -96,7 +96,7 @@
                     ])
                 </td>
 
-                <td class="align-top border border-gray-300 p-4" width="50%">
+                <td class="align-top border border-gray-300 p-4 text-gray-900" width="50%">
                     <p class="mb-3 text-sm font-bold text-white px-3 py-2" style="background-color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
                         INFORMACIÓN DEL ADQUIRIENTE
                     </p>
@@ -111,8 +111,8 @@
 
     @if ($invoice->description)
         <div class="mb-6 p-4 border border-gray-300 bg-gray-50">
-            <p class="text-sm font-bold mb-2">Observaciones:</p>
-            <p class="text-sm text-gray-700">{{ $invoice->description }}</p>
+            <p class="text-sm font-bold mb-2 text-gray-900">Observaciones:</p>
+            <p class="text-sm text-gray-900">{{ $invoice->description }}</p>
         </div>
     @endif
 
@@ -138,18 +138,18 @@
                         $total = $subtotal->plus($taxAmount);
                     @endphp
                     <tr class="text-xs {{ $loop->even ? 'bg-gray-50' : 'bg-white' }}">
-                        <td class="border border-gray-300 p-3">
-                            <strong class="text-gray-800">{{ $item->label }}</strong>
+                        <td class="border border-gray-300 p-3 text-gray-900">
+                            <strong class="text-gray-900">{{ $item->label }}</strong>
                             @if ($item->description)
-                                <br><span class="text-gray-600 text-xs">{{ $item->description }}</span>
+                                <br><span class="text-gray-700 text-xs">{{ $item->description }}</span>
                             @endif
                         </td>
-                        <td class="border border-gray-300 p-3 text-center font-semibold">{{ $item->quantity }}</td>
-                        <td class="border border-gray-300 p-3 text-right">{{ $invoice->formatMoney($item->unit_price) }}</td>
-                        <td class="border border-gray-300 p-3 text-center">{{ number_format($taxRate, 1) }}%</td>
-                        <td class="border border-gray-300 p-3 text-right">{{ $invoice->formatMoney($taxAmount) }}</td>
-                        <td class="border border-gray-300 p-3 text-right">{{ $invoice->formatMoney($subtotal) }}</td>
-                        <td class="border border-gray-300 p-3 text-right font-bold">{{ $invoice->formatMoney($total) }}</td>
+                        <td class="border border-gray-300 p-3 text-center font-semibold text-gray-900">{{ $item->quantity }}</td>
+                        <td class="border border-gray-300 p-3 text-right text-gray-900">{{ $invoice->formatMoney($item->unit_price) }}</td>
+                        <td class="border border-gray-300 p-3 text-center text-gray-900">{{ number_format($taxRate, 1) }}%</td>
+                        <td class="border border-gray-300 p-3 text-right text-gray-900">{{ $invoice->formatMoney($taxAmount) }}</td>
+                        <td class="border border-gray-300 p-3 text-right text-gray-900">{{ $invoice->formatMoney($subtotal) }}</td>
+                        <td class="border border-gray-300 p-3 text-right font-bold text-gray-900">{{ $invoice->formatMoney($total) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -235,23 +235,23 @@
         <table class="ml-auto border border-gray-300" width="45%">
             <tbody class="bg-gray-50">
                 <tr class="text-sm border-b border-gray-300">
-                    <td class="py-2 px-4 text-right font-semibold">Subtotal:</td>
-                    <td class="py-2 px-4 text-right font-semibold">{{ $invoice->formatMoney($subtotal) }}</td>
+                    <td class="py-2 px-4 text-right font-semibold text-gray-900">Subtotal:</td>
+                    <td class="py-2 px-4 text-right font-semibold text-gray-900">{{ $invoice->formatMoney($subtotal) }}</td>
                 </tr>
                 
                 @if ($discountEnabled && $discountPercentage > 0)
                     <tr class="text-sm border-b border-gray-300 bg-green-50">
-                        <td class="py-2 px-4 text-right font-semibold text-green-700">
+                        <td class="py-2 px-4 text-right font-semibold text-green-800">
                             Descuento ({{ number_format($discountPercentage, 2) }}%):
                         </td>
-                        <td class="py-2 px-4 text-right font-semibold text-green-700">
+                        <td class="py-2 px-4 text-right font-semibold text-green-800">
                             -{{ $invoice->formatMoney($discountAmount) }}
                         </td>
                     </tr>
                     
                     <tr class="text-sm border-b border-gray-300">
-                        <td class="py-2 px-4 text-right font-semibold">Subtotal con Descuento:</td>
-                        <td class="py-2 px-4 text-right font-semibold">{{ $invoice->formatMoney($subtotalAfterDiscount) }}</td>
+                        <td class="py-2 px-4 text-right font-semibold text-gray-900">Subtotal con Descuento:</td>
+                        <td class="py-2 px-4 text-right font-semibold text-gray-900">{{ $invoice->formatMoney($subtotalAfterDiscount) }}</td>
                     </tr>
                 @endif
                 
@@ -260,7 +260,7 @@
                 @endphp
                 @if ($taxAmount > 0)
                     <tr class="text-sm border-b border-gray-300">
-                        <td class="py-2 px-4 text-right font-semibold">
+                        <td class="py-2 px-4 text-right font-semibold text-gray-900">
                             IVA ({{ number_format(
                                 collect($invoice->items)
                                     ->pluck('tax_percentage')
@@ -270,13 +270,13 @@
                                 ?: 19, 1
                             ) }}%):
                         </td>
-                        <td class="py-2 px-4 text-right font-semibold">{{ $invoice->formatMoney($totalTax) }}</td>
+                        <td class="py-2 px-4 text-right font-semibold text-gray-900">{{ $invoice->formatMoney($totalTax) }}</td>
                     </tr>
                 @endif
                 
                 <tr class="text-lg font-bold" style="color: {{ data_get($invoice->templateData, 'color', '#1e40af') }}">
-                    <td class="py-3 px-4 text-right border-t-2 border-gray-400">TOTAL A PAGAR:</td>
-                    <td class="py-3 px-4 text-right border-t-2 border-gray-400">{{ $invoice->formatMoney($total) }}</td>
+                    <td class="py-3 px-4 text-right border-t-2 border-gray-400 text-gray-900">TOTAL A PAGAR:</td>
+                    <td class="py-3 px-4 text-right border-t-2 border-gray-400 text-gray-900">{{ $invoice->formatMoney($total) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -289,9 +289,9 @@
             </h3>
             @foreach ($invoice->paymentInstructions as $instruction)
                 <div class="border border-gray-300 p-4 mb-3 bg-gray-50">
-                    <h4 class="font-bold text-sm mb-2">{{ $instruction->name }}</h4>
+                    <h4 class="font-bold text-sm mb-2 text-gray-900">{{ $instruction->name }}</h4>
                     @if ($instruction->description)
-                        <p class="text-xs text-gray-600 mb-3">{{ $instruction->description }}</p>
+                        <p class="text-xs text-gray-900 mb-3">{{ $instruction->description }}</p>
                     @endif
                     
                     <div class="flex">
@@ -300,8 +300,8 @@
                                 <table class="text-xs w-full">
                                     @foreach ($instruction->fields as $key => $value)
                                         <tr class="border-b border-gray-200">
-                                            <td class="py-1 pr-3 font-semibold">{{ $key }}:</td>
-                                            <td class="py-1">{!! $value !!}</td>
+                                            <td class="py-1 pr-3 font-semibold text-gray-900">{{ $key }}:</td>
+                                            <td class="py-1 text-gray-900">{!! $value !!}</td>
                                         </tr>
                                     @endforeach
                                 </table>
@@ -321,7 +321,7 @@
 
     <div class="mt-8 pt-4 border-t-2 border-gray-400">
         <div class="text-center mb-4">
-            <p class="font-bold text-sm mb-2">Este documento es una representación impresa de la factura electrónica</p>
+            <p class="font-bold text-gray-900 text-sm mb-2">Este documento es una representación impresa de la factura electrónica</p>
             <p class="text-xs text-gray-700 mb-3">
                 Válida según el Decreto 1625 de 2016 y demás normas vigentes sobre facturación electrónica en Colombia
             </p>
